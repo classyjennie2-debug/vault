@@ -1,0 +1,545 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import {
+  type CoinType,
+  type NetworkType,
+  type WalletAddress,
+  coinNetworks,
+  coinDetails,
+  allUsers,
+  initialWalletAddresses,
+} from "@/lib/mock-data"
+import { CoinIcon } from "@/components/crypto/coin-icon"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs"
+import {
+  Plus,
+  Wallet,
+  Trash2,
+  User,
+  Search,
+} from "lucide-react"
+
+const allCoins: CoinType[] = ["USDT", "BTC", "ETH", "BNB", "TRX", "SOL"]
+const allNetworks: NetworkType[] = ["TRC20", "ERC20", "BEP20", "USDT0", "BTC", "SOL"]
+
+export default function AdminWalletsPage() {
+  const [walletPool, setWalletPool] = useState<WalletAddress[]>(() => {
+    if (typeof window !== "undefined") {
+      const version = localStorage.getItem("vault_wallet_version")
+      if (version === "2") {
+        const stored = localStorage.getItem("vault_wallet_pool")
+        if (stored) return JSON.parse(stored)
+      }
+      localStorage.setItem("vault_wallet_version", "2")
+    }
+    return initialWalletAddresses
+  })
+
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [newCoin, setNewCoin] = useState<CoinType>("USDT")
+  const [newNetwork, setNewNetwork] = useState<NetworkType>("TRC20")
+  const [newAddress, setNewAddress] = useState("")
+  const [filterCoin, setFilterCoin] = useState<string>("all")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+
+  useEffect(() => {
+    localStorage.setItem("vault_wallet_pool", JSON.stringify(walletPool))
+  }, [walletPool])
+
+  const handleAddWallet = () => {
+    if (!newAddress.trim()) return
+
+    const wallet: WalletAddress = {
+      id: `w${Date.now()}`,
+      coin: newCoin,
+      network: newNetwork,
+      address: newAddress.trim(),
+      assignedTo: null,
+      assignedAt: null,
+      createdAt: new Date().toISOString().split("T")[0],
+    }
+
+    setWalletPool((prev) => [...prev, wallet])
+    setNewAddress("")
+    setDialogOpen(false)
+  }
+
+  const handleDeleteWallet = (id: string) => {
+    setWalletPool((prev) => prev.filter((w) => w.id !== id))
+    setDeleteConfirmId(null)
+  }
+
+  const filteredWallets = walletPool.filter((w) => {
+    if (filterCoin !== "all" && w.coin !== filterCoin) return false
+    if (
+      searchQuery &&
+      !w.address.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+      return false
+    return true
+  })
+
+  const availableWallets = walletPool.filter((w) => !w.assignedTo)
+  const assignedWallets = walletPool.filter((w) => w.assignedTo)
+
+  const statsByMCoin = allCoins.map((coin) => {
+    const all = walletPool.filter((w) => w.coin === coin)
+    const available = all.filter((w) => !w.assignedTo)
+    return { coin, total: all.length, available: available.length }
+  })
+
+  const getUserName = (userId: string | null) => {
+    if (!userId) return null
+    const user = allUsers.find((u) => u.id === userId)
+    return user?.name || userId
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Wallet Management
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Manage deposit wallet addresses for all coins and networks.
+          </p>
+        </div>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Plus className="mr-2 h-4 w-4" />
+              Add Wallet Address
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Wallet Address</DialogTitle>
+              <DialogDescription>
+                Add a new deposit wallet address to the pool. Users will be
+                assigned addresses from this pool.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 py-4">
+              <div className="flex flex-col gap-2">
+                <Label>Coin</Label>
+                <Select
+                  value={newCoin}
+                  onValueChange={(v) => {
+                    setNewCoin(v as CoinType)
+                    // Reset network if not valid for new coin
+                    const validNetworks = coinNetworks[v as CoinType]
+                    if (!validNetworks.includes(newNetwork)) {
+                      setNewNetwork(validNetworks[0])
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allCoins.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        <div className="flex items-center gap-2">
+                          <CoinIcon coin={c} size={16} />
+                          <span>
+                            {c} - {coinDetails[c].name}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label>Network</Label>
+                <Select
+                  value={newNetwork}
+                  onValueChange={(v) => setNewNetwork(v as NetworkType)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {coinNetworks[newCoin].map((n) => (
+                      <SelectItem key={n} value={n}>
+                        {n}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label>Wallet Address</Label>
+                <Input
+                  placeholder="Enter wallet address..."
+                  value={newAddress}
+                  onChange={(e) => setNewAddress(e.target.value)}
+                  className="font-mono text-sm"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddWallet}
+                disabled={!newAddress.trim()}
+                className="bg-accent text-accent-foreground hover:bg-accent/90"
+              >
+                Add Address
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {statsByMCoin.map((stat) => (
+          <Card key={stat.coin}>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {stat.coin} Wallets
+                  </p>
+                  <p className="mt-1 text-2xl font-bold text-card-foreground">
+                    {stat.total}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {stat.available} available
+                  </p>
+                </div>
+                <div
+                  className="flex h-11 w-11 items-center justify-center rounded-xl"
+                  style={{ backgroundColor: coinDetails[stat.coin].bgColor }}
+                >
+                  <CoinIcon coin={stat.coin} size={24} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Wallet List */}
+      <Tabs defaultValue="all" className="w-full">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <TabsList>
+            <TabsTrigger value="all">
+              All ({walletPool.length})
+            </TabsTrigger>
+            <TabsTrigger value="available">
+              Available ({availableWallets.length})
+            </TabsTrigger>
+            <TabsTrigger value="assigned">
+              Assigned ({assignedWallets.length})
+            </TabsTrigger>
+          </TabsList>
+          <div className="flex gap-2">
+            <div className="relative flex-1 sm:w-56 sm:flex-initial">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search address..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 font-mono text-xs"
+              />
+            </div>
+            <Select value={filterCoin} onValueChange={setFilterCoin}>
+              <SelectTrigger className="w-28">
+                <SelectValue placeholder="Coin" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Coins</SelectItem>
+                {allCoins.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <TabsContent value="all" className="mt-4">
+          <WalletTable
+            wallets={filteredWallets}
+            getUserName={getUserName}
+            onDelete={(id) => setDeleteConfirmId(id)}
+          />
+        </TabsContent>
+        <TabsContent value="available" className="mt-4">
+          <WalletTable
+            wallets={filteredWallets.filter((w) => !w.assignedTo)}
+            getUserName={getUserName}
+            onDelete={(id) => setDeleteConfirmId(id)}
+          />
+        </TabsContent>
+        <TabsContent value="assigned" className="mt-4">
+          <WalletTable
+            wallets={filteredWallets.filter((w) => w.assignedTo)}
+            getUserName={getUserName}
+            onDelete={(id) => setDeleteConfirmId(id)}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={!!deleteConfirmId}
+        onOpenChange={() => setDeleteConfirmId(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Wallet Address</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove this wallet address from the pool?
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirmId(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteConfirmId && handleDeleteWallet(deleteConfirmId)}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
+
+function WalletTable({
+  wallets,
+  getUserName,
+  onDelete,
+}: {
+  wallets: WalletAddress[]
+  getUserName: (id: string | null) => string | null
+  onDelete: (id: string) => void
+}) {
+  if (wallets.length === 0) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <Wallet className="mb-3 h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">
+            No wallet addresses found.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <CardContent className="p-0">
+        {/* Desktop Table */}
+        <div className="hidden overflow-x-auto md:block">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                  Coin
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                  Network
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                  Address
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                  Assigned To
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {wallets.map((wallet) => (
+                <tr
+                  key={wallet.id}
+                  className="border-b border-border last:border-0"
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <CoinIcon coin={wallet.coin} size={20} />
+                      <span className="text-sm font-medium text-card-foreground">
+                        {wallet.coin}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant="outline" className="text-xs">
+                      {wallet.network}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <code className="text-xs text-muted-foreground">
+                      {wallet.address.slice(0, 12)}...{wallet.address.slice(-8)}
+                    </code>
+                  </td>
+                  <td className="px-4 py-3">
+                    {wallet.assignedTo ? (
+                      <Badge
+                        variant="secondary"
+                        className="bg-warning/10 text-warning-foreground text-xs"
+                      >
+                        Assigned
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="secondary"
+                        className="bg-accent/10 text-accent text-xs"
+                      >
+                        Available
+                      </Badge>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {wallet.assignedTo ? (
+                      <div className="flex items-center gap-1.5">
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs text-card-foreground">
+                          {getUserName(wallet.assignedTo)}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">--</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(wallet.id)}
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete wallet</span>
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="flex flex-col gap-3 p-4 md:hidden">
+          {wallets.map((wallet) => (
+            <div
+              key={wallet.id}
+              className="flex flex-col gap-3 rounded-lg border border-border p-4"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CoinIcon coin={wallet.coin} size={20} />
+                  <span className="text-sm font-medium text-card-foreground">
+                    {wallet.coin}
+                  </span>
+                  <Badge variant="outline" className="text-[10px]">
+                    {wallet.network}
+                  </Badge>
+                </div>
+                {wallet.assignedTo ? (
+                  <Badge
+                    variant="secondary"
+                    className="bg-warning/10 text-warning-foreground text-[10px]"
+                  >
+                    Assigned
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="secondary"
+                    className="bg-accent/10 text-accent text-[10px]"
+                  >
+                    Available
+                  </Badge>
+                )}
+              </div>
+              <code className="break-all text-xs text-muted-foreground">
+                {wallet.address}
+              </code>
+              <div className="flex items-center justify-between">
+                {wallet.assignedTo ? (
+                  <div className="flex items-center gap-1.5">
+                    <User className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-card-foreground">
+                      {getUserName(wallet.assignedTo)}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    Unassigned
+                  </span>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(wallet.id)}
+                  className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="mr-1 h-3 w-3" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
