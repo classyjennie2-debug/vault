@@ -15,7 +15,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <DashboardHero user={user} />
+      <DashboardHero user={user} stats={stats} />
 
       <DashboardCards
         totalBalance={user.balance}
