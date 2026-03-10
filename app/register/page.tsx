@@ -13,9 +13,42 @@ export default function RegisterPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [step, setStep] = useState<0 | 1>(0)
+  const [code, setCode] = useState("")
+  const [error, setError] = useState("")
+  const [info, setInfo] = useState("")
 
-  function handleRegister(e: React.FormEvent) {
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
+    setError("")
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error || "Something went wrong")
+      return
+    }
+    setInfo("Verification code sent to your email")
+    setStep(1)
+  }
+
+  async function handleVerify(e: React.FormEvent) {
+    e.preventDefault()
+    setError("")
+    const res = await fetch("/api/auth/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, code }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error || "Invalid code")
+      return
+    }
+    // user is logged in automatically by backend
     router.push("/dashboard")
   }
 
@@ -81,46 +114,76 @@ export default function RegisterPage() {
           Get started with Vault in under 2 minutes
         </p>
 
-        <form onSubmit={handleRegister} className="mt-8 flex flex-col gap-5">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="name">Full name</Label>
-            <Input
-              id="name"
-              placeholder="Alexandra Chen"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Create a strong password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              Must be at least 8 characters
+        {step === 0 ? (
+          <form onSubmit={handleRegister} className="mt-8 flex flex-col gap-5">
+            {error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
+            {info && (
+              <p className="text-sm text-green-600">{info}</p>
+            )}
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="name">Full name</Label>
+              <Input
+                id="name"
+                placeholder="Alexandra Chen"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Create a strong password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Must be at least 8 characters
+              </p>
+            </div>
+            <Button type="submit" size="lg" className="mt-2 w-full">
+              Create Account
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerify} className="mt-8 flex flex-col gap-5">
+            {error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Enter the verification code we sent to <strong>{email}</strong>
             </p>
-          </div>
-          <Button type="submit" size="lg" className="mt-2 w-full">
-            Create Account
-          </Button>
-        </form>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="code">Code</Label>
+              <Input
+                id="code"
+                placeholder="123456"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" size="lg" className="mt-2 w-full">
+              Verify &amp; Continue
+            </Button>
+          </form>
+        )}
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Already have an account?{" "}

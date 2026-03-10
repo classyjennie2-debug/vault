@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { transactions as initialTransactions, allUsers, type Transaction } from "@/lib/mock-data"
+import type { Transaction } from "@/lib/types"
+import { transactions as initialTransactions, allUsers } from "@/lib/mock-data"
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -151,8 +152,8 @@ export default function AdminTransactionsPage() {
               </p>
             ) : (
               filtered.map((tx) => {
-                const Icon = typeIcons[tx.type]
-                const color = typeColors[tx.type]
+                const Icon = typeIcons[tx.type as keyof typeof typeIcons]
+                const color = typeColors[tx.type as keyof typeof typeColors]
                 const user = allUsers.find((u) => u.id === tx.userId)
                 const isPositive =
                   tx.type === "deposit" || tx.type === "return"

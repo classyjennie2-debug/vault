@@ -13,8 +13,24 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  function handleLogin(e: React.FormEvent) {
+  const [error, setError] = useState("")
+
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
+    setError("")
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error || "Invalid credentials")
+      return
+    }
+    // successful login - token cookie set by server
+    // fetch session or decode role? for now assume backend returned role in token
+    // redirect to dashboard; admin users need to be detected by email
     if (email.includes("admin")) {
       router.push("/admin")
     } else {
@@ -47,6 +63,7 @@ export default function LoginPage() {
         </p>
 
         <form onSubmit={handleLogin} className="mt-8 flex flex-col gap-5">
+          {error && <p className="text-sm text-red-500">{error}</p>}
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">Email</Label>
             <Input

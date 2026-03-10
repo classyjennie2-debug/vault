@@ -1,5 +1,7 @@
 import Database from "better-sqlite3"
 import path from "path"
+import bcrypt from "bcrypt"
+import type { ActiveInvestment } from "./types"
 
 const DB_PATH = path.join(process.cwd(), "vault.db")
 
@@ -23,6 +25,8 @@ function getDb(): Database.Database {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
+      passwordHash TEXT,
+      verified INTEGER NOT NULL DEFAULT 0,
       role TEXT NOT NULL DEFAULT 'user',
       balance REAL NOT NULL DEFAULT 0,
       joinedAt TEXT NOT NULL,
@@ -46,9 +50,25 @@ function getDb(): Database.Database {
       minAmount REAL NOT NULL,
       maxAmount REAL NOT NULL,
       returnRate REAL NOT NULL,
-      duration TEXT NOT NULL,
+      duration INTEGER NOT NULL,
+      durationUnit TEXT NOT NULL,
       risk TEXT NOT NULL,
       description TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS active_investments (
+      id TEXT PRIMARY KEY,
+      userId TEXT NOT NULL,
+      planId TEXT NOT NULL,
+      planName TEXT NOT NULL,
+      amount REAL NOT NULL,
+      expectedProfit REAL NOT NULL,
+      startDate TEXT NOT NULL,
+      endDate TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'active',
+      progressPercentage REAL NOT NULL DEFAULT 0,
+      FOREIGN KEY (userId) REFERENCES users(id),
+      FOREIGN KEY (planId) REFERENCES investment_plans(id)
     );
 
     CREATE TABLE IF NOT EXISTS wallet_addresses (
@@ -61,31 +81,42 @@ function getDb(): Database.Database {
       createdAt TEXT NOT NULL,
       FOREIGN KEY (assignedTo) REFERENCES users(id)
     );
+
+    CREATE TABLE IF NOT EXISTS verification_codes (
+      id TEXT PRIMARY KEY,
+      email TEXT NOT NULL,
+      code TEXT NOT NULL,
+      expiresAt TEXT NOT NULL,
+      used INTEGER NOT NULL DEFAULT 0
+    );
   `)
 
   // Seed data on first run
   const seeded = _db.prepare("SELECT value FROM _meta WHERE key = 'seeded'").get() as { value: string } | undefined
   if (!seeded) {
-    seedDatabase(_db)
+    seedDatabaseSync(_db)
     _db.prepare("INSERT INTO _meta (key, value) VALUES ('seeded', 'true')").run()
   }
 
   return _db
 }
 
-function seedDatabase(db: Database.Database) {
+function seedDatabaseSync(db: Database.Database) {
+  // Hash password synchronously using bcrypt
+  const passwordHash = bcrypt.hashSync("password123", 10)
+
   // ── Users ───────────────────────────────────────────────────────────
   const insertUser = db.prepare(
-    "INSERT INTO users (id, name, email, role, balance, joinedAt, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO users (id, name, email, passwordHash, verified, role, balance, joinedAt, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
   )
 
   const users = [
-    ["u1", "Alexandra Chen", "alex@example.com", "user", 48250.75, "2025-06-15", "AC"],
-    ["u2", "Marcus Johnson", "marcus@example.com", "user", 125800.0, "2025-03-10", "MJ"],
-    ["u3", "Priya Sharma", "priya@example.com", "user", 67340.5, "2025-08-22", "PS"],
-    ["u4", "David Kim", "david@example.com", "user", 9120.0, "2025-11-05", "DK"],
-    ["u5", "Fatima Al-Rashid", "fatima@example.com", "user", 231500.25, "2025-01-18", "FA"],
-    ["a1", "Admin", "admin@vaultinvest.com", "admin", 0, "2024-01-01", "AD"],
+    ["u1", "Alexandra Chen", "alex@example.com", passwordHash, 1, "user", 48250.75, "2025-06-15", "AC"],
+    ["u2", "Marcus Johnson", "marcus@example.com", passwordHash, 1, "user", 125800.0, "2025-03-10", "MJ"],
+    ["u3", "Priya Sharma", "priya@example.com", passwordHash, 1, "user", 67340.5, "2025-08-22", "PS"],
+    ["u4", "David Kim", "david@example.com", passwordHash, 1, "user", 9120.0, "2025-11-05", "DK"],
+    ["u5", "Fatima Al-Rashid", "fatima@example.com", passwordHash, 1, "user", 231500.25, "2025-01-18", "FA"],
+    ["a1", "Admin", "admin@vaultinvest.com", passwordHash, 1, "admin", 0, "2024-01-01", "AD"],
   ]
   for (const u of users) insertUser.run(...u)
 
@@ -111,16 +142,29 @@ function seedDatabase(db: Database.Database) {
 
   // ── Investment Plans ────────────────────────────────────────────────
   const insertPlan = db.prepare(
-    "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, risk, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
   )
 
   const plans = [
-    ["p1", "Conservative Bond Fund", 1000, 100000, 6.5, "12 months", "Low", "A stable, low-risk fund investing primarily in government and corporate bonds. Ideal for capital preservation with steady returns."],
-    ["p2", "Growth Portfolio", 5000, 500000, 12.8, "6 months", "Medium", "A balanced portfolio combining equities and fixed income for moderate growth. Designed for investors seeking higher returns with manageable risk."],
-    ["p3", "High Yield Equity Fund", 10000, 1000000, 22.5, "3 months", "High", "An aggressive equity fund targeting high-growth sectors. Suitable for experienced investors with higher risk tolerance."],
-    ["p4", "Real Estate Trust", 25000, 500000, 9.2, "24 months", "Medium", "Diversified real estate investment trust providing exposure to commercial and residential properties with quarterly dividends."],
+    ["p1", "Conservative Bond Fund", 1000, 100000, 6.5, 12, "months", "Low", "A stable, low-risk fund investing primarily in government and corporate bonds. Ideal for capital preservation with steady returns."],
+    ["p2", "Growth Portfolio", 5000, 500000, 12.8, 6, "months", "Medium", "A balanced portfolio combining equities and fixed income for moderate growth. Designed for investors seeking higher returns with manageable risk."],
+    ["p3", "High Yield Equity Fund", 10000, 1000000, 22.5, 3, "months", "High", "An aggressive equity fund targeting high-growth sectors. Suitable for experienced investors with higher risk tolerance."],
+    ["p4", "Real Estate Trust", 25000, 500000, 9.2, 24, "months", "Medium", "Diversified real estate investment trust providing exposure to commercial and residential properties with quarterly dividends."],
   ]
   for (const p of plans) insertPlan.run(...p)
+
+  // ── Active Investments ──────────────────────────────────────────────
+  const insertActiveInvestment = db.prepare(
+    "INSERT INTO active_investments (id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  )
+
+  const activeInvestments = [
+    ["i1", "u1", "p2", "Growth Portfolio", 5000, 640, "2026-02-25", "2026-08-25", "active", 45],
+    ["i2", "u1", "p1", "Conservative Bond Fund", 15000, 975, "2026-02-10", "2026-02-10", "active", 80],
+    ["i3", "u2", "p3", "High Yield Equity Fund", 75000, 16875, "2026-01-15", "2026-04-15", "active", 65],
+    ["i4", "u3", "p4", "Real Estate Trust", 40000, 3680, "2025-12-01", "2027-12-01", "active", 25],
+  ]
+  for (const i of activeInvestments) insertActiveInvestment.run(...i)
 
   // ── Wallet Addresses ────────────────────────────────────────────────
   const insertWallet = db.prepare(
@@ -146,4 +190,181 @@ function seedDatabase(db: Database.Database) {
   for (const w of wallets) insertWallet.run(...w)
 }
 
+
+// --- helper query functions --------------------------------------------------
+
+export interface UserRow {
+  id: string
+  name: string
+  email: string
+  passwordHash?: string
+  verified: number
+  role: string
+  balance: number
+  joinedAt: string
+  avatar: string
+}
+
+export function getUserByEmail(email: string): UserRow | undefined {
+  const db = getDb()
+  return db
+    .prepare("SELECT * FROM users WHERE email = ?")
+    .get(email) as UserRow | undefined
+}
+
+export function getUserById(id: string): UserRow | undefined {
+  const db = getDb()
+  return db.prepare("SELECT * FROM users WHERE id = ?").get(id) as
+    | UserRow
+    | undefined
+}
+
+export function createUser(user: {
+  id: string
+  name: string
+  email: string
+  passwordHash?: string
+  avatar: string
+}): void {
+  const db = getDb()
+  db.prepare(
+    "INSERT INTO users (id, name, email, passwordHash, avatar, joinedAt) VALUES (?, ?, ?, ?, ?, ?)"
+  ).run(
+    user.id,
+    user.name,
+    user.email,
+    user.passwordHash || null,
+    user.avatar,
+    new Date().toISOString()
+  )
+}
+
+export function verifyUserEmail(email: string): void {
+  const db = getDb()
+  db.prepare("UPDATE users SET verified = 1 WHERE email = ?").run(email)
+}
+
+export function setUserBalance(userId: string, balance: number): void {
+  const db = getDb()
+  db.prepare("UPDATE users SET balance = ? WHERE id = ?").run(balance, userId)
+}
+
+export function insertVerificationCode(codeObj: {
+  id: string
+  email: string
+  code: string
+  expiresAt: string
+}): void {
+  const db = getDb()
+  db.prepare(
+    "INSERT INTO verification_codes (id, email, code, expiresAt) VALUES (?, ?, ?, ?)"
+  ).run(codeObj.id, codeObj.email, codeObj.code, codeObj.expiresAt)
+}
+
+export function consumeVerificationCode(code: string): boolean {
+  const db = getDb()
+  const row = db
+    .prepare(
+      "SELECT * FROM verification_codes WHERE code = ? AND used = 0 AND expiresAt > ?"
+    )
+    .get(code, new Date().toISOString())
+  if (!row) return false
+  db.prepare("UPDATE verification_codes SET used = 1 WHERE code = ?").run(code)
+  return true
+}
+
+export function getInvestmentPlansFromDb() {
+  const db = getDb()
+  return db.prepare("SELECT * FROM investment_plans").all()
+}
+
+export function getUserTransactions(userId: string) {
+  const db = getDb()
+  return db.prepare("SELECT * FROM transactions WHERE userId = ?").all(userId)
+}
+
+export function getRecentActivities(userId: string) {
+  const db = getDb()
+  return db
+    .prepare(
+      "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 5"
+    )
+    .all(userId)
+}
+export function getUserStats(userId: string) {
+  const db = getDb()
+  const totalInvestedRow = db
+    .prepare(
+      "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'"
+    )
+    .get(userId)
+  const totalProfitRow = db
+    .prepare(
+      "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'"
+    )
+    .get(userId)
+  const pendingDepositsRow = db
+    .prepare(
+      "SELECT COUNT(*) as cnt FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'pending'"
+    )
+    .get(userId)
+  const totalWithdrawnRow = db
+    .prepare(
+      "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'withdrawal' AND status = 'approved'"
+    )
+    .get(userId)
+  const activeCountRow = db
+    .prepare(
+      "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = 'active'"
+    )
+    .get(userId)
+  return {
+    totalInvested: totalInvestedRow?.sum || 0,
+    totalProfit: totalProfitRow?.sum || 0,
+    pendingDeposits: pendingDepositsRow?.cnt || 0,
+    totalWithdrawn: totalWithdrawnRow?.sum || 0,
+    activeInvestments: activeCountRow?.cnt || 0,
+  }
+}
+
+export function getUserActiveInvestments(userId: string): ActiveInvestment[] {
+  const db = getDb()
+  return db
+    .prepare("SELECT * FROM active_investments WHERE userId = ? AND status = 'active'")
+    .all(userId) as ActiveInvestment[]
+}
+
+export function generatePortfolioData(userId: string) {
+  const db = getDb()
+  const user = getUserById(userId)
+  
+  if (!user) return []
+
+  // Get user's investment transactions
+  const txs = db
+    .prepare(
+      "SELECT * FROM transactions WHERE userId = ? ORDER BY date ASC"
+    )
+    .all(userId) as any[]
+
+  const currentBalance = user.balance
+  const months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
+  const data: { month: string; value: number }[] = []
+
+  // Generate 6-month portfolio trend based on accumulated investments
+  let accumulatedValue = currentBalance * 0.65 // Start at 65% of current balance 6 months ago
+  const increments = (currentBalance - accumulatedValue) / (months.length - 1)
+
+  for (const month of months) {
+    data.push({
+      month,
+      value: Math.round(accumulatedValue),
+    })
+    accumulatedValue += increments
+  }
+
+  return data
+}
+
 export default getDb
+

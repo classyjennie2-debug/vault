@@ -26,9 +26,44 @@ export type InvestmentPlan = {
   minAmount: number
   maxAmount: number
   returnRate: number
-  duration: string
+  duration: number
+  durationUnit: "days" | "months"
   risk: "Low" | "Medium" | "High"
   description: string
+}
+
+export type ActiveInvestment = {
+  id: string
+  userId: string
+  planId: string
+  planName: string
+  amount: number
+  expectedProfit: number
+  startDate: string
+  endDate: string
+  status: "active" | "completed" | "withdrawn"
+  progressPercentage: number
+}
+
+export type Notification = {
+  id: string
+  userId: string
+  title: string
+  message: string
+  type: "success" | "info" | "warning" | "error"
+  isRead: boolean
+  timestamp: string
+  actionUrl?: string
+}
+
+export type Activity = {
+  id: string
+  userId: string
+  type: "deposit" | "investment" | "profit" | "withdrawal"
+  title: string
+  message: string
+  timestamp: string
+  icon: string
 }
 
 // ── Crypto Types ──────────────────────────────────────────────────────

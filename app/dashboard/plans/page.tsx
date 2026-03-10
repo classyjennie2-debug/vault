@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { investmentPlans } from "@/lib/mock-data"
+import { getInvestmentPlansFromDb } from "@/lib/db"
 import { Shield, TrendingUp, AlertTriangle, Clock, DollarSign } from "lucide-react"
 
 const riskConfig = {
@@ -31,6 +31,8 @@ const riskConfig = {
 }
 
 export default function PlansPage() {
+  const plans = getInvestmentPlansFromDb()
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -44,8 +46,8 @@ export default function PlansPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {investmentPlans.map((plan) => {
-          const risk = riskConfig[plan.risk]
+        {plans.map((plan) => {
+          const risk = riskConfig[plan.risk as keyof typeof riskConfig]
           const RiskIcon = risk.icon
           return (
             <Card
@@ -112,7 +114,7 @@ export default function PlansPage() {
                         Duration
                       </p>
                       <p className="text-xs font-semibold text-card-foreground">
-                        {plan.duration}
+                        {plan.duration} {plan.durationUnit}
                       </p>
                     </div>
                   </div>

@@ -1,33 +1,14 @@
-export type User = {
-  id: string
-  name: string
-  email: string
-  role: "user" | "admin"
-  balance: number
-  joinedAt: string
-  avatar: string
-}
-
-export type Transaction = {
-  id: string
-  userId: string
-  type: "deposit" | "withdrawal" | "investment" | "return"
-  amount: number
-  status: "pending" | "approved" | "rejected"
-  description: string
-  date: string
-}
-
-export type InvestmentPlan = {
-  id: string
-  name: string
-  minAmount: number
-  maxAmount: number
-  returnRate: number
-  duration: string
-  risk: "Low" | "Medium" | "High"
-  description: string
-}
+import type {
+  User,
+  Transaction,
+  InvestmentPlan,
+  ActiveInvestment,
+  Notification,
+  Activity,
+  CoinType,
+  NetworkType,
+  WalletAddress,
+} from "./types"
 
 export const currentUser: User = {
   id: "u1",
@@ -194,44 +175,60 @@ export const transactions: Transaction[] = [
 export const investmentPlans: InvestmentPlan[] = [
   {
     id: "p1",
-    name: "Conservative Bond Fund",
-    minAmount: 1000,
-    maxAmount: 100000,
-    returnRate: 6.5,
-    duration: "12 months",
+    name: "Starter Plan",
+    minAmount: 100,
+    maxAmount: 50000,
+    returnRate: 8,
+    duration: 7,
+    durationUnit: "days",
     risk: "Low",
     description:
-      "A stable, low-risk fund investing primarily in government and corporate bonds. Ideal for capital preservation with steady returns.",
+      "Perfect for beginners. A steady, low-risk investment with quick returns. Ideal for testing the platform.",
   },
   {
     id: "p2",
     name: "Growth Portfolio",
-    minAmount: 5000,
+    minAmount: 500,
     maxAmount: 500000,
-    returnRate: 12.8,
-    duration: "6 months",
+    returnRate: 15,
+    duration: 14,
+    durationUnit: "days",
     risk: "Medium",
     description:
       "A balanced portfolio combining equities and fixed income for moderate growth. Designed for investors seeking higher returns with manageable risk.",
   },
   {
     id: "p3",
-    name: "High Yield Equity Fund",
-    minAmount: 10000,
+    name: "VIP Plan",
+    minAmount: 2000,
     maxAmount: 1000000,
-    returnRate: 22.5,
-    duration: "3 months",
+    returnRate: 35,
+    duration: 30,
+    durationUnit: "days",
     risk: "High",
     description:
-      "An aggressive equity fund targeting high-growth sectors. Suitable for experienced investors with higher risk tolerance.",
+      "Premium plan with the highest returns. Suitable for experienced investors with higher risk tolerance and substantial capital.",
   },
   {
     id: "p4",
+    name: "Conservative Bond Fund",
+    minAmount: 1000,
+    maxAmount: 100000,
+    returnRate: 6.5,
+    duration: 12,
+    durationUnit: "months",
+    risk: "Low",
+    description:
+      "A stable, low-risk fund investing primarily in government and corporate bonds. Ideal for capital preservation with steady returns.",
+  },
+  {
+    id: "p5",
     name: "Real Estate Trust",
     minAmount: 25000,
     maxAmount: 500000,
     returnRate: 9.2,
-    duration: "24 months",
+    duration: 24,
+    durationUnit: "months",
     risk: "Medium",
     description:
       "Diversified real estate investment trust providing exposure to commercial and residential properties with quarterly dividends.",
@@ -431,4 +428,153 @@ export const portfolioData = [
   { month: "Dec", value: 38200 },
   { month: "Jan", value: 42100 },
   { month: "Feb", value: 48250 },
+]
+
+// ── Active Investments ────────────────────────────────────────────────
+
+export const activeInvestments: ActiveInvestment[] = [
+  {
+    id: "ai1",
+    userId: "u1",
+    planId: "p2",
+    planName: "Growth Portfolio",
+    amount: 5000,
+    expectedProfit: 750,
+    startDate: "2026-02-25",
+    endDate: "2026-03-10",
+    status: "active",
+    progressPercentage: 65,
+  },
+  {
+    id: "ai2",
+    userId: "u1",
+    planId: "p4",
+    planName: "Conservative Bond Fund",
+    amount: 15000,
+    expectedProfit: 975,
+    startDate: "2026-02-10",
+    endDate: "2027-02-10",
+    status: "active",
+    progressPercentage: 15,
+  },
+  {
+    id: "ai3",
+    userId: "u1",
+    planId: "p1",
+    planName: "Starter Plan",
+    amount: 1000,
+    expectedProfit: 80,
+    startDate: "2026-03-03",
+    endDate: "2026-03-10",
+    status: "active",
+    progressPercentage: 30,
+  },
+  {
+    id: "ai4",
+    userId: "u1",
+    planId: "p2",
+    planName: "Growth Portfolio",
+    amount: 10000,
+    expectedProfit: 1500,
+    startDate: "2026-01-25",
+    endDate: "2026-02-08",
+    status: "completed",
+    progressPercentage: 100,
+  },
+]
+
+// ── Notifications ─────────────────────────────────────────────────────
+
+export const notifications: Notification[] = [
+  {
+    id: "n1",
+    userId: "u1",
+    title: "Investment Completed",
+    message: "Your Growth Portfolio investment of $5,000 is now active",
+    type: "success",
+    isRead: false,
+    timestamp: "2026-03-03T10:30:00Z",
+    actionUrl: "/dashboard",
+  },
+  {
+    id: "n2",
+    userId: "u1",
+    title: "Profit Credited",
+    message: "You earned $250.50 from your Growth Portfolio",
+    type: "success",
+    isRead: false,
+    timestamp: "2026-03-02T14:15:00Z",
+    actionUrl: "/dashboard",
+  },
+  {
+    id: "n3",
+    userId: "u1",
+    title: "Deposit Approved",
+    message: "Your deposit of $10,000 has been approved",
+    type: "success",
+    isRead: true,
+    timestamp: "2026-02-28T11:00:00Z",
+    actionUrl: "/dashboard",
+  },
+  {
+    id: "n4",
+    userId: "u1",
+    title: "Withdrawal Pending",
+    message: "Your withdrawal request of $3,000 is pending review",
+    type: "warning",
+    isRead: true,
+    timestamp: "2026-03-01T09:45:00Z",
+    actionUrl: "/dashboard",
+  },
+  {
+    id: "n5",
+    userId: "u1",
+    title: "Plan Expiring Soon",
+    message: "Your Conservative Bond Fund investment will mature in 365 days",
+    type: "info",
+    isRead: true,
+    timestamp: "2026-02-20T16:20:00Z",
+    actionUrl: "/investments",
+  },
+]
+
+// ── Recent Activities ──────────────────────────────────────────────────
+
+export const recentActivities: Activity[] = [
+  {
+    id: "a1",
+    userId: "u1",
+    type: "investment",
+    title: "Investment Started",
+    message: "Growth Portfolio investment of $5,000 started",
+    timestamp: "2026-03-03T10:30:00Z",
+    icon: "TrendingUp",
+  },
+  {
+    id: "a2",
+    userId: "u1",
+    type: "profit",
+    title: "Profit Credited",
+    message: "Earned $250.50 from Growth Portfolio",
+    timestamp: "2026-03-02T14:15:00Z",
+    icon: "Award",
+  },
+  {
+    id: "a3",
+    userId: "u1",
+    type: "deposit",
+    title: "Deposit Approved",
+    message: "Bank transfer of $10,000 approved",
+    timestamp: "2026-02-28T11:00:00Z",
+    icon: "ArrowDown",
+  },
+  {
+    id: "a4",
+    userId: "u1",
+    type: "withdrawal",
+    title: "Withdrawal Processed",
+    message: "Withdrawal of $3,000 processed",
+    timestamp: "2026-02-25T15:45:00Z",
+    icon: "ArrowUp",
+  },
 ]

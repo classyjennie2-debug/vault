@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { allUsers, type User } from "@/lib/mock-data"
+import type { User } from "@/lib/types"
+import { allUsers } from "@/lib/mock-data"
 import { Search, DollarSign, Edit3, X, Check, Users } from "lucide-react"
 
 export default function AdminUsersPage() {
