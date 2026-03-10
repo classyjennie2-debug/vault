@@ -15,41 +15,52 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [step, setStep] = useState<0 | 1>(0)
   const [code, setCode] = useState("")
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [info, setInfo] = useState("")
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
     setError("")
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error || "Something went wrong")
-      return
+    setLoading(true)
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || "Something went wrong")
+        return
+      }
+      setInfo("Verification code sent to your email")
+      setStep(1)
+    } finally {
+      setLoading(false)
     }
-    setInfo("Verification code sent to your email")
-    setStep(1)
   }
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault()
     setError("")
-    const res = await fetch("/api/auth/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, code }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error || "Invalid code")
-      return
+    setLoading(true)
+    try {
+      const res = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || "Invalid code")
+        return
+      }
+      // user is logged in automatically by backend
+      router.push("/dashboard")
+    } finally {
+      setLoading(false)
     }
-    // user is logged in automatically by backend
-    router.push("/dashboard")
   }
 
   return (
@@ -157,8 +168,8 @@ export default function RegisterPage() {
                 Must be at least 8 characters
               </p>
             </div>
-            <Button type="submit" size="lg" className="mt-2 w-full">
-              Create Account
+            <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
         ) : (
@@ -179,8 +190,8 @@ export default function RegisterPage() {
                 required
               />
             </div>
-            <Button type="submit" size="lg" className="mt-2 w-full">
-              Verify &amp; Continue
+            <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
+              {loading ? "Verifying..." : "Verify & Continue"}
             </Button>
           </form>
         )}

@@ -12,29 +12,34 @@ export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setError("")
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error || "Invalid credentials")
-      return
-    }
-    // successful login - token cookie set by server
-    // fetch session or decode role? for now assume backend returned role in token
-    // redirect to dashboard; admin users need to be detected by email
-    if (email.includes("admin")) {
-      router.push("/admin")
-    } else {
-      router.push("/dashboard")
+    setLoading(true)
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || "Invalid credentials")
+        return
+      }
+      // successful login - token cookie set by server
+      // fetch session or decode role? for now assume backend returned role in token
+      // redirect to dashboard; admin users need to be detected by email
+      if (email.includes("admin")) {
+        router.push("/admin")
+      } else {
+        router.push("/dashboard")
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -94,8 +99,8 @@ export default function LoginPage() {
               required
             />
           </div>
-          <Button type="submit" size="lg" className="mt-2 w-full">
-            Sign in
+          <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
 
