@@ -26,15 +26,23 @@ export default function AdminUsersPage() {
       u.email.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleUpdateBalance = (userId: string) => {
+  const handleUpdateBalance = async (userId: string) => {
     const amount = parseFloat(newBalance)
     if (isNaN(amount) || amount < 0) return
 
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, balance: amount } : u))
-    )
-    setEditingUser(null)
-    setNewBalance("")
+    const res = await fetch("/api/admin/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, balance: amount }),
+    })
+
+    if (res.ok) {
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, balance: amount } : u))
+      )
+      setEditingUser(null)
+      setNewBalance("")
+    }
   }
 
   const totalAUM = users.reduce((sum, u) => sum + u.balance, 0)

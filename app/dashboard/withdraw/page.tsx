@@ -58,8 +58,23 @@ export default function WithdrawPage() {
     }
 
     setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    // Call API
+    const res = await fetch("/api/withdraw", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: amountNum,
+        method,
+        bankAccount: method === "bank" ? bankAccount : undefined,
+        cryptoAddress: method === "crypto" ? cryptoAddress : undefined,
+      }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error || "Something went wrong")
+      setIsSubmitting(false)
+      return
+    }
     setIsSubmitting(false)
     setSubmitted(true)
 

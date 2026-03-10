@@ -447,17 +447,17 @@ export default function LandingPage() {
             <div>
               <p className="text-sm font-semibold text-foreground mb-4">Company</p>
               <div className="space-y-2">
-                <Link href="#" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">About</Link>
-                <Link href="#" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
-                <Link href="#" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
+                <Link href="/about" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">About</Link>
+                <Link href="/blog" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
+                <Link href="/contact" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
               </div>
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground mb-4">Legal</p>
               <div className="space-y-2">
-                <Link href="#" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
-                <Link href="#" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
-                <Link href="#" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Compliance</Link>
+                <Link href="/terms" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
+                <Link href="/privacy" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
+                <Link href="/compliance" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Compliance</Link>
               </div>
             </div>
           </div>

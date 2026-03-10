@@ -66,8 +66,20 @@ export default function SettingsPage() {
   })
 
   const handleSaveSettings = async () => {
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+    const res = await fetch("/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userSettings,
+        securitySettings,
+        notificationSettings,
+        privacySettings,
+      }),
+    })
+    if (res.ok) {
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    }
   }
 
   const handleLogout = async () => {

@@ -249,6 +249,11 @@ export function setUserBalance(userId: string, balance: number): void {
   db.prepare("UPDATE users SET balance = ? WHERE id = ?").run(balance, userId)
 }
 
+export function setUserPassword(userId: string, passwordHash: string): void {
+  const db = getDb()
+  db.prepare("UPDATE users SET passwordHash = ? WHERE id = ?").run(passwordHash, userId)
+}
+
 export function insertVerificationCode(codeObj: {
   id: string
   email: string
@@ -364,6 +369,58 @@ export function generatePortfolioData(userId: string) {
   }
 
   return data
+}
+
+export function createTransaction(transaction: {
+  userId: string
+  type: "deposit" | "withdrawal" | "investment" | "return"
+  amount: number
+  status?: "pending" | "approved" | "rejected"
+  description?: string
+  method?: string
+  bankAccount?: string
+  cryptoAddress?: string
+}) {
+  const db = getDb()
+  const id = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const description = transaction.description || `${transaction.type} of $${transaction.amount.toLocaleString()}`
+
+  db.prepare(`
+    INSERT INTO transactions (id, userId, type, amount, status, description, date)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    id,
+    transaction.userId,
+    transaction.type,
+    transaction.amount,
+    transaction.status || "pending",
+    description,
+    new Date().toISOString()
+  )
+
+  return {
+    id,
+    userId: transaction.userId,
+    type: transaction.type,
+    amount: transaction.amount,
+    status: transaction.status || "pending",
+    description,
+    date: new Date().toISOString(),
+  }
+}
+
+export function updateTransactionStatus(transactionId: string, status: "approved" | "rejected") {
+  const db = getDb()
+  db.prepare(`
+    UPDATE transactions SET status = ? WHERE id = ?
+  `).run(status, transactionId)
+}
+
+export function updateUserSettings(userId: string, settings: any) {
+  // For now, this is a placeholder since we're using mock data
+  // In a real app, this would update user settings in the database
+  console.log(`Updating settings for user ${userId}:`, settings)
+  return true
 }
 
 export default getDb

@@ -82,15 +82,22 @@ export default function SupportPage() {
       ? faqs
       : faqs.filter((faq) => faq.category === selectedCategory)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
-    setTimeout(() => {
-      setSubmitted(false)
-      setEmail("")
-      setSubject("")
-      setMessage("")
-    }, 3000)
+    const res = await fetch("/api/support", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, subject, message }),
+    })
+    if (res.ok) {
+      setSubmitted(true)
+      setTimeout(() => {
+        setSubmitted(false)
+        setEmail("")
+        setSubject("")
+        setMessage("")
+      }, 3000)
+    }
   }
 
   return (

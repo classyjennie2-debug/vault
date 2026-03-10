@@ -49,16 +49,30 @@ export default function AdminTransactionsPage() {
   const approvedCount = txList.filter((t) => t.status === "approved").length
   const rejectedCount = txList.filter((t) => t.status === "rejected").length
 
-  const handleApprove = (txId: string) => {
-    setTxList((prev) =>
-      prev.map((t) => (t.id === txId ? { ...t, status: "approved" as const } : t))
-    )
+  const handleApprove = async (txId: string) => {
+    const res = await fetch("/api/admin/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transactionId: txId, status: "approved" }),
+    })
+    if (res.ok) {
+      setTxList((prev) =>
+        prev.map((t) => (t.id === txId ? { ...t, status: "approved" as const } : t))
+      )
+    }
   }
 
-  const handleReject = (txId: string) => {
-    setTxList((prev) =>
-      prev.map((t) => (t.id === txId ? { ...t, status: "rejected" as const } : t))
-    )
+  const handleReject = async (txId: string) => {
+    const res = await fetch("/api/admin/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transactionId: txId, status: "rejected" }),
+    })
+    if (res.ok) {
+      setTxList((prev) =>
+        prev.map((t) => (t.id === txId ? { ...t, status: "rejected" as const } : t))
+      )
+    }
   }
 
   return (
