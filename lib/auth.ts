@@ -6,10 +6,14 @@ import { NextResponse } from "next/server"
 import { getUserById, verifyUserEmail, insertVerificationCode, consumeVerificationCode } from "./db"
 
 const JWT_SECRET = process.env.JWT_SECRET
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required")
-}
 const TOKEN_NAME = "vault_token"
+
+function getJWTSecret(): string {
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET environment variable is required")
+  }
+  return JWT_SECRET
+}
 
 export interface SessionPayload {
   id: string
@@ -31,12 +35,12 @@ export async function verifyPassword(
 }
 
 export function issueToken(user: SessionPayload) {
-  return jwt.sign(user, JWT_SECRET, { expiresIn: "7d" })
+  return jwt.sign(user, getJWTSecret(), { expiresIn: "7d" })
 }
 
 export function verifyToken(token: string): SessionPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as SessionPayload
+    return jwt.verify(token, getJWTSecret()) as SessionPayload
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_err) {
     return null

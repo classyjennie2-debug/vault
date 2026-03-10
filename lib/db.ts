@@ -2,16 +2,15 @@ import Database from "better-sqlite3"
 import path from "path"
 import bcrypt from "bcrypt"
 import type { ActiveInvestment, InvestmentPlan } from "./types"
+import { Pool } from "pg"
 
 // support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)
-let pgPool: import("pg").Pool | null = null
+let pgPool: Pool | null = null
 const DATABASE_URL = process.env.DATABASE_URL
 let pgInitialized = false
 
 if (DATABASE_URL) {
-  import("pg").then(({ Pool }) => {
-    pgPool = new Pool({ connectionString: DATABASE_URL })
-  })
+  pgPool = new Pool({ connectionString: DATABASE_URL })
 }
 
 const DB_PATH = path.join(process.cwd(), "vault.db")

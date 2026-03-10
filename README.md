@@ -55,6 +55,33 @@ A modern, secure investment platform built with Next.js, TypeScript, and Tailwin
 
 The application supports both SQLite (for development) and PostgreSQL (for production). Database schema is automatically created on first run.
 
+## Deployment to Vercel
+
+1. **Connect your repository to Vercel:**
+   - Go to [vercel.com](https://vercel.com) and sign in
+   - Click "New Project" and import your GitHub repository
+   - Vercel will automatically detect it's a Next.js app
+
+2. **Set up PostgreSQL database:**
+   - Use [Vercel Postgres](https://vercel.com/storage/postgres) (recommended)
+   - Or use [Neon](https://neon.tech) for a free PostgreSQL database
+   - Copy the connection string
+
+3. **Configure environment variables in Vercel:**
+   - Go to your project settings → Environment Variables
+   - Add the following variables:
+     ```
+     JWT_SECRET=your-super-secure-jwt-secret-here
+     DATABASE_URL=postgresql://username:password@hostname:5432/database_name
+     NEXT_PUBLIC_APP_URL=https://your-app-name.vercel.app
+     ```
+   - Generate a secure JWT_SECRET (you can use `openssl rand -base64 32`)
+
+4. **Deploy:**
+   - Push your code to GitHub
+   - Vercel will automatically build and deploy
+   - Your app will be live at `https://your-app-name.vercel.app`
+
 ## Scripts
 
 - `npm run dev`: Start development server
