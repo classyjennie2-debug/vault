@@ -1,6 +1,7 @@
 "use client"
 
-import type { CoinType } from "@/lib/mock-data"
+import React from "react"
+import type { CoinType } from "@/lib/types"
 
 const coinSvgs: Record<CoinType, { viewBox: string; path: React.ReactNode }> = {
   USDT: {

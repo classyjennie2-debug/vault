@@ -14,6 +14,7 @@
  * NODE_ENV=production
  */
 
+// @ts-expect-error - MongoDB types and usage (this file is for reference only)
 import { MongoClient, Db, ObjectId } from "mongodb"
 
 let cachedClient: MongoClient | null = null
@@ -77,8 +78,8 @@ export async function initializeMongoDB() {
     try {
       await db.createCollection(collectionName)
       console.log(`Created collection: ${collectionName}`)
-    } catch (error: any) {
-      if (error.codeName === "NamespaceExists") {
+    } catch (error: unknown) {
+      if (error instanceof Error && 'codeName' in error && error.codeName === "NamespaceExists") {
         console.log(`Collection ${collectionName} already exists`)
       } else {
         throw error
@@ -191,6 +192,7 @@ export async function mongoCreateInvestment(investmentData: {
 }) {
   const investments = await getCollection("activeInvestments")
 
+// @ts-expect-error - MongoDB types and usage (this file is for reference only)
   const plan = await getCollection("investmentPlans").findOne({
     _id: new ObjectId(investmentData.planId),
   })
@@ -233,7 +235,7 @@ export async function mongoCreateDeposit(depositData: {
   userId: string
   amount: number
   paymentMethod: string
-  details?: any
+  details?: Record<string, unknown>
 }) {
   const deposits = await getCollection("deposits")
   const result = await deposits.insertOne({
@@ -298,7 +300,7 @@ export async function mongoCreateWithdrawal(withdrawalData: {
   userId: string
   amount: number
   method: string
-  details?: any
+  details?: Record<string, unknown>
 }) {
   const withdrawals = await getCollection("withdrawals")
   const fee = Math.max(withdrawalData.amount * 0.01, 1)

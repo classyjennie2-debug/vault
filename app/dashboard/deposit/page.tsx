@@ -1,15 +1,16 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import {
   type CoinType,
   type NetworkType,
   type WalletAddress,
   coinNetworks,
   coinDetails,
-  initialWalletAddresses,
-} from "@/lib/mock-data"
+} from "@/lib/types"
 import { CoinIcon } from "@/components/crypto/coin-icon"
+import { DepositModal } from "@/components/dashboard/deposit-modal"
 import {
   Card,
   CardContent,
@@ -18,9 +19,11 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Copy, Check, Loader2, AlertCircle, ArrowLeft } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Loader2, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { convertUSDToCoin, formatCoinAmount, getCryptoPriceInUSD } from "@/lib/crypto-prices"
 
 const coins: CoinType[] = ["USDT", "BTC", "ETH", "BNB", "TRX", "SOL"]
 
@@ -33,36 +36,84 @@ const networkLabels: Partial<Record<string, string>> = {
 
 export default function DepositPage() {
   const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null)
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkType | null>(
-    null
-  )
+  const [selectedNetwork, setSelectedNetwork] = useState<NetworkType | null>(null)
+  const [amount, setAmount] = useState<string>("")
   const [isGenerating, setIsGenerating] = useState(false)
-  const [assignedWallet, setAssignedWallet] = useState<WalletAddress | null>(
-    null
-  )
-  const [copied, setCopied] = useState(false)
+  const [assignedWallet, setAssignedWallet] = useState<WalletAddress | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [walletPool, setWalletPool] = useState<WalletAddress[]>(() => {
-    if (typeof window !== "undefined") {
-      const version = localStorage.getItem("vault_wallet_version")
-      if (version === "2") {
-        const stored = localStorage.getItem("vault_wallet_pool")
-        if (stored) return JSON.parse(stored)
-      }
-      localStorage.setItem("vault_wallet_version", "2")
-    }
-    return initialWalletAddresses
-  })
+  const [availableWallets, setAvailableWallets] = useState<WalletAddress[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [coinAmount, setCoinAmount] = useState<string>("")
+  const [cryptoPrice, setCryptoPrice] = useState<number | null>(null)
+  const [isCalculating, setIsCalculating] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const router = useRouter()
 
-  // Sync wallet pool to localStorage for cross-page state
   useEffect(() => {
-    localStorage.setItem("vault_wallet_pool", JSON.stringify(walletPool))
-  }, [walletPool])
+    const fetchWallets = async () => {
+      try {
+        const res = await fetch("/api/wallet-addresses")
+        if (res.ok) {
+          const data = await res.json()
+          setAvailableWallets(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch wallets:", error)
+      }
+    }
+    fetchWallets()
+  }, [])
+
+  // Fetch crypto price when coin is selected
+  useEffect(() => {
+    if (!selectedCoin) {
+      setCryptoPrice(null)
+      setCoinAmount("")
+      return
+    }
+
+    const fetchPrice = async () => {
+      try {
+        const price = await getCryptoPriceInUSD(selectedCoin)
+        setCryptoPrice(price)
+      } catch (error) {
+        console.error("Failed to fetch crypto price:", error)
+        setCryptoPrice(null)
+      }
+    }
+
+    fetchPrice()
+  }, [selectedCoin])
+
+  // Calculate coin amount when amount changes
+  useEffect(() => {
+    if (!selectedCoin || !amount || parseFloat(amount) <= 0 || !cryptoPrice) {
+      setCoinAmount("")
+      return
+    }
+
+    const calculateAmount = async () => {
+      setIsCalculating(true)
+      try {
+        const coinAmt = await convertUSDToCoin(parseFloat(amount), selectedCoin)
+        const formatted = formatCoinAmount(coinAmt, selectedCoin)
+        setCoinAmount(formatted)
+      } catch (error) {
+        console.error("Failed to calculate coin amount:", error)
+        setCoinAmount("")
+      } finally {
+        setIsCalculating(false)
+      }
+    }
+
+    calculateAmount()
+  }, [amount, selectedCoin, cryptoPrice])
 
   const handleCoinSelect = (coin: CoinType) => {
     setSelectedCoin(coin)
     setSelectedNetwork(null)
     setAssignedWallet(null)
+    setCoinAmount("")
     setError(null)
   }
 
@@ -73,54 +124,65 @@ export default function DepositPage() {
   }
 
   const handleGenerateAddress = useCallback(() => {
-    if (!selectedCoin || !selectedNetwork) return
+    if (!selectedCoin || !selectedNetwork || !amount || parseFloat(amount) <= 0 || !coinAmount) {
+      setError("Please select coin, network, and enter a valid amount.")
+      return
+    }
 
     setIsGenerating(true)
     setError(null)
 
-    // Simulate 5 second loading
-    setTimeout(() => {
-      const available = walletPool.find(
-        (w) =>
-          w.coin === selectedCoin &&
-          w.network === selectedNetwork &&
-          w.assignedTo === null
-      )
+    // Find available wallet
+    const available = availableWallets.find(
+      (w) => w.coin === selectedCoin && w.network === selectedNetwork
+    )
 
-      if (!available) {
-        setError(
-          `No available ${selectedCoin} addresses on ${selectedNetwork}. Please try a different network or contact support.`
-        )
-        setIsGenerating(false)
-        return
-      }
-
-      // Assign the wallet
-      const updated = walletPool.map((w) =>
-        w.id === available.id
-          ? {
-              ...w,
-              assignedTo: "u1",
-              assignedAt: new Date().toISOString().split("T")[0],
-            }
-          : w
-      )
-
-      setWalletPool(updated)
-      setAssignedWallet({
-        ...available,
-        assignedTo: "u1",
-        assignedAt: new Date().toISOString().split("T")[0],
-      })
+    if (!available) {
+      setError(`No available ${selectedCoin} addresses on ${selectedNetwork}. Please try a different network or contact support.`)
       setIsGenerating(false)
-    }, 5000)
-  }, [selectedCoin, selectedNetwork, walletPool])
+      return
+    }
 
-  const handleCopy = async () => {
-    if (!assignedWallet) return
-    await navigator.clipboard.writeText(assignedWallet.address)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    // Assign the wallet and show modal
+    setAssignedWallet(available)
+    setShowModal(true)
+    setIsGenerating(false)
+  }, [selectedCoin, selectedNetwork, amount, coinAmount, availableWallets])
+
+  const handleSubmitDeposit = async () => {
+    if (!assignedWallet || !amount) return
+
+    setIsSubmitting(true)
+    try {
+      const res = await fetch("/api/deposits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          coin: selectedCoin,
+          network: selectedNetwork,
+          amount: parseFloat(amount),
+          coinAmount: coinAmount,
+          walletId: assignedWallet.id,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to submit deposit")
+      
+      // Reset form and close modal
+      setShowModal(false)
+      setAmount("")
+      setCoinAmount("")
+      setAssignedWallet(null)
+      setSelectedCoin(null)
+      setSelectedNetwork(null)
+      
+      router.push("/dashboard")
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong"
+      setError(message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -137,7 +199,7 @@ export default function DepositPage() {
             Deposit Crypto
           </h1>
           <p className="text-sm text-muted-foreground">
-            Select a coin and network to generate your unique deposit address.
+            Select a coin, network, and amount to generate your deposit address.
           </p>
         </div>
       </div>
@@ -227,7 +289,7 @@ export default function DepositPage() {
             {selectedNetwork && (
               <div className="mt-4 rounded-lg bg-secondary/50 p-3">
                 <p className="text-xs text-muted-foreground">
-                  {"Make sure you're sending"}{" "}
+                  Make sure you're sending{" "}
                   <span className="font-medium text-foreground">
                     {selectedCoin}
                   </span>{" "}
@@ -244,131 +306,113 @@ export default function DepositPage() {
         </Card>
       )}
 
-      {/* Step 3 - Generate Address */}
-      {selectedCoin && selectedNetwork && !assignedWallet && (
+      {/* Step 3 - Enter Amount */}
+      {selectedNetwork && (
         <Card className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
           <CardHeader className="pb-4">
             <CardTitle className="text-base">
               <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                 3
               </span>
-              Generate Deposit Address
+              Enter Amount
             </CardTitle>
             <CardDescription>
-              Click below to get a unique {selectedCoin} deposit address on{" "}
-              {selectedNetwork}.
+              Specify the amount you want to deposit.
+              {cryptoPrice && (
+                <span className="block text-xs mt-1 text-muted-foreground/80">
+                  Current {selectedCoin} price: ${cryptoPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              )}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {error && (
-              <div className="mb-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-                <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-destructive" />
-                <p className="text-sm text-destructive">{error}</p>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Deposit Amount (USD)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  $
+                </span>
+                <Input
+                  id="amount"
+                  type="number"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  min="0"
+                  step="0.01"
+                  className="pl-7"
+                />
+              </div>
+            </div>
+
+            {/* Coin Amount Preview */}
+            {amount && coinAmount && !isCalculating && (
+              <div className="rounded-lg bg-accent/5 border border-accent/30 p-4 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  You'll send
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CoinIcon coin={selectedCoin} size={20} />
+                    <span className="text-lg font-semibold text-foreground font-mono">
+                      {coinAmount}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {selectedCoin}
+                  </span>
+                </div>
               </div>
             )}
+
+            {isCalculating && (
+              <div className="rounded-lg bg-secondary/50 p-4 flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Calculating amount...</span>
+              </div>
+            )}
+
             <Button
               onClick={handleGenerateAddress}
-              disabled={isGenerating}
+              disabled={isGenerating || !amount || parseFloat(amount) <= 0 || !coinAmount || isCalculating}
               className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
               size="lg"
             >
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating secure address...
+                  Generating Address...
                 </>
               ) : (
-                "Generate Address"
+                "Generate Deposit Address"
               )}
             </Button>
-            {isGenerating && (
-              <div className="mt-4 flex flex-col items-center gap-3">
-                <div className="flex gap-1.5">
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="h-1.5 w-8 overflow-hidden rounded-full bg-secondary"
-                    >
-                      <div
-                        className="h-full rounded-full bg-accent animate-pulse"
-                        style={{
-                          animationDelay: `${i * 200}ms`,
-                          animationDuration: "1s",
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Securing your unique deposit address...
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
       )}
 
-      {/* Assigned Address Result */}
-      {assignedWallet && (
-        <Card className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300 border-accent/30">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent">
-                  <Check className="h-3.5 w-3.5 text-accent-foreground" />
-                </div>
-                Your Deposit Address
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant="secondary"
-                  className="gap-1.5"
-                >
-                  <CoinIcon coin={assignedWallet.coin} size={14} />
-                  {assignedWallet.coin}
-                </Badge>
-                <Badge variant="outline">{assignedWallet.network}</Badge>
-              </div>
+      <DepositModal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false)
+          setAssignedWallet(null)
+        }}
+        coin={selectedCoin}
+        network={selectedNetwork}
+        usdAmount={amount}
+        coinAmount={coinAmount}
+        wallet={assignedWallet}
+        onConfirm={handleSubmitDeposit}
+        isLoading={isSubmitting}
+      />
+
+      {error && (
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <p className="text-sm text-destructive">{error}</p>
             </div>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-secondary/50 p-4">
-              <code className="flex-1 break-all text-sm font-medium text-foreground">
-                {assignedWallet.address}
-              </code>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleCopy}
-                className="flex-shrink-0"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4 text-accent" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-                <span className="sr-only">Copy address</span>
-              </Button>
-            </div>
-            <div className="rounded-lg bg-warning/10 p-3">
-              <p className="text-xs font-medium text-warning-foreground">
-                Important: Only send{" "}
-                <span className="font-bold">{assignedWallet.coin}</span> on the{" "}
-                <span className="font-bold">{assignedWallet.network}</span>{" "}
-                network to this address. Minimum deposit is $10. Deposits
-                typically confirm within 10-30 minutes.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setAssignedWallet(null)
-                setSelectedCoin(null)
-                setSelectedNetwork(null)
-              }}
-            >
-              Generate Another Address
-            </Button>
           </CardContent>
         </Card>
       )}

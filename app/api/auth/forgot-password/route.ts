@@ -22,7 +22,10 @@ export async function POST(request: NextRequest) {
     const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`
 
     // In a real application, you would send an email here
-    console.log(`Password reset link for ${email}: ${resetLink}`)
+    // Log reset link in development only
+    if (process.env.NODE_ENV === "development") {
+      console.log(`Password reset link for ${email}: ${resetLink}`)
+    }
 
     // For demo purposes, we'll log the link
     // In production, you'd use a service like SendGrid, Mailgun, etc.

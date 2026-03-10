@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,14 +29,27 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
     if (!isValid) return
 
     setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    setSubmitted(true)
 
-    setTimeout(() => {
-      onSuccess()
-    }, 2000)
+    try {
+      const res = await fetch("/api/investments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: plan.id, amount: amountNum }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to invest")
+      }
+      setSubmitted(true)
+      setTimeout(() => {
+        onSuccess()
+      }, 500)
+    } catch (err: unknown) {
+      console.error("investment submit error", err)
+      // TODO: show error toast
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (submitted) {

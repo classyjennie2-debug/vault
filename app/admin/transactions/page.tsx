@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import type { Transaction } from "@/lib/types"
-import { transactions as initialTransactions, allUsers } from "@/lib/mock-data"
+import type { Transaction, User } from "@/lib/types"
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -39,8 +38,36 @@ const typeColors = {
 type StatusFilter = "all" | "pending" | "approved" | "rejected"
 
 export default function AdminTransactionsPage() {
-  const [txList, setTxList] = useState<Transaction[]>([...initialTransactions])
+  const [txList, setTxList] = useState<Transaction[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [filter, setFilter] = useState<StatusFilter>("all")
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [txRes, usersRes] = await Promise.all([
+          fetch("/api/admin/transactions"),
+          fetch("/api/admin/users")
+        ])
+        
+        if (txRes.ok) {
+          const txData = await txRes.json()
+          setTxList(txData)
+        }
+        
+        if (usersRes.ok) {
+          const usersData = await usersRes.json()
+          setUsers(usersData)
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
 
   const filtered =
     filter === "all" ? txList : txList.filter((t) => t.status === filter)
@@ -74,6 +101,8 @@ export default function AdminTransactionsPage() {
       )
     }
   }
+
+  if (loading) return <div>Loading transactions...</div>
 
   return (
     <div className="flex flex-col gap-6">
@@ -168,7 +197,7 @@ export default function AdminTransactionsPage() {
               filtered.map((tx) => {
                 const Icon = typeIcons[tx.type as keyof typeof typeIcons]
                 const color = typeColors[tx.type as keyof typeof typeColors]
-                const user = allUsers.find((u) => u.id === tx.userId)
+                const user = users.find((u: User) => u.id === tx.userId)
                 const isPositive =
                   tx.type === "deposit" || tx.type === "return"
 

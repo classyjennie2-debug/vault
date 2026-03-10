@@ -15,6 +15,7 @@ import {
   Eye,
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import type { Activity } from "@/lib/types"
 
 const activityIcons = {
   investment: TrendingUp,
@@ -30,12 +31,8 @@ const activityBgColors = {
   withdrawal: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
 }
 
-interface RecentActivitiesProps {
-  userId: string
-}
-
-export function RecentActivities({ userId }: RecentActivitiesProps) {
-  const [activities, setActivities] = useState<any[]>([])
+export function RecentActivities() {
+  const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

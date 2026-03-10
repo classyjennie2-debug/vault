@@ -27,9 +27,16 @@ export type InvestmentPlan = {
   maxAmount: number
   returnRate: number
   duration: number
-  durationUnit: "days" | "months"
+  durationUnit: "days" | "months" | "years"
   risk: "Low" | "Medium" | "High"
   description: string
+  // optional fields for plans loaded from mock data or extended schema
+  fees?: {
+    management: number // Annual percentage
+    performance: number // % of profits
+    withdrawal: number // Early withdrawal fee %
+  }
+  category?: string
 }
 
 export type ActiveInvestment = {

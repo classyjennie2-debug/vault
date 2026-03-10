@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuth } from "@/lib/auth"
-import { setUserBalance, getUserById } from "@/lib/db"
+import { setUserBalance, getUserById, all } from "@/lib/db"
+
+export async function GET() {
+  try {
+    const user = await requireAuth()
+
+    // Check if user is admin
+    if (user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+    }
+
+    const users = await all("SELECT id, name, email, balance, role, joinedAt, avatar FROM users")
+    return NextResponse.json(users)
+  } catch (error) {
+    console.error("Admin get users error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {

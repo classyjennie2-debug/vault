@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import {
   Card,
   CardContent,
@@ -19,7 +19,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import { AlertCircle, CheckCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Textarea } from "@/components/ui/textarea"

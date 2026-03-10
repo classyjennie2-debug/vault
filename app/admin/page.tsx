@@ -11,7 +11,6 @@ import Link from "next/link"
 export default function AdminOverviewPage() {
   const totalBalance = allUsers.reduce((sum, u) => sum + u.balance, 0)
   const pendingTx = transactions.filter((t) => t.status === "pending")
-  const pendingAmount = pendingTx.reduce((sum, t) => sum + t.amount, 0)
   const approvedTx = transactions.filter((t) => t.status === "approved")
   const approvedVolume = approvedTx.reduce((sum, t) => sum + t.amount, 0)
 

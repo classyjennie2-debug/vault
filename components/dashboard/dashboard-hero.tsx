@@ -1,6 +1,6 @@
 "use client"
 
-import { ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 
 interface DashboardHeroProps {
   user: {
@@ -13,10 +13,9 @@ interface DashboardHeroProps {
     activeInvestments: number
     pendingDeposits: number
   }
-  todayProfit?: number
 }
 
-export function DashboardHero({ user, stats, todayProfit = 0 }: DashboardHeroProps) {
+export function DashboardHero({ user, stats }: DashboardHeroProps) {
   const totalBalance = user.balance
   const activeInvestments = stats?.activeInvestments || 0
   const totalProfit = stats?.totalProfit || 0
@@ -74,7 +73,7 @@ export function DashboardHero({ user, stats, todayProfit = 0 }: DashboardHeroPro
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3 animate-in fade-in slide-in-from-bottom duration-700 delay-300">
+      <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom duration-700 delay-300">
         <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-4 backdrop-blur-lg hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300">
           <p className="text-xs text-muted-foreground">Total Profit</p>
           <p className="text-xl font-bold text-green-500 mt-1">${(totalProfit).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
@@ -85,12 +84,6 @@ export function DashboardHero({ user, stats, todayProfit = 0 }: DashboardHeroPro
           <p className="text-xs text-muted-foreground">Active Plans</p>
           <p className="text-xl font-bold text-blue-500 mt-1">{activeInvestments}</p>
           <p className="text-xs text-blue-500/70 mt-1">Active investments</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl p-4 backdrop-blur-lg hover:shadow-lg hover:shadow-purple-500/10 transition-all duration-300">
-          <p className="text-xs text-muted-foreground">Portfolio Balance</p>
-          <p className="text-xl font-bold text-purple-500 mt-1">${(totalBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
-          <p className="text-xs text-purple-500/70 mt-1">Current balance</p>
         </div>
 
         <div className="bg-gradient-to-br from-orange-500/20 to-yellow-500/20 border border-orange-500/30 rounded-xl p-4 backdrop-blur-lg hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300">

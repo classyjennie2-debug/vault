@@ -16,7 +16,6 @@ import {
   YAxis,
 } from "recharts"
 import { TrendingUp, Activity } from "lucide-react"
-import { useState } from "react"
 
 interface PortfolioChartProps {
   data: { month: string; value: number }[]
@@ -24,7 +23,13 @@ interface PortfolioChartProps {
   monthlyChange?: number
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload }: {
+  active?: boolean;
+  payload?: Array<{
+    payload: { month: string };
+    value: number;
+  }>;
+}) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white dark:bg-slate-950 border border-border rounded-lg p-3 shadow-xl">
@@ -41,7 +46,11 @@ const CustomTooltip = ({ active, payload }: any) => {
 }
 
 export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: PortfolioChartProps) {
-  const [isAnimating, setIsAnimating] = useState(true)
+  // Calculate 30-day high, low, and average from the data
+  const values = data.map(item => item.value)
+  const thirtyDayHigh = values.length > 0 ? Math.max(...values) : 0
+  const thirtyDayLow = values.length > 0 ? Math.min(...values) : 0
+  const avgValue = values.length > 0 ? values.reduce((sum, val) => sum + val, 0) / values.length : 0
 
   return (
     <Card className="border backdrop-blur-lg bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-950/50 dark:to-slate-900/30 animate-in fade-in slide-in-from-left duration-700">
@@ -72,8 +81,6 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
             <AreaChart
               data={data}
               margin={{ top: 10, right: 30, bottom: 10, left: 0 }}
-              onMouseEnter={() => setIsAnimating(false)}
-              onMouseLeave={() => setIsAnimating(true)}
             >
               <defs>
                 {/* Green gradient for positive trend */}
@@ -140,15 +147,15 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
         <div className="mt-6 grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/20">
           <div>
             <p className="text-xs text-muted-foreground font-medium">30-Day High</p>
-            <p className="text-sm font-bold text-card-foreground mt-1">$51,200</p>
+            <p className="text-sm font-bold text-card-foreground mt-1">${thirtyDayHigh.toLocaleString()}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground font-medium">30-Day Low</p>
-            <p className="text-sm font-bold text-card-foreground mt-1">$32,150</p>
+            <p className="text-sm font-bold text-card-foreground mt-1">${thirtyDayLow.toLocaleString()}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground font-medium">Avg Value</p>
-            <p className="text-sm font-bold text-card-foreground mt-1">$42,890</p>
+            <p className="text-sm font-bold text-card-foreground mt-1">${avgValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
           </div>
         </div>
       </CardContent>

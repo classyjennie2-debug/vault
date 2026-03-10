@@ -1,3 +1,4 @@
+import React from "react"
 import { requireAuth } from "@/lib/auth"
 import DashboardLayoutClient from "@/components/dashboard/DashboardLayoutClient"
 

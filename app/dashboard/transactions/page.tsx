@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -8,8 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import type { Transaction } from "@/lib/types"
 import { Button } from "@/components/ui/button"
-import { transactions } from "@/lib/mock-data"
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -43,8 +43,28 @@ type FilterType = "all" | "deposit" | "withdrawal" | "investment" | "return"
 
 export default function TransactionsPage() {
   const [filter, setFilter] = useState<FilterType>("all")
+  const [userTransactions, setUserTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const userTransactions = transactions.filter((t) => t.userId === "u1")
+  useEffect(() => {
+    async function fetchTransactions() {
+      try {
+        const response = await fetch("/api/transactions")
+        if (response.ok) {
+          const data = await response.json()
+          setUserTransactions(data)
+        } else {
+          console.error("Failed to fetch transactions")
+        }
+      } catch (error) {
+        console.error("Error fetching transactions:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTransactions()
+  }, [])
+
   const filtered =
     filter === "all"
       ? userTransactions
@@ -72,55 +92,73 @@ export default function TransactionsPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
-                <ArrowUpRight className="h-5 w-5 text-accent" />
+      {loading ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-secondary animate-pulse" />
+                  <div className="space-y-2">
+                    <div className="h-3 w-20 bg-secondary animate-pulse rounded" />
+                    <div className="h-4 w-16 bg-secondary animate-pulse rounded" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
+                  <ArrowUpRight className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Total Deposits</p>
+                  <p className="text-lg font-bold text-card-foreground">
+                    ${totalDeposits.toLocaleString()}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total Deposits</p>
-                <p className="text-lg font-bold text-card-foreground">
-                  ${totalDeposits.toLocaleString()}
-                </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10">
+                  <ArrowDownRight className="h-5 w-5 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    Total Withdrawals
+                  </p>
+                  <p className="text-lg font-bold text-card-foreground">
+                    ${totalWithdrawals.toLocaleString()}
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10">
-                <ArrowDownRight className="h-5 w-5 text-destructive" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
+                  <RefreshCw className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Total Returns</p>
+                  <p className="text-lg font-bold text-card-foreground">
+                    ${totalReturns.toLocaleString()}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">
-                  Total Withdrawals
-                </p>
-                <p className="text-lg font-bold text-card-foreground">
-                  ${totalWithdrawals.toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
-                <RefreshCw className="h-5 w-5 text-accent" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total Returns</p>
-                <p className="text-lg font-bold text-card-foreground">
-                  ${totalReturns.toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Filters and list */}
       <Card>
@@ -147,14 +185,30 @@ export default function TransactionsPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3">
-            {filtered.length === 0 ? (
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-lg border border-border p-4">
+                    <div className="h-10 w-10 rounded-lg bg-secondary animate-pulse" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-3/4 bg-secondary animate-pulse rounded" />
+                      <div className="h-3 w-1/2 bg-secondary animate-pulse rounded" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-4 w-16 bg-secondary animate-pulse rounded" />
+                      <div className="h-5 w-12 bg-secondary animate-pulse rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">
                 No transactions found for this filter.
               </p>
             ) : (
               filtered.map((tx) => {
-                const Icon = typeIcons[tx.type]
-                const color = typeColors[tx.type]
+                const Icon = typeIcons[tx.type as keyof typeof typeIcons]
+                const color = typeColors[tx.type as keyof typeof typeColors]
                 const isPositive =
                   tx.type === "deposit" || tx.type === "return"
                 return (

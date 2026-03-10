@@ -1,0 +1,198 @@
+"use client"
+
+import { useState } from "react"
+import { Copy, Check, Loader2, X } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { CoinIcon } from "@/components/crypto/coin-icon"
+import { Badge } from "@/components/ui/badge"
+import type { CoinType, NetworkType, WalletAddress } from "@/lib/types"
+
+interface DepositModalProps {
+  open: boolean
+  onClose: () => void
+  coin: CoinType | null
+  network: NetworkType | null
+  usdAmount: string
+  coinAmount: string
+  wallet: WalletAddress | null
+  onConfirm: () => Promise<void>
+  isLoading?: boolean
+}
+
+export function DepositModal({
+  open,
+  onClose,
+  coin,
+  network,
+  usdAmount,
+  coinAmount,
+  wallet,
+  onConfirm,
+  isLoading = false,
+}: DepositModalProps) {
+  const [copiedAddress, setCopiedAddress] = useState(false)
+  const [copiedAmount, setCopiedAmount] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleCopyAddress = async () => {
+    if (!wallet) return
+    await navigator.clipboard.writeText(wallet.address)
+    setCopiedAddress(true)
+    setTimeout(() => setCopiedAddress(false), 2000)
+  }
+
+  const handleCopyAmount = async () => {
+    await navigator.clipboard.writeText(coinAmount)
+    setCopiedAmount(true)
+    setTimeout(() => setCopiedAmount(false), 2000)
+  }
+
+  const handleConfirm = async () => {
+    setIsSubmitting(true)
+    try {
+      await onConfirm()
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-xl">Confirm Deposit</DialogTitle>
+              <DialogDescription>
+                Send the exact amount to complete your deposit
+              </DialogDescription>
+            </div>
+            <button
+              onClick={onClose}
+              className="rounded-lg hover:bg-secondary p-1.5 transition-colors"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-6 pt-4">
+          {/* Deposit Summary */}
+          <div className="rounded-xl bg-gradient-to-br from-secondary/50 to-secondary/30 p-6 border border-secondary">
+            <div className="space-y-4">
+              {/* USD Amount */}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  You're Depositing
+                </p>
+                <p className="text-3xl font-bold text-foreground mt-1">
+                  ${usdAmount}
+                </p>
+              </div>
+
+              {/* Coin Amount */}
+              <div className="pt-4 border-t border-border/50">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    You'll Send
+                  </p>
+                  <Badge variant="secondary" className="flex items-center gap-1.5">
+                    <CoinIcon coin={coin!} size={14} />
+                    <span className="font-semibold">{coin}</span>
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between gap-2 bg-card/50 rounded-lg p-3 border border-border">
+                  <p className="text-lg font-semibold text-foreground font-mono">
+                    {coinAmount}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopyAmount}
+                    className="h-8 w-8 p-0"
+                  >
+                    {copiedAmount ? (
+                      <Check className="h-4 w-4 text-accent" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Wallet Address Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-foreground">Wallet Address</p>
+              <p className="text-xs text-muted-foreground">
+                {network} Network
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-muted/40 rounded-lg p-3 border border-border">
+              <div className="flex-1 min-w-0">
+                <p className="font-mono text-xs break-all text-foreground/80 truncate sm:truncate-none">
+                  {wallet?.address}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyAddress}
+                className="h-8 w-8 p-0 flex-shrink-0"
+                title="Copy address"
+              >
+                {copiedAddress ? (
+                  <Check className="h-4 w-4 text-accent" />
+                ) : (
+                  <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Warning */}
+          <div className="rounded-lg bg-warning/10 border border-warning/30 p-3">
+            <p className="text-xs text-warning font-medium leading-relaxed">
+              ⚠️ Send exactly {coinAmount} {coin}. Sending different amounts or wrong network may result in loss of funds.
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting || isLoading}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={isSubmitting || isLoading}
+              className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              {isSubmitting || isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "I've Sent It"
+              )}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

@@ -175,80 +175,97 @@ export const transactions: Transaction[] = [
 export const investmentPlans: InvestmentPlan[] = [
   {
     id: "p1",
-    name: "Starter Plan",
-    minAmount: 100,
-    maxAmount: 50000,
-    returnRate: 8,
-    duration: 7,
-    durationUnit: "days",
-    risk: "Low",
-    description:
-      "Perfect for beginners. A steady, low-risk investment with quick returns. Ideal for testing the platform.",
-  },
-  {
-    id: "p2",
-    name: "Growth Portfolio",
-    minAmount: 500,
-    maxAmount: 500000,
-    returnRate: 15,
-    duration: 14,
-    durationUnit: "days",
-    risk: "Medium",
-    description:
-      "A balanced portfolio combining equities and fixed income for moderate growth. Designed for investors seeking higher returns with manageable risk.",
-  },
-  {
-    id: "p3",
-    name: "VIP Plan",
-    minAmount: 2000,
-    maxAmount: 1000000,
-    returnRate: 35,
-    duration: 30,
-    durationUnit: "days",
-    risk: "High",
-    description:
-      "Premium plan with the highest returns. Suitable for experienced investors with higher risk tolerance and substantial capital.",
-  },
-  {
-    id: "p4",
-    name: "Conservative Bond Fund",
+    name: "Conservative Growth Fund",
     minAmount: 1000,
     maxAmount: 100000,
-    returnRate: 6.5,
+    returnRate: 4.2,
     duration: 12,
     durationUnit: "months",
     risk: "Low",
     description:
-      "A stable, low-risk fund investing primarily in government and corporate bonds. Ideal for capital preservation with steady returns.",
+      "Government bonds and blue-chip stocks portfolio. Ideal for capital preservation with steady, predictable returns.",
+    fees: {
+      management: 0.75,
+      performance: 10,
+      withdrawal: 2
+    },
+    category: "Fixed Income"
   },
   {
-    id: "p5",
-    name: "Real Estate Trust",
-    minAmount: 25000,
+    id: "p2",
+    name: "Balanced Portfolio",
+    minAmount: 2500,
     maxAmount: 500000,
-    returnRate: 9.2,
+    returnRate: 7.8,
+    duration: 6,
+    durationUnit: "months",
+    risk: "Medium",
+    description:
+      "60% equities, 40% bonds - optimal risk-adjusted returns. Diversified across sectors and geographies.",
+    fees: {
+      management: 1.25,
+      performance: 15,
+      withdrawal: 3
+    },
+    category: "Balanced"
+  },
+  {
+    id: "p3",
+    name: "Growth Accelerator",
+    minAmount: 5000,
+    maxAmount: 1000000,
+    returnRate: 12.5,
+    duration: 9,
+    durationUnit: "months",
+    risk: "High",
+    description:
+      "High-growth portfolio focused on emerging markets and technology sectors. Higher risk, higher potential returns.",
+    fees: {
+      management: 1.75,
+      performance: 20,
+      withdrawal: 5
+    },
+    category: "Growth"
+  },
+  {
+    id: "p4",
+    name: "Real Estate Investment Trust",
+    minAmount: 10000,
+    maxAmount: 250000,
+    returnRate: 8.9,
     duration: 24,
     durationUnit: "months",
     risk: "Medium",
     description:
-      "Diversified real estate investment trust providing exposure to commercial and residential properties with quarterly dividends.",
+      "Diversified commercial and residential real estate portfolio with quarterly distributions and property appreciation potential.",
+    fees: {
+      management: 1.5,
+      performance: 12,
+      withdrawal: 4
+    },
+    category: "Real Estate"
+  },
+  {
+    id: "p5",
+    name: "Crypto Index Fund",
+    minAmount: 500,
+    maxAmount: 50000,
+    returnRate: 18.5,
+    duration: 3,
+    durationUnit: "months",
+    risk: "High",
+    description:
+      "Market-cap weighted cryptocurrency portfolio. High volatility, high potential returns. Suitable for experienced investors.",
+    fees: {
+      management: 2.0,
+      performance: 25,
+      withdrawal: 6
+    },
+    category: "Cryptocurrency"
   },
 ]
 
 // ── Crypto Deposit Types ──────────────────────────────────────────────
-
-export type CoinType = "USDT" | "BTC" | "ETH" | "BNB" | "TRX" | "SOL"
-export type NetworkType = "TRC20" | "ERC20" | "BEP20" | "USDT0" | "BTC" | "SOL"
-
-export type WalletAddress = {
-  id: string
-  coin: CoinType
-  network: NetworkType
-  address: string
-  assignedTo: string | null // userId or null if available
-  assignedAt: string | null
-  createdAt: string
-}
 
 export const coinNetworks: Record<CoinType, NetworkType[]> = {
   USDT: ["TRC20", "ERC20", "BEP20", "USDT0"],

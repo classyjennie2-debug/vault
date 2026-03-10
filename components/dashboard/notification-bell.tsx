@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Zap, TrendingUp, AlertCircle, CheckCircle, Info } from "lucide-react"
+import { Bell, Zap, AlertCircle, CheckCircle, Info } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -9,26 +9,53 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { notifications as mockNotifications } from "@/lib/mock-data"
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import type { Notification } from "@/lib/types"
 
 export function NotificationBell() {
-  const [notifications, setNotifications] = useState(mockNotifications)
-  const [selectedNotification, setSelectedNotification] = useState<string | null>(
-    null
-  )
+  const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    async function fetchNotifications() {
+      try {
+        const response = await fetch("/api/notifications")
+        if (response.ok) {
+          const data = await response.json()
+          setNotifications(data)
+        } else {
+          console.error("Failed to fetch notifications")
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error)
+      }
+    }
+    fetchNotifications()
+  }, [])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const unreadNotifications = notifications.filter((n) => !n.isRead)
   const readNotifications = notifications.filter((n) => n.isRead)
 
-  const handleMarkAsRead = (id: string) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    )
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ notificationId: id }),
+      })
+      if (response.ok) {
+        setNotifications(
+          notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+        )
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error)
+    }
   }
 
   const getNotificationColor = (
@@ -61,12 +88,11 @@ export function NotificationBell() {
     }
   }
 
-  const NotificationItem = ({ notification, idx }: { notification: any; idx: number }) => (
+  const NotificationItem = ({ notification, idx }: { notification: Notification; idx: number }) => (
     <div
       className="p-4 border-b border-border/30 hover:bg-gradient-to-r hover:from-white/50 hover:to-slate-50/50 dark:hover:from-slate-800/50 dark:hover:to-slate-900/50 cursor-pointer transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
       style={{ animationDelay: `${idx * 50}ms` }}
       onClick={() => {
-        setSelectedNotification(notification.id)
         handleMarkAsRead(notification.id)
       }}
     >

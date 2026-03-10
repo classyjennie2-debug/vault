@@ -2,9 +2,13 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { getUserById, getUserByEmail, verifyUserEmail, insertVerificationCode, consumeVerificationCode } from "./db"
+import { NextResponse } from "next/server"
+import { getUserById, verifyUserEmail, insertVerificationCode, consumeVerificationCode } from "./db"
 
-const JWT_SECRET = process.env.JWT_SECRET || "super-secret-change-me"
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required")
+}
 const TOKEN_NAME = "vault_token"
 
 export interface SessionPayload {
@@ -33,7 +37,8 @@ export function issueToken(user: SessionPayload) {
 export function verifyToken(token: string): SessionPayload | null {
   try {
     return jwt.verify(token, JWT_SECRET) as SessionPayload
-  } catch (_) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_err) {
     return null
   }
 }
@@ -56,16 +61,41 @@ export async function requireAuth(redirectTo = "/login") {
   if (!payload) redirect(redirectTo)
   const user = await getUserById(payload.id)
   if (!user) redirect(redirectTo)
+
+  // process matured investments each time the user is authenticated
+  try {
+    await import("./db").then((db) => db.processMaturedInvestments(user.id))
+  } catch (err) {
+    console.error("Error processing matured investments:", err)
+  }
+
   return user
 }
 
 // used in API routes
-export async function verifyAdminAuth(request: Request) {
-  const token = request.headers.get("authorization")?.split(" ")[1]
-  if (!token) return null
+export async function requireAuthAPI() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get(TOKEN_NAME)?.value
+  if (!token) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
   const payload = verifyToken(token)
-  if (!payload || payload.role !== "admin") return null
-  return await getUserById(payload.id)
+  if (!payload) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+  const user = await getUserById(payload.id)
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  // process matured investments each time the user is authenticated
+  try {
+    await import("./db").then((db) => db.processMaturedInvestments(user.id))
+  } catch (err) {
+    console.error("Error processing matured investments:", err)
+  }
+
+  return user
 }
 
 
@@ -83,7 +113,13 @@ export async function sendVerificationCode(email: string) {
   })
 
   // send email - placeholder using console
-  console.log(`Verification code for ${email}: ${code}`)
+  // Log verification code in development only
+  if (process.env.NODE_ENV !== "production") {
+    // Log verification code in development only
+    if (process.env.NODE_ENV === "development") {
+      console.log(`Verification code for ${email}: ${code}`)
+    }
+  }
 
   // TODO: integrate actual email delivery (nodemailer or service)
 }

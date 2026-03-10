@@ -1,6 +1,4 @@
-import { InvestmentPlansGrid } from "@/components/investments/investment-plans-grid"
-import { InvestmentCalculator } from "@/components/investments/investment-calculator"
-import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
+import { UnifiedInvestmentDashboard } from "@/components/investments/unified-investment-dashboard"
 import { requireAuth } from "@/lib/auth"
 import { getInvestmentPlansFromDb, getUserActiveInvestments } from "@/lib/db"
 
@@ -10,17 +8,8 @@ export default async function InvestmentsPage() {
   const investments = await getUserActiveInvestments(user.id)
 
   return (
-    <div className="flex flex-col gap-8">
-      <InvestmentPlansGrid plans={plans} />
-
-      <div className="grid gap-6 lg:grid-cols-5">
-        <div className="lg:col-span-2">
-          <InvestmentCalculator />
-        </div>
-        <div className="lg:col-span-3">
-          <ActiveInvestmentsTable investments={investments} />
-        </div>
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <UnifiedInvestmentDashboard plans={plans} investments={investments} />
     </div>
   )
 }

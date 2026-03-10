@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import {
   Card,
   CardContent,
@@ -68,22 +69,22 @@ function StatCard({
   gradientIndex?: number
 }) {
   return (
-    <Card className={`group bg-gradient-to-br ${gradients[gradientIndex]} border hover:shadow-2xl hover:shadow-current transition-all duration-500 hover:scale-105 backdrop-blur-lg`}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+    <Card className={`group bg-gradient-to-br ${gradients[gradientIndex]} border hover:shadow-lg hover:shadow-current transition-all duration-500 hover:scale-103 backdrop-blur-lg`}>
+      <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3">
+        <CardTitle className="text-xs font-medium text-muted-foreground">
           {label}
         </CardTitle>
-        <div className={`${iconBgColors[gradientIndex]} p-2.5 rounded-lg group-hover:scale-110 transition-transform duration-300`}>
-          <Icon className={`h-5 w-5 ${iconColors[gradientIndex]}`} />
+        <div className={`${iconBgColors[gradientIndex]} p-1.5 rounded-lg group-hover:scale-105 transition-transform duration-300`}>
+          <Icon className={`h-4 w-4 ${iconColors[gradientIndex]}`} />
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-3xl font-bold bg-gradient-to-r from-card-foreground to-card-foreground/80 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-2 duration-700">
+      <CardContent className="pt-1 pb-3 px-3">
+        <p className="text-lg font-bold bg-gradient-to-r from-card-foreground to-card-foreground/80 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-2 duration-700 overflow-hidden text-ellipsis line-clamp-2">
           {value}
         </p>
         {trend && (
-          <p className={`text-xs mt-2 flex items-center gap-1 ${trendColor || "text-muted-foreground"}`}>
-            {trend.includes("+") && <ArrowUpRight className="h-3 w-3" />}
+          <p className={`text-[10px] mt-1.5 flex items-center gap-0.5 ${trendColor || "text-muted-foreground"}`}>
+            {trend.includes("+") && <ArrowUpRight className="h-2.5 w-2.5" />}
             {trend}
           </p>
         )}
@@ -125,7 +126,7 @@ export function DashboardCards({
   }).format(totalWithdrawn)
 
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6 animate-in fade-in slide-in-from-top duration-700">
+    <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-6 animate-in fade-in slide-in-from-top duration-700">
       <StatCard
         icon={Wallet}
         label="Total Balance"

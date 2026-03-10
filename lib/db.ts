@@ -1,16 +1,17 @@
 import Database from "better-sqlite3"
 import path from "path"
 import bcrypt from "bcrypt"
-import type { ActiveInvestment } from "./types"
+import type { ActiveInvestment, InvestmentPlan } from "./types"
 
 // support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)
-let pgPool: any = null
+let pgPool: import("pg").Pool | null = null
 const DATABASE_URL = process.env.DATABASE_URL
 let pgInitialized = false
 
 if (DATABASE_URL) {
-  const { Pool } = require("pg")
-  pgPool = new Pool({ connectionString: DATABASE_URL })
+  import("pg").then(({ Pool }) => {
+    pgPool = new Pool({ connectionString: DATABASE_URL })
+  })
 }
 
 const DB_PATH = path.join(process.cwd(), "vault.db")
@@ -96,6 +97,18 @@ async function initializePostgres() {
           assignedAt TEXT,
           createdAt TEXT NOT NULL,
           FOREIGN KEY (assignedTo) REFERENCES users(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS notifications (
+          id TEXT PRIMARY KEY,
+          userId TEXT NOT NULL,
+          title TEXT NOT NULL,
+          message TEXT NOT NULL,
+          type TEXT NOT NULL,
+          isRead INTEGER NOT NULL DEFAULT 0,
+          timestamp TEXT NOT NULL,
+          actionUrl TEXT,
+          FOREIGN KEY (userId) REFERENCES users(id)
         );
 
         CREATE TABLE IF NOT EXISTS verification_codes (
@@ -206,6 +219,18 @@ function getDb(): Database.Database {
       FOREIGN KEY (assignedTo) REFERENCES users(id)
     );
 
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      userId TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      type TEXT NOT NULL,
+      isRead INTEGER NOT NULL DEFAULT 0,
+      timestamp TEXT NOT NULL,
+      actionUrl TEXT,
+      FOREIGN KEY (userId) REFERENCES users(id)
+    );
+
     CREATE TABLE IF NOT EXISTS verification_codes (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL,
@@ -232,30 +257,35 @@ function adaptSql(sql: string) {
   return sql.replace(/\?/g, () => "$" + ++idx)
 }
 
-async function run(sql: string, params: any[] = []) {
-  if (pgPool) {
-    await initializePostgres()
-    return pgPool.query(adaptSql(sql), params)
-  }
-  return getDb().prepare(sql).run(...params)
+interface DatabaseRow {
+  [key: string]: unknown
 }
 
-async function get(sql: string, params: any[] = []) {
+export async function run(sql: string, params: unknown[] = []): Promise<void> {
+  if (pgPool) {
+    await initializePostgres()
+    await pgPool.query(adaptSql(sql), params)
+  } else {
+    getDb().prepare(sql).run(...params)
+  }
+}
+
+export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T | undefined> {
   if (pgPool) {
     await initializePostgres()
     const res = await pgPool.query(adaptSql(sql), params)
-    return res.rows[0]
+    return res.rows[0] as T
   }
-  return getDb().prepare(sql).get(...params)
+  return getDb().prepare(sql).get(...params) as T
 }
 
-async function all(sql: string, params: any[] = []) {
+export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T[]> {
   if (pgPool) {
     await initializePostgres()
     const res = await pgPool.query(adaptSql(sql), params)
-    return res.rows
+    return res.rows as T[]
   }
-  return getDb().prepare(sql).all(...params)
+  return getDb().prepare(sql).all(...params) as T[]
 }
 
 function seedDatabaseSync(db: Database.Database) {
@@ -345,6 +375,20 @@ function seedDatabaseSync(db: Database.Database) {
     ["w15", "SOL", "SOL", "DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21hy", null, null, "2026-02-15"],
   ]
   for (const w of wallets) insertWallet.run(...w)
+
+  // ── Notifications ───────────────────────────────────────────────────
+  const insertNotification = db.prepare(
+    "INSERT INTO notifications (id, userId, title, message, type, isRead, timestamp, actionUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  )
+
+  const notifications = [
+    ["n1", "u1", "Investment Completed", "Your Growth Portfolio investment of $5,000 is now active", "success", 0, "2026-03-03T10:30:00Z", "/dashboard"],
+    ["n2", "u1", "Profit Credited", "You earned $250.50 from your Growth Portfolio", "success", 0, "2026-03-02T14:15:00Z", "/dashboard"],
+    ["n3", "u1", "Deposit Approved", "Your deposit of $10,000 has been approved", "success", 1, "2026-02-28T11:00:00Z", "/dashboard"],
+    ["n4", "u1", "Withdrawal Pending", "Your withdrawal request of $3,000 is pending review", "warning", 1, "2026-03-01T09:45:00Z", "/dashboard"],
+    ["n5", "u1", "Plan Expiring Soon", "Your Conservative Bond Fund investment will mature in 365 days", "info", 1, "2026-02-20T16:20:00Z", "/investments"],
+  ]
+  for (const n of notifications) insertNotification.run(...n)
 }
 
 async function seedDatabasePostgres() {
@@ -441,6 +485,21 @@ async function seedDatabasePostgres() {
       w
     )
   }
+
+  // ── Notifications ───────────────────────────────────────────────────
+  const notifications = [
+    ["n1", "u1", "Investment Completed", "Your Growth Portfolio investment of $5,000 is now active", "success", 0, "2026-03-03T10:30:00Z", "/dashboard"],
+    ["n2", "u1", "Profit Credited", "You earned $250.50 from your Growth Portfolio", "success", 0, "2026-03-02T14:15:00Z", "/dashboard"],
+    ["n3", "u1", "Deposit Approved", "Your deposit of $10,000 has been approved", "success", 1, "2026-02-28T11:00:00Z", "/dashboard"],
+    ["n4", "u1", "Withdrawal Pending", "Your withdrawal request of $3,000 is pending review", "warning", 1, "2026-03-01T09:45:00Z", "/dashboard"],
+    ["n5", "u1", "Plan Expiring Soon", "Your Conservative Bond Fund investment will mature in 365 days", "info", 1, "2026-02-20T16:20:00Z", "/investments"],
+  ]
+  for (const n of notifications) {
+    await pool.query(
+      "INSERT INTO notifications (id, userId, title, message, type, isRead, timestamp, actionUrl) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id) DO NOTHING",
+      n
+    )
+  }
 }
 
 
@@ -534,11 +593,35 @@ export async function consumeVerificationCode(code: string): Promise<boolean> {
 }
 
 export async function getInvestmentPlansFromDb() {
-  return all("SELECT * FROM investment_plans")
+  const rows: InvestmentPlan[] = await all("SELECT * FROM investment_plans")
+  // map to include optional fields expected by the UI
+  return rows.map((p) => ({
+    ...p,
+    fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
+    category: p.category || "",
+  }))
+}
+
+export async function getInvestmentPlanById(planId: string) {
+  const p: InvestmentPlan | undefined = await get("SELECT * FROM investment_plans WHERE id = ?", [planId])
+  if (!p) return undefined
+  return {
+    ...p,
+    fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
+    category: p.category || "",
+  }
 }
 
 export async function getUserTransactions(userId: string) {
   return all("SELECT * FROM transactions WHERE userId = ?", [userId])
+}
+
+export async function getUserNotifications(userId: string) {
+  return all("SELECT * FROM notifications WHERE userId = ? ORDER BY timestamp DESC", [userId])
+}
+
+export async function markNotificationAsRead(notificationId: string): Promise<void> {
+  await run("UPDATE notifications SET isRead = 1 WHERE id = ?", [notificationId])
 }
 
 export async function getRecentActivities(userId: string) {
@@ -548,23 +631,23 @@ export async function getRecentActivities(userId: string) {
   )
 }
 export async function getUserStats(userId: string) {
-  const totalInvestedRow: any = await get(
+  const totalInvestedRow: { sum: number } | undefined = await get(
     "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'",
     [userId]
   )
-  const totalProfitRow: any = await get(
+  const totalProfitRow: { sum: number } | undefined = await get(
     "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'",
     [userId]
   )
-  const pendingDepositsRow: any = await get(
+  const pendingDepositsRow: { cnt: number } | undefined = await get(
     "SELECT COUNT(*) as cnt FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'pending'",
     [userId]
   )
-  const totalWithdrawnRow: any = await get(
+  const totalWithdrawnRow: { sum: number } | undefined = await get(
     "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'withdrawal' AND status = 'approved'",
     [userId]
   )
-  const activeCountRow: any = await get(
+  const activeCountRow: { cnt: number } | undefined = await get(
     "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = 'active'",
     [userId]
   )
@@ -588,12 +671,6 @@ export async function generatePortfolioData(userId: string) {
   const user = await getUserById(userId)
 
   if (!user) return []
-
-  // Get user's investment transactions
-  const txs = (await all(
-    "SELECT * FROM transactions WHERE userId = ? ORDER BY date ASC",
-    [userId]
-  )) as any[]
 
   const currentBalance = user.balance
   const months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
@@ -651,13 +728,61 @@ export async function createTransaction(transaction: {
   }
 }
 
+// process investments that have matured and credit returns to user
+export async function processMaturedInvestments(userId: string) {
+  const now = new Date().toISOString()
+  const matured = (await all(
+    "SELECT * FROM active_investments WHERE userId = ? AND status = 'active' AND endDate <= ?",
+    [userId, now]
+  )) as ActiveInvestment[]
+
+  for (const inv of matured) {
+    // mark complete and set full progress
+    await run(
+      "UPDATE active_investments SET status = 'completed', progressPercentage = 100 WHERE id = ?",
+      [inv.id]
+    )
+
+    // credit the expected profit and principal back to user balance
+    const profit = inv.expectedProfit || 0
+    const principal = inv.amount || 0
+    const totalCredit = profit + principal
+    await run(
+      "UPDATE users SET balance = balance + ? WHERE id = ?",
+      [totalCredit, userId]
+    )
+
+    // record a deposit for the principal (so dashboard and history reflect it)
+    if (principal > 0) {
+      await createTransaction({
+        userId,
+        type: "deposit",
+        amount: principal,
+        status: "approved",
+        description: `Principal returned from ${inv.planName}`,
+      })
+    }
+
+    // record a return transaction for the profit portion
+    if (profit > 0) {
+      await createTransaction({
+        userId,
+        type: "return",
+        amount: profit,
+        status: "approved",
+        description: `Profit from ${inv.planName}`,
+      })
+    }
+  }
+}
+
 export async function updateTransactionStatus(transactionId: string, status: "approved" | "rejected") {
   await run(`
     UPDATE transactions SET status = ? WHERE id = ?
   `, [status, transactionId])
 }
 
-export function updateUserSettings(userId: string, settings: any) {
+export function updateUserSettings(userId: string, settings: Record<string, unknown>) {
   // For now, this is a placeholder since we're using mock data
   // In a real app, this would update user settings in the database
   console.log(`Updating settings for user ${userId}:`, settings)

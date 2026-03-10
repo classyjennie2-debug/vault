@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowUpRight, ArrowDownRight, TrendingUp, RefreshCw, Clock, Eye } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import type { Transaction } from "@/lib/types"
 
 const typeIcons = {
   deposit: ArrowUpRight,
@@ -31,12 +32,8 @@ const statusColors = {
   rejected: "bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30 shadow-lg shadow-red-500/10",
 }
 
-interface RecentTransactionsProps {
-  userId: string
-}
-
-export function RecentTransactions({ userId }: RecentTransactionsProps) {
-  const [userTransactions, setUserTransactions] = useState<any[]>([])
+export function RecentTransactions() {
+  const [userTransactions, setUserTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

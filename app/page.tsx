@@ -13,6 +13,8 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { TrustBadges } from "@/components/ui/trust-badges"
+import { Logo } from "@/components/ui/logo"
 
 const features = [
   {
@@ -86,14 +88,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background">
       {/* Nav */}
       <nav className="fixed top-0 z-50 flex w-full items-center justify-between border-b border-border/50 bg-background/80 px-6 py-4 backdrop-blur-md lg:px-12">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Lock className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-semibold tracking-tight text-foreground">
-            Vault
-          </span>
-        </Link>
+        <Logo />
         <div className="hidden items-center gap-8 md:flex">
           <Link
             href="#features"
@@ -149,16 +144,16 @@ export default function LandingPage() {
           </div>
           <h1 className="max-w-3xl text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
             <span className="text-balance">
-              Invest Like the
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                {" "}Professionals
+              Secure. Transparent.
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent font-serif">
+                {" "}Profitable.
               </span>
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            Deploy your capital into expertly managed portfolios with institutional-grade
-            strategies. Our AI-powered platform helps you build wealth automatically while
-            you focus on what matters most.
+            Institutional-grade investment management for individual investors. Access
+            diversified portfolios, advanced analytics, and AI-powered strategies designed
+            to maximize returns while managing risk effectively.
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row justify-center">
             <Button size="lg" className="h-12 px-8 text-base font-semibold" asChild>
@@ -178,19 +173,8 @@ export default function LandingPage() {
           </div>
           
           {/* Trust badges */}
-          <div className="mt-12 flex flex-wrap justify-center gap-8 pt-12 border-t border-border/50">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">$2.4B+</p>
-              <p className="text-xs text-muted-foreground">Managed Assets</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">50K+</p>
-              <p className="text-xs text-muted-foreground">Active Investors</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-foreground">12.8%</p>
-              <p className="text-xs text-muted-foreground">Avg Annual Return</p>
-            </div>
+          <div className="mt-12 pt-12 border-t border-border/50">
+            <TrustBadges />
           </div>
         </div>
       </section>
@@ -200,7 +184,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
             <p className="mb-3 text-sm font-medium tracking-wider text-accent uppercase">
-              Why Choose Vault
+              Why Choose Vault Capital
             </p>
             <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
               <span className="text-balance">

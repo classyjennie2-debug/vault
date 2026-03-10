@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -16,23 +16,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { investmentPlans } from "@/lib/mock-data"
+import type { InvestmentPlan } from "@/lib/types"
 import { TrendingUp } from "lucide-react"
 
 export function InvestmentCalculator() {
-  const [selectedPlanId, setSelectedPlanId] = useState<string>(
-    investmentPlans[0].id
-  )
+  const [selectedPlanId, setSelectedPlanId] = useState<string>("")
   const [amount, setAmount] = useState<string>("1000")
+  const [plans, setPlans] = useState<InvestmentPlan[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const selectedPlan = investmentPlans.find((p) => p.id === selectedPlanId)
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch("/api/investment-plans")
+        if (res.ok) {
+          const data = await res.json()
+          setPlans(data)
+          if (data.length > 0) setSelectedPlanId(data[0].id)
+        }
+      } catch (error) {
+        console.error("Failed to fetch plans:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPlans()
+  }, [])
+
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId)
   const investmentAmount = parseFloat(amount) || 0
 
+  if (loading) return <div>Loading calculator...</div>
   if (!selectedPlan) return null
 
-  const expectedProfit = (investmentAmount * selectedPlan.returnRate) / 100
-  const totalReturn = investmentAmount + expectedProfit
-  const profitPercentage = selectedPlan.returnRate
+  // plan might not include fees (real data), so default to zero
+  const fees = selectedPlan.fees || { management: 0, performance: 0, withdrawal: 0 }
+
+  // Calculate returns with optional fees
+  const grossProfit = (investmentAmount * selectedPlan.returnRate) / 100
+  const managementFee =
+    investmentAmount * (fees.management / 100) *
+    (selectedPlan.duration / (selectedPlan.durationUnit === "months" ? 12 : 365))
+  const performanceFee = grossProfit * (fees.performance / 100)
+  const totalFees = managementFee + performanceFee
+  const netProfit = grossProfit - totalFees
+  const totalReturn = investmentAmount + netProfit
+  const netReturnRate = investmentAmount > 0 ? (netProfit / investmentAmount) * 100 : 0
 
   return (
     <Card>
@@ -50,7 +79,7 @@ export function InvestmentCalculator() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {investmentPlans.map((plan) => (
+              {plans.map((plan) => (
                 <SelectItem key={plan.id} value={plan.id}>
                   {plan.name} ({plan.returnRate}% return)
                 </SelectItem>
@@ -93,34 +122,47 @@ export function InvestmentCalculator() {
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Return Rate:</span>
+              <span className="text-sm text-muted-foreground">Gross Return Rate:</span>
               <span className="text-lg font-bold text-accent">
-                {profitPercentage}%
+                {selectedPlan.returnRate}%
               </span>
             </div>
 
-            <div className="border-t border-border pt-2 flex items-center justify-between">
-              <span className="font-semibold text-card-foreground">
-                Expected Profit:
-              </span>
-              <span className="text-xl font-bold text-accent">
-                ${expectedProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Management Fee:</span>
+              <span className="text-sm text-orange-600">
+                -${managementFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
             </div>
 
-            <div className="flex items-center justify-between bg-accent/10 p-2 rounded -mx-4 -mb-2 px-4 py-3">
-              <span className="font-semibold text-card-foreground">
-                Total Return:
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Performance Fee:</span>
+              <span className="text-sm text-orange-600">
+                -${performanceFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
-              <span className="text-2xl font-bold text-accent">
-                ${totalReturn.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </span>
+            </div>
+
+            <div className="border-t border-border/50 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">Net Return:</span>
+                <span className="text-lg font-bold text-green-600">
+                  ${netProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })} ({netReturnRate.toFixed(1)}%)
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-sm font-medium text-muted-foreground">Total Value:</span>
+                <span className="text-xl font-bold text-card-foreground">
+                  ${totalReturn.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </span>
+              </div>
             </div>
           </div>
 
           <div className="text-xs text-muted-foreground pt-2 space-y-1">
             <p>📅 Duration: {selectedPlan.duration} {selectedPlan.durationUnit}</p>
             <p>⚠️ Risk Level: {selectedPlan.risk}</p>
+            <p>🏷️ Category: {selectedPlan.category ?? "—"}</p>
           </div>
         </div>
       </CardContent>

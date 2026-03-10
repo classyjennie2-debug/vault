@@ -15,7 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { TrendingUp, Calendar, DollarSign, Zap, Clock } from "lucide-react"
 import type { ActiveInvestment } from "@/lib/types"
 
@@ -140,6 +139,7 @@ export function ActiveInvestmentsTable({ investments }: { investments: ActiveInv
                             style={{
                               width: `${investment.progressPercentage}%`,
                               animation: `slideInProgress 0.8s ease-out ${idx * 0.1}s both`,
+                              animationDelay: `${idx * 50}ms`,
                             }}
                           />
                         </div>
@@ -168,7 +168,7 @@ export function ActiveInvestmentsTable({ investments }: { investments: ActiveInv
               opacity: 0;
             }
             to {
-              width: var(--progress-width);
+              width: 100%;
               opacity: 1;
             }
           }

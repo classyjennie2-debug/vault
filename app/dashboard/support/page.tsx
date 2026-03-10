@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useState } from "react"
 import {
   Card,
@@ -18,7 +19,6 @@ import {
   Phone,
   Clock,
   CheckCircle,
-  AlertCircle,
   BookOpen,
   Zap,
 } from "lucide-react"

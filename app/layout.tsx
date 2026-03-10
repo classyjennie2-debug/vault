@@ -1,23 +1,63 @@
 import type { Metadata, Viewport } from "next"
-import { Inter, DM_Sans } from "next/font/google"
+import React from "react"
+import { Inter, Playfair_Display } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  weight: ['300', '400', '500', '600', '700', '800'],
 })
 
-const dmSans = DM_Sans({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-playfair",
+  weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
-  title: "Vault Invest - Modern Investment Platform",
+  title: "Vault Capital - Institutional Investment Management",
   description:
-    "Grow your wealth with institutional-grade investment strategies. Secure, transparent, and designed for modern investors.",
-  generator: "v0.app",
+    "Secure. Transparent. Profitable. Access institutional-grade investment portfolios with advanced analytics and AI-powered strategies.",
+  keywords: ["investment", "wealth management", "portfolio", "financial planning", "retirement", "stocks", "bonds", "crypto"],
+  authors: [{ name: "Vault Capital" }],
+  creator: "Vault Capital",
+  publisher: "Vault Capital",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://vaultcapital.com'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "Vault Capital - Institutional Investment Management",
+    description: "Secure. Transparent. Profitable. Access institutional-grade investment portfolios.",
+    url: "https://vaultcapital.com",
+    siteName: "Vault Capital",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vault Capital - Institutional Investment Management",
+    description: "Secure. Transparent. Profitable. Access institutional-grade investment portfolios.",
+    creator: "@vaultcapital",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: [
       {
@@ -51,7 +91,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${dmSans.variable} font-sans antialiased`}
+        className={`${inter.variable} ${playfair.variable} font-sans antialiased`}
       >
         {children}
         <Analytics />

@@ -1,10 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import type { CoinType, NetworkType, WalletAddress } from "@/lib/types"
 import {
-  type CoinType,
-  type NetworkType,
-  type WalletAddress,
   coinNetworks,
   coinDetails,
   allUsers,
@@ -14,9 +12,6 @@ import { CoinIcon } from "@/components/crypto/coin-icon"
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -53,17 +48,16 @@ import {
 } from "lucide-react"
 
 const allCoins: CoinType[] = ["USDT", "BTC", "ETH", "BNB", "TRX", "SOL"]
-const allNetworks: NetworkType[] = ["TRC20", "ERC20", "BEP20", "USDT0", "BTC", "SOL"]
 
 export default function AdminWalletsPage() {
   const [walletPool, setWalletPool] = useState<WalletAddress[]>(() => {
     if (typeof window !== "undefined") {
-      const version = localStorage.getItem("vault_wallet_version")
+      const version = window.localStorage.getItem("vault_wallet_version")
       if (version === "2") {
-        const stored = localStorage.getItem("vault_wallet_pool")
+        const stored = window.localStorage.getItem("vault_wallet_pool")
         if (stored) return JSON.parse(stored)
       }
-      localStorage.setItem("vault_wallet_version", "2")
+      window.localStorage.setItem("vault_wallet_version", "2")
     }
     return initialWalletAddresses
   })
@@ -77,7 +71,9 @@ export default function AdminWalletsPage() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
 
   useEffect(() => {
-    localStorage.setItem("vault_wallet_pool", JSON.stringify(walletPool))
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("vault_wallet_pool", JSON.stringify(walletPool))
+    }
   }, [walletPool])
 
   const handleAddWallet = () => {
