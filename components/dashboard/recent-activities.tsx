@@ -1,10 +1,11 @@
+"use client"
+
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { getRecentActivities } from "@/lib/db"
 import {
   TrendingUp,
   Award,
@@ -13,6 +14,7 @@ import {
   Zap,
   Eye,
 } from "lucide-react"
+import { useEffect, useState } from "react"
 
 const activityIcons = {
   investment: TrendingUp,
@@ -33,7 +35,27 @@ interface RecentActivitiesProps {
 }
 
 export function RecentActivities({ userId }: RecentActivitiesProps) {
-  const activities = getRecentActivities(userId)
+  const [activities, setActivities] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchActivities() {
+      try {
+        const response = await fetch("/api/activities")
+        if (response.ok) {
+          const data = await response.json()
+          setActivities(data)
+        } else {
+          console.error("Failed to fetch activities")
+        }
+      } catch (error) {
+        console.error("Error fetching activities:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchActivities()
+  }, [])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -66,18 +88,27 @@ export function RecentActivities({ userId }: RecentActivitiesProps) {
         </a>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 pt-6">
-        {activities.map((tx, idx) => {
-          const Icon = activityIcons[tx.type as keyof typeof activityIcons] || TrendingUp
-          const bgColor = activityBgColors[tx.type as keyof typeof activityBgColors] || "bg-gray-200"
-          return (
-            <div
-              key={tx.id}
-              className="flex items-start gap-4 p-3 rounded-lg hover:bg-gradient-to-r hover:from-white/50 hover:to-slate-50/50 dark:hover:from-slate-800/50 dark:hover:to-slate-900/50 transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
-              style={{ animationDelay: `${idx * 75}ms` }}
-            >
-              <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 font-bold border border-white/20 shadow-lg`}>
-                <Icon className="h-5 w-5" />
-              </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No recent activities
+          </div>
+        ) : (
+          activities.map((tx, idx) => {
+            const Icon = activityIcons[tx.type as keyof typeof activityIcons] || TrendingUp
+            const bgColor = activityBgColors[tx.type as keyof typeof activityBgColors] || "bg-gray-200"
+            return (
+              <div
+                key={tx.id}
+                className="flex items-start gap-4 p-3 rounded-lg hover:bg-gradient-to-r hover:from-white/50 hover:to-slate-50/50 dark:hover:from-slate-800/50 dark:hover:to-slate-900/50 transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
+                style={{ animationDelay: `${idx * 75}ms` }}
+              >
+                <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 font-bold border border-white/20 shadow-lg`}>
+                  <Icon className="h-5 w-5" />
+                </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-card-foreground group-hover:text-accent transition-colors">
                   {tx.description}
@@ -93,7 +124,8 @@ export function RecentActivities({ userId }: RecentActivitiesProps) {
               </div>
             </div>
           )
-        })}
+        })
+        )}
       </CardContent>
     </Card>
   )

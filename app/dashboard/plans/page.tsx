@@ -30,8 +30,8 @@ const riskConfig = {
   },
 }
 
-export default function PlansPage() {
-  const plans = getInvestmentPlansFromDb()
+export default async function PlansPage() {
+  const plans = await getInvestmentPlansFromDb()
 
   return (
     <div className="flex flex-col gap-6">

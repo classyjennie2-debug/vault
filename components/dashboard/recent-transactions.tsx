@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Card,
   CardContent,
@@ -5,9 +7,9 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { getUserTransactions } from "@/lib/db"
 import { ArrowUpRight, ArrowDownRight, TrendingUp, RefreshCw, Clock, Eye } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
 
 const typeIcons = {
   deposit: ArrowUpRight,
@@ -34,7 +36,27 @@ interface RecentTransactionsProps {
 }
 
 export function RecentTransactions({ userId }: RecentTransactionsProps) {
-  const userTransactions = getUserTransactions(userId).slice(0, 5)
+  const [userTransactions, setUserTransactions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchTransactions() {
+      try {
+        const response = await fetch("/api/transactions")
+        if (response.ok) {
+          const data = await response.json()
+          setUserTransactions(data.slice(0, 5))
+        } else {
+          console.error("Failed to fetch transactions")
+        }
+      } catch (error) {
+        console.error("Error fetching transactions:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTransactions()
+  }, [])
 
   return (
     <Card className="border backdrop-blur-lg bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-950/50 dark:to-slate-900/30 animate-in fade-in slide-in-from-right duration-700">
@@ -52,14 +74,23 @@ export function RecentTransactions({ userId }: RecentTransactionsProps) {
         </Link>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 pt-6">
-        {userTransactions.map((tx, idx) => {
-          const Icon = typeIcons[tx.type as keyof typeof typeIcons]
-          const bgColor = typeBgColors[tx.type as keyof typeof typeBgColors]
-          const isPositive = tx.type === "deposit" || tx.type === "return"
-          const statusColor = statusColors[tx.status as keyof typeof statusColors] || statusColors.approved
-          return (
-            <div
-              key={tx.id}
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : userTransactions.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No recent transactions
+          </div>
+        ) : (
+          userTransactions.map((tx, idx) => {
+            const Icon = typeIcons[tx.type as keyof typeof typeIcons]
+            const bgColor = typeBgColors[tx.type as keyof typeof typeBgColors]
+            const isPositive = tx.type === "deposit" || tx.type === "return"
+            const statusColor = statusColors[tx.status as keyof typeof statusColors] || statusColors.approved
+            return (
+              <div
+                key={tx.id}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-white/50 hover:to-slate-50/50 dark:hover:from-slate-800/50 dark:hover:to-slate-900/50 transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
               style={{ animationDelay: `${idx * 75}ms` }}
             >
@@ -89,7 +120,8 @@ export function RecentTransactions({ userId }: RecentTransactionsProps) {
               </div>
             </div>
           )
-        })}
+        })
+        )}
       </CardContent>
     </Card>
   )
