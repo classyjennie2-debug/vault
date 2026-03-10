@@ -16,99 +16,119 @@ if (DATABASE_URL) {
 const DB_PATH = path.join(process.cwd(), "vault.db")
 
 let _db: Database.Database | null = null
+let pgInitPromise: Promise<void> | null = null
 
 async function initializePostgres() {
-  if (pgInitialized || !pgPool) return
-  pgInitialized = true
-  
-  try {
-    // Create tables for PostgreSQL
-    await pgPool.query(`
-      CREATE TABLE IF NOT EXISTS _meta (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        passwordHash TEXT,
-        verified INTEGER NOT NULL DEFAULT 0,
-        role TEXT NOT NULL DEFAULT 'user',
-        balance REAL NOT NULL DEFAULT 0,
-        joinedAt TEXT NOT NULL,
-        avatar TEXT NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS transactions (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        type TEXT NOT NULL,
-        amount REAL NOT NULL,
-        status TEXT NOT NULL DEFAULT 'pending',
-        description TEXT NOT NULL,
-        date TEXT NOT NULL,
-        FOREIGN KEY (userId) REFERENCES users(id)
-      );
-
-      CREATE TABLE IF NOT EXISTS investment_plans (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        minAmount REAL NOT NULL,
-        maxAmount REAL NOT NULL,
-        returnRate REAL NOT NULL,
-        duration INTEGER NOT NULL,
-        durationUnit TEXT NOT NULL,
-        risk TEXT NOT NULL,
-        description TEXT NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS active_investments (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        planId TEXT NOT NULL,
-        planName TEXT NOT NULL,
-        amount REAL NOT NULL,
-        expectedProfit REAL NOT NULL,
-        startDate TEXT NOT NULL,
-        endDate TEXT NOT NULL,
-        status TEXT NOT NULL DEFAULT 'active',
-        progressPercentage REAL NOT NULL DEFAULT 0,
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (planId) REFERENCES investment_plans(id)
-      );
-
-      CREATE TABLE IF NOT EXISTS wallet_addresses (
-        id TEXT PRIMARY KEY,
-        coin TEXT NOT NULL,
-        network TEXT NOT NULL,
-        address TEXT NOT NULL,
-        assignedTo TEXT,
-        assignedAt TEXT,
-        createdAt TEXT NOT NULL,
-        FOREIGN KEY (assignedTo) REFERENCES users(id)
-      );
-
-      CREATE TABLE IF NOT EXISTS verification_codes (
-        id TEXT PRIMARY KEY,
-        email TEXT NOT NULL,
-        code TEXT NOT NULL,
-        expiresAt TEXT NOT NULL,
-        used INTEGER NOT NULL DEFAULT 0
-      );
-    `)
-
-    // Check if already seeded
-    const res = await pgPool.query("SELECT value FROM _meta WHERE key = 'seeded'")
-    if (res.rows.length === 0) {
-      await seedDatabasePostgres()
-      await pgPool.query("INSERT INTO _meta (key, value) VALUES ('seeded', 'true')")
-    }
-  } catch (error) {
-    console.error("Error initializing PostgreSQL:", error)
-    throw error
+  // If already initializing, wait for it to complete
+  if (pgInitPromise) {
+    await pgInitPromise
+    return
   }
+  
+  if (pgInitialized || !pgPool) return
+  
+  // Create the initialization promise to prevent concurrent initializations
+  pgInitPromise = (async () => {
+    try {
+      // Create tables for PostgreSQL
+      await pgPool.query(`
+        CREATE TABLE IF NOT EXISTS _meta (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS users (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT UNIQUE NOT NULL,
+          passwordHash TEXT,
+          verified INTEGER NOT NULL DEFAULT 0,
+          role TEXT NOT NULL DEFAULT 'user',
+          balance REAL NOT NULL DEFAULT 0,
+          joinedAt TEXT NOT NULL,
+          avatar TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS transactions (
+          id TEXT PRIMARY KEY,
+          userId TEXT NOT NULL,
+          type TEXT NOT NULL,
+          amount REAL NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending',
+          description TEXT NOT NULL,
+          date TEXT NOT NULL,
+          FOREIGN KEY (userId) REFERENCES users(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS investment_plans (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          minAmount REAL NOT NULL,
+          maxAmount REAL NOT NULL,
+          returnRate REAL NOT NULL,
+          duration INTEGER NOT NULL,
+          durationUnit TEXT NOT NULL,
+          risk TEXT NOT NULL,
+          description TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS active_investments (
+          id TEXT PRIMARY KEY,
+          userId TEXT NOT NULL,
+          planId TEXT NOT NULL,
+          planName TEXT NOT NULL,
+          amount REAL NOT NULL,
+          expectedProfit REAL NOT NULL,
+          startDate TEXT NOT NULL,
+          endDate TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'active',
+          progressPercentage REAL NOT NULL DEFAULT 0,
+          FOREIGN KEY (userId) REFERENCES users(id),
+          FOREIGN KEY (planId) REFERENCES investment_plans(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS wallet_addresses (
+          id TEXT PRIMARY KEY,
+          coin TEXT NOT NULL,
+          network TEXT NOT NULL,
+          address TEXT NOT NULL,
+          assignedTo TEXT,
+          assignedAt TEXT,
+          createdAt TEXT NOT NULL,
+          FOREIGN KEY (assignedTo) REFERENCES users(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS verification_codes (
+          id TEXT PRIMARY KEY,
+          email TEXT NOT NULL,
+          code TEXT NOT NULL,
+          expiresAt TEXT NOT NULL,
+          used INTEGER NOT NULL DEFAULT 0
+        );
+      `)
+
+      // Check if already seeded
+      try {
+        const res = await pgPool.query("SELECT value FROM _meta WHERE key = 'seeded'")
+        if (res.rows.length === 0) {
+          await seedDatabasePostgres()
+          await pgPool.query("INSERT INTO _meta (key, value) VALUES ('seeded', 'true')")
+        }
+      } catch (seedError) {
+        console.error("Error during seeding:", seedError)
+        // Continue even if seeding fails (data might already exist)
+      }
+      
+      pgInitialized = true
+    } catch (error) {
+      console.error("Error initializing PostgreSQL:", error)
+      // Reset the promise so we can try again
+      pgInitPromise = null
+      throw error
+    }
+  })()
+  
+  await pgInitPromise
 }
 
 function getDb(): Database.Database {

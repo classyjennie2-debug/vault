@@ -2,7 +2,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { getUserById, getUserByEmail, verifyUserEmail, insertVerificationCode } from "./db"
+import { getUserById, getUserByEmail, verifyUserEmail, insertVerificationCode, consumeVerificationCode } from "./db"
 
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-change-me"
 const TOKEN_NAME = "vault_token"
@@ -90,9 +90,13 @@ export async function sendVerificationCode(email: string) {
 
 // helper to validate code and mark email verified
 export async function verifySignupCode(email: string, code: string) {
-  const { consumeVerificationCode } = await import("./db")
-  const ok = await consumeVerificationCode(code)
-  if (!ok) return false
-  await verifyUserEmail(email)
-  return true
+  try {
+    const ok = await consumeVerificationCode(code)
+    if (!ok) return false
+    await verifyUserEmail(email)
+    return true
+  } catch (error) {
+    console.error("Error verifying signup code:", error)
+    return false
+  }
 }
