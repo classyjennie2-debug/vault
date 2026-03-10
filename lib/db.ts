@@ -3,6 +3,14 @@ import path from "path"
 import bcrypt from "bcrypt"
 import type { ActiveInvestment } from "./types"
 
+// support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)
+let pgPool: any = null
+const DATABASE_URL = process.env.DATABASE_URL
+if (DATABASE_URL) {
+  const { Pool } = require("pg")
+  pgPool = new Pool({ connectionString: DATABASE_URL })
+}
+
 const DB_PATH = path.join(process.cwd(), "vault.db")
 
 let _db: Database.Database | null = null
@@ -99,6 +107,36 @@ function getDb(): Database.Database {
   }
 
   return _db
+}
+
+// utility helpers to abstract sqlite / postgres differences
+function adaptSql(sql: string) {
+  if (!pgPool) return sql
+  let idx = 0
+  return sql.replace(/\?/g, () => "$" + ++idx)
+}
+
+async function run(sql: string, params: any[] = []) {
+  if (pgPool) {
+    return pgPool.query(adaptSql(sql), params)
+  }
+  return getDb().prepare(sql).run(...params)
+}
+
+async function get(sql: string, params: any[] = []) {
+  if (pgPool) {
+    const res = await pgPool.query(adaptSql(sql), params)
+    return res.rows[0]
+  }
+  return getDb().prepare(sql).get(...params)
+}
+
+async function all(sql: string, params: any[] = []) {
+  if (pgPool) {
+    const res = await pgPool.query(adaptSql(sql), params)
+    return res.rows
+  }
+  return getDb().prepare(sql).all(...params)
 }
 
 function seedDatabaseSync(db: Database.Database) {
@@ -205,124 +243,116 @@ export interface UserRow {
   avatar: string
 }
 
-export function getUserByEmail(email: string): UserRow | undefined {
-  const db = getDb()
-  return db
-    .prepare("SELECT * FROM users WHERE email = ?")
-    .get(email) as UserRow | undefined
-}
-
-export function getUserById(id: string): UserRow | undefined {
-  const db = getDb()
-  return db.prepare("SELECT * FROM users WHERE id = ?").get(id) as
+export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
+  return (await get("SELECT * FROM users WHERE email = ?", [email])) as
     | UserRow
     | undefined
 }
 
-export function createUser(user: {
+export async function getUserById(id: string): Promise<UserRow | undefined> {
+  return (await get("SELECT * FROM users WHERE id = ?", [id])) as
+    | UserRow
+    | undefined
+}
+
+export async function createUser(user: {
   id: string
   name: string
   email: string
   passwordHash?: string
   avatar: string
-}): void {
-  const db = getDb()
-  db.prepare(
-    "INSERT INTO users (id, name, email, passwordHash, avatar, joinedAt) VALUES (?, ?, ?, ?, ?, ?)"
-  ).run(
-    user.id,
-    user.name,
-    user.email,
-    user.passwordHash || null,
-    user.avatar,
-    new Date().toISOString()
+}): Promise<void> {
+  await run(
+    "INSERT INTO users (id, name, email, passwordHash, avatar, joinedAt) VALUES (?, ?, ?, ?, ?, ?)",
+    [
+      user.id,
+      user.name,
+      user.email,
+      user.passwordHash || null,
+      user.avatar,
+      new Date().toISOString(),
+    ]
   )
 }
 
-export function verifyUserEmail(email: string): void {
-  const db = getDb()
-  db.prepare("UPDATE users SET verified = 1 WHERE email = ?").run(email)
+export async function verifyUserEmail(email: string): Promise<void> {
+  await run("UPDATE users SET verified = 1 WHERE email = ?", [email])
 }
 
-export function setUserBalance(userId: string, balance: number): void {
-  const db = getDb()
-  db.prepare("UPDATE users SET balance = ? WHERE id = ?").run(balance, userId)
+export async function setUserBalance(
+  userId: string,
+  balance: number
+): Promise<void> {
+  await run("UPDATE users SET balance = ? WHERE id = ?", [balance, userId])
 }
 
-export function setUserPassword(userId: string, passwordHash: string): void {
-  const db = getDb()
-  db.prepare("UPDATE users SET passwordHash = ? WHERE id = ?").run(passwordHash, userId)
+export async function setUserPassword(
+  userId: string,
+  passwordHash: string
+): Promise<void> {
+  await run("UPDATE users SET passwordHash = ? WHERE id = ?", [
+    passwordHash,
+    userId,
+  ])
 }
 
-export function insertVerificationCode(codeObj: {
+export async function insertVerificationCode(codeObj: {
   id: string
   email: string
   code: string
   expiresAt: string
-}): void {
-  const db = getDb()
-  db.prepare(
-    "INSERT INTO verification_codes (id, email, code, expiresAt) VALUES (?, ?, ?, ?)"
-  ).run(codeObj.id, codeObj.email, codeObj.code, codeObj.expiresAt)
+}): Promise<void> {
+  await run(
+    "INSERT INTO verification_codes (id, email, code, expiresAt) VALUES (?, ?, ?, ?)",
+    [codeObj.id, codeObj.email, codeObj.code, codeObj.expiresAt]
+  )
 }
 
-export function consumeVerificationCode(code: string): boolean {
-  const db = getDb()
-  const row = db
-    .prepare(
-      "SELECT * FROM verification_codes WHERE code = ? AND used = 0 AND expiresAt > ?"
-    )
-    .get(code, new Date().toISOString())
+export async function consumeVerificationCode(code: string): Promise<boolean> {
+  const row = await get(
+    "SELECT * FROM verification_codes WHERE code = ? AND used = 0 AND expiresAt > ?",
+    [code, new Date().toISOString()]
+  )
   if (!row) return false
-  db.prepare("UPDATE verification_codes SET used = 1 WHERE code = ?").run(code)
+  await run("UPDATE verification_codes SET used = 1 WHERE code = ?", [code])
   return true
 }
 
-export function getInvestmentPlansFromDb() {
-  const db = getDb()
-  return db.prepare("SELECT * FROM investment_plans").all()
+export async function getInvestmentPlansFromDb() {
+  return all("SELECT * FROM investment_plans")
 }
 
-export function getUserTransactions(userId: string) {
-  const db = getDb()
-  return db.prepare("SELECT * FROM transactions WHERE userId = ?").all(userId)
+export async function getUserTransactions(userId: string) {
+  return all("SELECT * FROM transactions WHERE userId = ?", [userId])
 }
 
-export function getRecentActivities(userId: string) {
-  const db = getDb()
-  return db
-    .prepare(
-      "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 5"
-    )
-    .all(userId)
+export async function getRecentActivities(userId: string) {
+  return all(
+    "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 5",
+    [userId]
+  )
 }
-export function getUserStats(userId: string) {
-  const db = getDb()
-  const totalInvestedRow = db
-    .prepare(
-      "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'"
-    )
-    .get(userId)
-  const totalProfitRow = db
-    .prepare(
-      "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'"
-    )
-    .get(userId)
-  const pendingDepositsRow = db
-    .prepare(
-      "SELECT COUNT(*) as cnt FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'pending'"
-    )
-    .get(userId)
-  const totalWithdrawnRow = db
-    .prepare(
-      "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'withdrawal' AND status = 'approved'"
-    )
-    .get(userId)
-  const activeCountRow = db
-    .prepare(
-      "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = 'active'"
-    )
-    .get(userId)
+export async function getUserStats(userId: string) {
+  const totalInvestedRow: any = await get(
+    "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'",
+    [userId]
+  )
+  const totalProfitRow: any = await get(
+    "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'",
+    [userId]
+  )
+  const pendingDepositsRow: any = await get(
+    "SELECT COUNT(*) as cnt FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'pending'",
+    [userId]
+  )
+  const totalWithdrawnRow: any = await get(
+    "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'withdrawal' AND status = 'approved'",
+    [userId]
+  )
+  const activeCountRow: any = await get(
+    "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = 'active'",
+    [userId]
+  )
   return {
     totalInvested: totalInvestedRow?.sum || 0,
     totalProfit: totalProfitRow?.sum || 0,
@@ -332,25 +362,23 @@ export function getUserStats(userId: string) {
   }
 }
 
-export function getUserActiveInvestments(userId: string): ActiveInvestment[] {
-  const db = getDb()
-  return db
-    .prepare("SELECT * FROM active_investments WHERE userId = ? AND status = 'active'")
-    .all(userId) as ActiveInvestment[]
+export async function getUserActiveInvestments(userId: string): Promise<ActiveInvestment[]> {
+  return (await all(
+    "SELECT * FROM active_investments WHERE userId = ? AND status = 'active'",
+    [userId]
+  )) as ActiveInvestment[]
 }
 
-export function generatePortfolioData(userId: string) {
-  const db = getDb()
-  const user = getUserById(userId)
-  
+export async function generatePortfolioData(userId: string) {
+  const user = await getUserById(userId)
+
   if (!user) return []
 
   // Get user's investment transactions
-  const txs = db
-    .prepare(
-      "SELECT * FROM transactions WHERE userId = ? ORDER BY date ASC"
-    )
-    .all(userId) as any[]
+  const txs = (await all(
+    "SELECT * FROM transactions WHERE userId = ? ORDER BY date ASC",
+    [userId]
+  )) as any[]
 
   const currentBalance = user.balance
   const months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
@@ -371,7 +399,7 @@ export function generatePortfolioData(userId: string) {
   return data
 }
 
-export function createTransaction(transaction: {
+export async function createTransaction(transaction: {
   userId: string
   type: "deposit" | "withdrawal" | "investment" | "return"
   amount: number
@@ -381,21 +409,20 @@ export function createTransaction(transaction: {
   bankAccount?: string
   cryptoAddress?: string
 }) {
-  const db = getDb()
   const id = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   const description = transaction.description || `${transaction.type} of $${transaction.amount.toLocaleString()}`
 
-  db.prepare(`
-    INSERT INTO transactions (id, userId, type, amount, status, description, date)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    id,
-    transaction.userId,
-    transaction.type,
-    transaction.amount,
-    transaction.status || "pending",
-    description,
-    new Date().toISOString()
+  await run(
+    `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      transaction.userId,
+      transaction.type,
+      transaction.amount,
+      transaction.status || "pending",
+      description,
+      new Date().toISOString(),
+    ]
   )
 
   return {
@@ -409,11 +436,10 @@ export function createTransaction(transaction: {
   }
 }
 
-export function updateTransactionStatus(transactionId: string, status: "approved" | "rejected") {
-  const db = getDb()
-  db.prepare(`
+export async function updateTransactionStatus(transactionId: string, status: "approved" | "rejected") {
+  await run(`
     UPDATE transactions SET status = ? WHERE id = ?
-  `).run(status, transactionId)
+  `, [status, transactionId])
 }
 
 export function updateUserSettings(userId: string, settings: any) {

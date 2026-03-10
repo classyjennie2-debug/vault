@@ -44,7 +44,7 @@ export async function getCurrentUser() {
   if (!token) return null
   const payload = verifyToken(token)
   if (!payload) return null
-  const user = getUserById(payload.id)
+  const user = await getUserById(payload.id)
   return user ? { ...user, role: payload.role } : null
 }
 
@@ -54,7 +54,7 @@ export async function requireAuth(redirectTo = "/login") {
   if (!token) redirect(redirectTo)
   const payload = verifyToken(token)
   if (!payload) redirect(redirectTo)
-  const user = getUserById(payload.id)
+  const user = await getUserById(payload.id)
   if (!user) redirect(redirectTo)
   return user
 }
@@ -65,7 +65,7 @@ export async function verifyAdminAuth(request: Request) {
   if (!token) return null
   const payload = verifyToken(token)
   if (!payload || payload.role !== "admin") return null
-  return getUserById(payload.id)
+  return await getUserById(payload.id)
 }
 
 
@@ -75,7 +75,7 @@ export async function sendVerificationCode(email: string) {
   const expiresAt = new Date(Date.now() + 1000 * 60 * 10).toISOString()
   // store in DB
   const { v4: uuidv4 } = await import("uuid")
-  insertVerificationCode({
+  await insertVerificationCode({
     id: uuidv4(),
     email,
     code,
@@ -91,8 +91,8 @@ export async function sendVerificationCode(email: string) {
 // helper to validate code and mark email verified
 export async function verifySignupCode(email: string, code: string) {
   const { consumeVerificationCode } = await import("./db")
-  const ok = consumeVerificationCode(code)
+  const ok = await consumeVerificationCode(code)
   if (!ok) return false
-  verifyUserEmail(email)
+  await verifyUserEmail(email)
   return true
 }

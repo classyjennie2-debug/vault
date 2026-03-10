@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   if (!name || !email || !password) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 })
   }
-  const existing = getUserByEmail(email)
+  const existing = await getUserByEmail(email)
   if (existing) {
     return NextResponse.json({ error: "Email already registered" }, { status: 409 })
   }
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     .join("")
     .toUpperCase()
 
-  createUser({ id, name, email, passwordHash, avatar })
+  await createUser({ id, name, email, passwordHash, avatar })
 
   // send verification code to email
   await sendVerificationCode(email)

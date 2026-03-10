@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
-    const user = getUserByEmail(email)
+    const user = await getUserByEmail(email)
     if (!user) {
       // Don't reveal if email exists or not for security
       return NextResponse.json({

@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
     }
 
-    const userData = getUserById(user.id)
+    const userData = await getUserById(user.id)
     if (!userData) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create withdrawal transaction
-    const transaction = createTransaction({
+    const transaction = await createTransaction({
       userId: user.id,
       type: "withdrawal",
       amount,

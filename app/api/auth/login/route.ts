@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   if (!email || !password) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 })
   }
-  const user = getUserByEmail(email)
+  const user = await getUserByEmail(email)
   if (!user) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
   }

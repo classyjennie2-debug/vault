@@ -6,8 +6,8 @@ import { getInvestmentPlansFromDb, getUserActiveInvestments } from "@/lib/db"
 
 export default async function InvestmentsPage() {
   const user = await requireAuth()
-  const plans = getInvestmentPlansFromDb()
-  const investments = getUserActiveInvestments(user.id)
+  const plans = await getInvestmentPlansFromDb()
+  const investments = await getUserActiveInvestments(user.id)
 
   return (
     <div className="flex flex-col gap-8">

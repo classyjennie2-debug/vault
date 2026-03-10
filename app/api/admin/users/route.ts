@@ -17,12 +17,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 })
     }
 
-    const targetUser = getUserById(userId)
+    const targetUser = await getUserById(userId)
     if (!targetUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    setUserBalance(userId, balance)
+    await setUserBalance(userId, balance)
 
     return NextResponse.json({ message: "User balance updated successfully" })
   } catch (error) {

@@ -10,8 +10,8 @@ import { getUserStats, generatePortfolioData } from "@/lib/db"
 export default async function DashboardPage() {
   // server component can fetch user and stats
   const user = await requireAuth()
-  const stats = getUserStats(user.id)
-  const portfolioData = generatePortfolioData(user.id)
+  const stats = await getUserStats(user.id)
+  const portfolioData = await generatePortfolioData(user.id)
 
   return (
     <div className="flex flex-col gap-6">

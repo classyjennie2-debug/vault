@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   }
 
   // automatically log user in
-  const user = getUserByEmail(email)
+  const user = await getUserByEmail(email)
   if (user) {
     const token = issueToken({ id: user.id, email: user.email, role: user.role })
     const cookieStore = await cookies()
