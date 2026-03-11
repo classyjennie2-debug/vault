@@ -2,7 +2,7 @@ import Database from "better-sqlite3"
 import path from "path"
 import bcrypt from "bcrypt"
 import type { ActiveInvestment, InvestmentPlan } from "./types"
-// @ts-ignore - pg types are optional, using fallback types
+// @ts-expect-error - pg types are optional, using fallback types
 import { Pool } from "pg"
 
 // support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)

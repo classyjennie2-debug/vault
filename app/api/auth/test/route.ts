@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getUserByEmail } from "@/lib/db"
-import { hashPassword, verifyPassword } from "@/lib/auth"
+import { verifyPassword } from "@/lib/auth"
 
 /**
  * Test endpoint for debugging login issues
