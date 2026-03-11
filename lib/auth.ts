@@ -10,6 +10,11 @@ const TOKEN_NAME = "vault_token"
 
 function getJWTSecret(): string {
   if (!JWT_SECRET) {
+    if (process.env.NODE_ENV === "development") {
+      // fall back to a default in development so the server won't crash
+      console.warn("WARNING: JWT_SECRET not set, using fallback development secret")
+      return "development-secret"
+    }
     throw new Error("JWT_SECRET environment variable is required")
   }
   return JWT_SECRET

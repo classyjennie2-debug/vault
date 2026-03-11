@@ -29,6 +29,9 @@ export function resolveSlot(
 ): React.ElementType {
   if (!asChild) return defaultTag
 
+  // determine if the direct child is a React fragment; if it is we can't use
+  // the slot because it will try to spread props onto the fragment.  we also
+  // warn so developers know they should avoid this pattern.
   const child = React.Children.only(children as React.ReactNode)
   if (
     React.isValidElement(child) &&
@@ -41,5 +44,31 @@ export function resolveSlot(
     return defaultTag
   }
 
-  return SlotComponent
+  // wrap the supplied SlotComponent in a higher‑order component that will strip
+  // `data-slot` (and any other props that are problematic for fragments) when
+  // the slot’s *rendered* child is a fragment.  This protects against cases
+  // where the direct child is a custom component which itself renders a
+  // fragment (e.g. Next.js <Link> sometimes does this), which would otherwise
+  // reintroduce the same runtime warning.
+  const WrappedSlot: React.FC<any> = (props) => {
+    // look through the immediate children to see if any is a fragment
+    const hasFragment = React.Children.toArray(props.children).some(
+      (c) => React.isValidElement(c) && c.type === React.Fragment
+    )
+
+    if (hasFragment) {
+      // drop the offending props; `data-slot` is the common culprit but we
+      // remove anything starting with "data-" to be safe.
+      const cleaned: Record<string, unknown> = {}
+      for (const key of Object.keys(props)) {
+        if (key.startsWith('data-')) continue
+        cleaned[key] = props[key]
+      }
+      return React.createElement(SlotComponent, cleaned, props.children)
+    }
+
+    return React.createElement(SlotComponent, props)
+  }
+
+  return WrappedSlot
 }
