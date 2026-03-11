@@ -108,15 +108,15 @@ export function RecentActivities() {
                 </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-card-foreground group-hover:text-accent transition-colors">
-                  {tx.description}
+                  {tx.title}
                 </p>
                 <p className="text-xs text-muted-foreground/70 mt-1 line-clamp-2">
-                  Amount: ${tx.amount.toLocaleString()}
+                  {tx.message}
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1 flex-shrink-0">
                 <p className="text-xs font-semibold text-muted-foreground/60 whitespace-nowrap group-hover:text-muted-foreground transition-colors">
-                  {formatDate(tx.date)}
+                  {formatDate(tx.timestamp)}
                 </p>
               </div>
             </div>

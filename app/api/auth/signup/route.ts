@@ -20,10 +20,14 @@ export async function POST(request: Request) {
     .join("")
     .toUpperCase()
 
-  await createUser({ id, name, email, passwordHash, avatar })
+  // In development, auto-verify. In production, require email verification
+  const verified = process.env.NODE_ENV === "development"
+  await createUser({ id, name, email, passwordHash, avatar, verified })
 
-  // send verification code to email
-  await sendVerificationCode(email)
+  // send verification code to email (unless already verified in dev)
+  if (!verified) {
+    await sendVerificationCode(email)
+  }
 
   return NextResponse.json({ success: true })
 }

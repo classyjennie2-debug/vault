@@ -2,6 +2,7 @@ import Database from "better-sqlite3"
 import path from "path"
 import bcrypt from "bcrypt"
 import type { ActiveInvestment, InvestmentPlan } from "./types"
+// @ts-ignore - pg types are optional, using fallback types
 import { Pool } from "pg"
 
 // support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)
@@ -394,6 +395,8 @@ async function seedDatabasePostgres() {
   // Hash password synchronously using bcrypt
   const passwordHash = bcrypt.hashSync("password123", 10)
 
+  if (!pgPool) return
+
   const pool = pgPool
 
   // ── Users ───────────────────────────────────────────────────────────
@@ -534,9 +537,10 @@ export async function createUser(user: {
   email: string
   passwordHash?: string
   avatar: string
+  verified?: boolean
 }): Promise<void> {
   await run(
-    "INSERT INTO users (id, name, email, passwordHash, avatar, joinedAt) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO users (id, name, email, passwordHash, avatar, joinedAt, verified) VALUES (?, ?, ?, ?, ?, ?, ?)",
     [
       user.id,
       user.name,
@@ -544,6 +548,7 @@ export async function createUser(user: {
       user.passwordHash || null,
       user.avatar,
       new Date().toISOString(),
+      user.verified ? 1 : 0,
     ]
   )
 }
