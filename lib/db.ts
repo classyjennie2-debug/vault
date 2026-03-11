@@ -517,13 +517,13 @@ export interface UserRow {
 }
 
 export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
-  return (await get("SELECT * FROM users WHERE email = ?", [email])) as
+  return (await get("SELECT id, name, email, passwordhash AS \"passwordHash\", verified, role, balance, joinedat AS \"joinedAt\", avatar FROM users WHERE email = ?", [email])) as
     | UserRow
     | undefined
 }
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
-  return (await get("SELECT * FROM users WHERE id = ?", [id])) as
+  return (await get("SELECT id, name, email, passwordhash AS \"passwordHash\", verified, role, balance, joinedat AS \"joinedAt\", avatar FROM users WHERE id = ?", [id])) as
     | UserRow
     | undefined
 }

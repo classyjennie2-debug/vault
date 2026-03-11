@@ -116,16 +116,39 @@ export async function sendVerificationCode(email: string) {
     expiresAt,
   })
 
-  // send email - placeholder using console
-  // Log verification code in development only
-  if (process.env.NODE_ENV !== "production") {
-    // Log verification code in development only
-    if (process.env.NODE_ENV === "development") {
-      console.log(`Verification code for ${email}: ${code}`)
-    }
+  // send email using nodemailer
+  const nodemailer = await import("nodemailer")
+
+  const transporter = nodemailer.createTransporter({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT || "587"),
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  })
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Your Verification Code",
+    text: `Your verification code is: ${code}. It expires in 10 minutes.`,
+    html: `<p>Your verification code is: <strong>${code}</strong></p><p>It expires in 10 minutes.</p>`,
   }
 
-  // TODO: integrate actual email delivery (nodemailer or service)
+  try {
+    await transporter.sendMail(mailOptions)
+    console.log(`Verification email sent to ${email}`)
+  } catch (error) {
+    console.error("Error sending verification email:", error)
+    throw new Error("Failed to send verification email")
+  }
+
+  // Log verification code in development only
+  if (process.env.NODE_ENV === "development") {
+    console.log(`Verification code for ${email}: ${code}`)
+  }
 }
 
 // helper to validate code and mark email verified

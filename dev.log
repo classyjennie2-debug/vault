@@ -1,0 +1,32 @@
+
+> my-project@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.0.2.65:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 2.4s
+⚠ Cross origin request detected from 127.0.0.1 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+○ Compiling /login ...
+ GET /login 200 in 5.3s (compile: 5.1s, render: 243ms)
+ GET /api/investment-plans 200 in 1148ms (compile: 1022ms, render: 126ms)
+ GET /api/wallet-addresses 200 in 300ms (compile: 294ms, render: 6ms)
+ POST /api/auth/login 200 in 590ms (compile: 508ms, render: 82ms)
+  Reload env: .env.local
+ GET /login 200 in 110ms (compile: 73ms, render: 37ms)
+  Reload env: .env.local
+ GET /login 200 in 303ms (compile: 193ms, render: 110ms)
+  Reload env: .env.local
+ GET /login 200 in 120ms (compile: 86ms, render: 34ms)
+ GET /login 200 in 26ms (compile: 3ms, render: 23ms)
+  Reload env: .env.local
+ GET /login 200 in 63ms (compile: 37ms, render: 25ms)
+ POST /api/auth/login 401 in 3.3s (compile: 2.6s, render: 748ms)
+ POST /api/auth/login 200 in 761ms (compile: 67ms, render: 695ms)
+ POST /api/auth/login 200 in 136ms (compile: 3ms, render: 133ms)
+ GET / 200 in 337ms (compile: 111ms, render: 226ms)
+ HEAD / 200 in 352ms (compile: 119ms, render: 233ms)
