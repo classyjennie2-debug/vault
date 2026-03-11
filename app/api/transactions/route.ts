@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth"
+import { requireAuthAPI } from "@/lib/auth"
 import { getUserTransactions } from "@/lib/db"
 
 export async function GET() {
   try {
-    const user = await requireAuth()
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
     const transactions = await getUserTransactions(user.id)
     return NextResponse.json(transactions)
   } catch (error) {

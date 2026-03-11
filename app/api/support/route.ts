@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth"
+import { requireAuthAPI } from "@/lib/auth"
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAuth()
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
     const { email, subject, message } = await request.json()
 
     if (!email || !subject || !message) {

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth"
+import { requireAuthAPI } from "@/lib/auth"
 import { updateUserSettings } from "@/lib/db"
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAuth()
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
     const settings = await request.json()
 
     // Update user settings (this would typically update the database)

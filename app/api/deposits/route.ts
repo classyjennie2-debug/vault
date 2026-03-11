@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth"
+import { requireAuthAPI } from "@/lib/auth"
 import { createTransaction, run } from "@/lib/db"
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await requireAuth()
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
     const body = await req.json()
     const { coin, network, amount, coinAmount, walletId } = body as { 
       coin: string; 

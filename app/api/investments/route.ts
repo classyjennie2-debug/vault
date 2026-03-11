@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { v4 as uuidv4 } from "uuid"
-import { requireAuth } from "@/lib/auth"
+import { requireAuthAPI } from "@/lib/auth"
 import {
   getInvestmentPlansFromDb,
   run,
@@ -9,7 +9,8 @@ import {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await requireAuth()
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
     const body = await req.json()
     const { planId, amount } = body as { planId: string; amount: number }
 

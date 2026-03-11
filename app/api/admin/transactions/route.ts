@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth"
+import { requireAuthAPI } from "@/lib/auth"
 import { updateTransactionStatus, setUserBalance, getUserById, all, run } from "@/lib/db"
 import type { Transaction } from "@/lib/types"
 
 export async function GET() {
   try {
-    const user = await requireAuth()
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
     if (user.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
@@ -20,7 +21,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAuth()
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
 
     // Check if user is admin
     if (user.role !== "admin") {

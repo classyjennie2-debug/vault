@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server"
-import { requireAuth } from "@/lib/auth"
+import { requireAuthAPI } from "@/lib/auth"
 import { getUserNotifications, markNotificationAsRead } from "@/lib/db"
 import type { Notification } from "@/lib/types"
 
 export async function GET() {
   try {
-    const user = await requireAuth()
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
     const notifications = await getUserNotifications(user.id)
     return NextResponse.json(notifications)
   } catch (error) {
@@ -16,7 +17,8 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
-    const user = await requireAuth()
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
     const { notificationId } = await request.json()
 
     if (!notificationId) {
