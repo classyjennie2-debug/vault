@@ -1,7 +1,7 @@
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn } from '@/lib/utils'
+import { cn, resolveSlot } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 
 const buttonGroupVariants = cva(
@@ -44,7 +44,7 @@ function ButtonGroupText({
 }: React.ComponentProps<'div'> & {
   asChild?: boolean
 }) {
-  const Comp = asChild ? Slot : 'div'
+  const Comp = resolveSlot(asChild, props.children, 'div', Slot)
 
   return (
     <Comp

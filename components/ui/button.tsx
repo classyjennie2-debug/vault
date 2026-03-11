@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn } from '@/lib/utils'
+import { cn, resolveSlot } from '@/lib/utils'
 import { Icon, type IconName } from '@/components/ui/icon'
 
 const buttonVariants = cva(
@@ -66,7 +66,7 @@ function Button({
   animateEntry = false,
   ...props
 }: ButtonProps) {
-  const Comp = asChild ? Slot : 'button'
+  const Comp = resolveSlot(asChild, props.children, 'button', Slot)
 
   const content = (
     <>

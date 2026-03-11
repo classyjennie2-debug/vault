@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { Slot } from '@radix-ui/react-slot'
+import { resolveSlot } from '@/lib/utils'
 import { cva, VariantProps } from 'class-variance-authority'
 import { PanelLeftIcon } from 'lucide-react'
 
@@ -398,7 +399,7 @@ function SidebarGroupLabel({
   asChild = false,
   ...props
 }: React.ComponentProps<'div'> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : 'div'
+  const Comp = resolveSlot(asChild, props.children, 'div', Slot)
 
   return (
     <Comp
@@ -419,7 +420,7 @@ function SidebarGroupAction({
   asChild = false,
   ...props
 }: React.ComponentProps<'button'> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : 'button'
+  const Comp = resolveSlot(asChild, props.children, 'button', Slot)
 
   return (
     <Comp
@@ -508,7 +509,7 @@ function SidebarMenuButton({
   isActive?: boolean
   tooltip?: string | React.ComponentProps<typeof TooltipContent>
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
-  const Comp = asChild ? Slot : 'button'
+  const Comp = resolveSlot(asChild, props.children, 'button', Slot)
   const { isMobile, state } = useSidebar()
 
   const button = (

@@ -13,7 +13,7 @@ import {
   type FieldValues,
 } from 'react-hook-form'
 
-import { cn } from '@/lib/utils'
+import { cn, resolveSlot } from '@/lib/utils'
 import { Label } from '@/components/ui/label'
 
 const Form = FormProvider
@@ -107,8 +107,10 @@ function FormLabel({
 function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
+  const Comp = resolveSlot(true, props.children, 'div', Slot)
+
   return (
-    <Slot
+    <Comp
       data-slot="form-control"
       id={formItemId}
       aria-describedby={
