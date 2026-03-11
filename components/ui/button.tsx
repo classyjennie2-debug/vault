@@ -3,6 +3,7 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
+import { Icon, type IconName } from '@/components/ui/icon'
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
@@ -36,24 +37,55 @@ const buttonVariants = cva(
   },
 )
 
+interface ButtonProps
+  extends React.ComponentProps<'button'>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  /**
+   * pass a React node to show an icon at the start of the button
+   */
+  icon?: React.ReactNode
+  /**
+   * convenience prop; uses the shared Icon component by name
+   */
+  iconName?: IconName
+  /**
+   * automatically add a simple fade-in/slide-up animation when the button
+   * mounts.  Useful for modals, toasts, etc.
+   */
+  animateEntry?: boolean
+}
+
 function Button({
   className,
   variant,
   size,
   asChild = false,
+  icon,
+  iconName,
+  animateEntry = false,
   ...props
-}: React.ComponentProps<'button'> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
+}: ButtonProps) {
   const Comp = asChild ? Slot : 'button'
+
+  const content = (
+    <>
+      {icon || (iconName && <Icon name={iconName} className="size-4" />)}
+      {props.children}
+    </>
+  )
 
   return (
     <Comp
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        animateEntry && 'animate-fade-in'
+      )}
       {...props}
-    />
+    >
+      {content}
+    </Comp>
   )
 }
 
