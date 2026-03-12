@@ -81,22 +81,22 @@ export default function TransactionsPage() {
     .reduce((sum, t) => sum + (t.amount || 0), 0)
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           Transactions
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs sm:text-sm text-muted-foreground">
           View and track all your account activity.
         </p>
       </div>
 
       {/* Summary cards */}
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-2 sm:gap-3 md:gap-4 sm:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
-              <CardContent className="pt-6">
+              <CardContent className="pt-4 sm:pt-6">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-secondary animate-pulse" />
                   <div className="space-y-2">
@@ -109,7 +109,7 @@ export default function TransactionsPage() {
           ))}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-2 sm:gap-3 md:gap-4 sm:grid-cols-3">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">

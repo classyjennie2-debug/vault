@@ -115,7 +115,7 @@ export default function WithdrawPage() {
 
   if (submitted) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard">
@@ -124,14 +124,14 @@ export default function WithdrawPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
               Withdraw Crypto
             </h1>
           </div>
         </div>
 
         <Card className="border-green-500/20 bg-green-50/50 dark:bg-green-950/20">
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center gap-4">
               <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400 flex-shrink-0" />
               <div>
@@ -151,7 +151,7 @@ export default function WithdrawPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4 md:gap-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -161,10 +161,10 @@ export default function WithdrawPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Withdraw Crypto
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Select a coin, enter your address, and amount to withdraw.
           </p>
         </div>
@@ -182,8 +182,8 @@ export default function WithdrawPage() {
 
       {/* Step 1 - Select Coin */}
       <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base">
+        <CardHeader className="pb-2 sm:pb-3 md:pb-4">
+          <CardTitle className="text-sm sm:text-base">
             <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
               1
             </span>
@@ -194,7 +194,7 @@ export default function WithdrawPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {coins.map((coin) => {
               const details = coinDetails[coin]
               const isSelected = selectedCoin === coin
@@ -203,20 +203,20 @@ export default function WithdrawPage() {
                   key={coin}
                   type="button"
                   onClick={() => handleCoinSelect(coin)}
-                  className={`flex flex-col items-center gap-2.5 rounded-xl border-2 p-4 transition-all ${
+                  className={`flex flex-col items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border-2 p-2 sm:p-3 md:p-4 transition-all ${
                     isSelected
                       ? "border-accent bg-accent/5 shadow-sm"
                       : "border-border bg-card hover:border-muted-foreground/30 hover:bg-secondary/50"
                   }`}
                 >
-                  <CoinIcon coin={coin} size={36} />
+                  <CoinIcon coin={coin} size={32} />
                   <div className="text-center">
                     <p
-                      className={`text-sm font-semibold ${isSelected ? "text-foreground" : "text-card-foreground"}`}
+                      className={`text-xs sm:text-sm font-semibold ${isSelected ? "text-foreground" : "text-card-foreground"}`}
                     >
                       {coin}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[9px] sm:text-[11px] text-muted-foreground">
                       {details.name}
                     </p>
                   </div>
@@ -230,8 +230,8 @@ export default function WithdrawPage() {
       {/* Step 2 - Enter Details */}
       {selectedCoin && (
         <Card className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base">
+          <CardHeader className="pb-2 sm:pb-3 md:pb-4">
+            <CardTitle className="text-sm sm:text-base">
               <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                 2
               </span>

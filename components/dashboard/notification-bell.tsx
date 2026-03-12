@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Zap, AlertCircle, CheckCircle, Info } from "lucide-react"
+import { Bell, Zap, AlertCircle, CheckCircle, Info, X } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -156,11 +156,20 @@ export function NotificationBell() {
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:w-[420px] flex flex-col p-0">
-        <SheetHeader className="border-b border-border/30 px-6 py-4 sticky top-0 z-10 bg-gradient-to-b from-card to-card/50 backdrop-blur-sm">
+        <SheetHeader className="border-b border-border/30 px-6 py-4 sticky top-0 z-10 bg-gradient-to-b from-card to-card/50 backdrop-blur-sm flex flex-row items-center justify-between">
           <SheetTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5 text-accent" />
             Notifications
           </SheetTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 -mr-2"
+            onClick={() => setIsOpen(false)}
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close notifications</span>
+          </Button>
         </SheetHeader>
 
         <Tabs defaultValue="unread" className="flex-1 flex flex-col">

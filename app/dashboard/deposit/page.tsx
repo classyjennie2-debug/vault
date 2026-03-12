@@ -190,7 +190,7 @@ export default function DepositPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard">
@@ -199,10 +199,10 @@ export default function DepositPage() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Deposit Crypto
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Select a coin, network, and amount to generate your deposit address.
           </p>
         </div>
@@ -210,8 +210,8 @@ export default function DepositPage() {
 
       {/* Step 1 - Select Coin */}
       <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="text-base">
+        <CardHeader className="pb-2 sm:pb-3 md:pb-4">
+          <CardTitle className="text-sm sm:text-base">
             <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
               1
             </span>
@@ -222,7 +222,7 @@ export default function DepositPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {coins.map((coin) => {
               const details = coinDetails[coin]
               const isSelected = selectedCoin === coin
@@ -230,20 +230,20 @@ export default function DepositPage() {
                 <button
                   key={coin}
                   onClick={() => handleCoinSelect(coin)}
-                  className={`flex flex-col items-center gap-2.5 rounded-xl border-2 p-4 transition-all ${
+                  className={`flex flex-col items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border-2 p-2 sm:p-3 md:p-4 transition-all ${
                     isSelected
                       ? "border-accent bg-accent/5 shadow-sm"
                       : "border-border bg-card hover:border-muted-foreground/30 hover:bg-secondary/50"
                   }`}
                 >
-                  <CoinIcon coin={coin} size={36} />
+                  <CoinIcon coin={coin} size={32} />
                   <div className="text-center">
                     <p
-                      className={`text-sm font-semibold ${isSelected ? "text-foreground" : "text-card-foreground"}`}
+                      className={`text-xs sm:text-sm font-semibold ${isSelected ? "text-foreground" : "text-card-foreground"}`}
                     >
                       {coin}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[9px] sm:text-[11px] text-muted-foreground">
                       {details.name}
                     </p>
                   </div>

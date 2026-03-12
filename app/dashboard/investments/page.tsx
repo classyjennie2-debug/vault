@@ -10,7 +10,7 @@ export default async function InvestmentsPage() {
     const investments = await getUserActiveInvestmentsWithProfit(user.id)
 
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 md:py-8">
         <UnifiedInvestmentDashboard plans={plans} investments={investments} />
       </div>
     )
