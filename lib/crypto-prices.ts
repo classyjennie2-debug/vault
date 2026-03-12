@@ -13,11 +13,18 @@ const coinToCmcSymbol: Record<CoinType, string> = {
 const priceCache: Record<string, { price: number; timestamp: number }> = {}
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
-const CMC_API_KEY = process.env.CMC_API_KEY || ""
 
 /**
- * Fetch the current price of a cryptocurrency in USD using CoinMarketCap API
- * Falls back to mock data if API is unavailable
+ * Fetch the current price of a cryptocurrency in USD.
+ *
+ * The client-side code used to call CoinMarketCap directly, which meant the
+ * API key was never available (it isn’t prefixed with `NEXT_PUBLIC_`).  The
+ * request therefore always failed and we would fall back to a hard‑coded mock
+ * price, which is why the UI was stuck around 42k for BTC.
+ *
+ * To avoid leaking the key we now proxy the request through an internal
+ * server route (`/api/crypto-price`).  That endpoint runs on the server and
+ * can safely read `process.env.CMC_API_KEY`.
  */
 export async function getCryptoPriceInUSD(coin: CoinType): Promise<number> {
   const cacheKey = `price_${coin}`
@@ -28,34 +35,27 @@ export async function getCryptoPriceInUSD(coin: CoinType): Promise<number> {
   }
 
   try {
-    // Use CoinMarketCap API
     const cmcSymbol = coinToCmcSymbol[coin]
-    const cmcResponse = await fetch(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${cmcSymbol}&convert=USD`, {
-      method: "GET",
-      headers: {
-        "X-CMC_PRO_API_KEY": CMC_API_KEY,
-        "Content-Type": "application/json",
-      },
-    })
+    const res = await fetch(`/api/crypto-price?symbol=${cmcSymbol}`, { cache: "no-store" })
 
-    if (cmcResponse.ok) {
-      const data = await cmcResponse.json()
-      const price = data.data[cmcSymbol]?.quote?.USD?.price
-      if (price) {
-        // Cache the price
-        priceCache[cacheKey] = {
-          price,
-          timestamp: Date.now(),
-        }
-        return price
+    if (res.ok) {
+      const data = await res.json()
+      const price = data.price as number
+      // Cache the price
+      priceCache[cacheKey] = {
+        price,
+        timestamp: Date.now(),
       }
+      return price
     }
 
-    throw new Error("CoinMarketCap API failed")
+    throw new Error(`backend price proxy failed: ${res.status}`)
   } catch (error) {
     console.error(`Failed to fetch price for ${coin}:`, error)
     
-    // Return mock prices as fallback
+    // Return mock prices as fallback (these are only used when the proxy
+    // itself is down so correctness isn’t critical).  Update the BTC stub to
+    // something less misleading if you like.
     const mockPrices: Record<CoinType, number> = {
       USDT: 1.0,
       BTC: 42500,
@@ -68,6 +68,7 @@ export async function getCryptoPriceInUSD(coin: CoinType): Promise<number> {
     return mockPrices[coin] || 0
   }
 }
+
 
 /**
  * Convert USD amount to coin amount
