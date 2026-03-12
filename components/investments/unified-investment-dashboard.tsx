@@ -31,11 +31,14 @@ import {
 import { TrustBadges, ComplianceFooter } from "@/components/ui/trust-badges"
 
 interface UnifiedInvestmentDashboardProps {
-  plans: InvestmentPlan[]
-  investments: ActiveInvestment[]
+  plans: InvestmentPlan[] | null | undefined
+  investments: ActiveInvestment[] | null | undefined
 }
 
-export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvestmentDashboardProps) {
+export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: UnifiedInvestmentDashboardProps) {
+  const safePlans = Array.isArray(plans) ? plans : []
+  const safeInvestments = Array.isArray(investments) ? investments : []
+  
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("plans")
   const router = useRouter()
@@ -85,8 +88,8 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
 
   const isPopular = (index: number) => index === 1
 
-  const totalInvested = investments.reduce((sum, inv) => sum + inv.amount, 0)
-  const totalReturns = investments.reduce((sum, inv) => sum + (inv.expectedProfit || 0), 0)
+  const totalInvested = safeInvestments.reduce((sum, inv) => sum + (inv?.amount || 0), 0)
+  const totalReturns = safeInvestments.reduce((sum, inv) => sum + (inv?.expectedProfit || 0), 0)
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -125,7 +128,7 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
             <CardContent className="p-6 text-center">
               <Target className="h-8 w-8 text-purple-600 mx-auto mb-2" />
               <p className="text-2xl font-bold text-card-foreground">
-                {investments.length}
+                {safeInvestments.length}
               </p>
               <p className="text-sm text-muted-foreground">Active Investments</p>
             </CardContent>
@@ -186,7 +189,7 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {plans.map((plan, index) => (
+                  {safePlans.map((plan, index) => (
                     <Dialog key={plan.id} open={selectedPlan === plan.id} onOpenChange={(open) => {
                       if (open) setSelectedPlan(plan.id)
                       else setSelectedPlan(null)
@@ -300,7 +303,7 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                 </div>
 
                 {/* Active Investments Summary */}
-                {investments.length > 0 && (
+                {safeInvestments.length > 0 && (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
                       <CardContent className="p-4">
@@ -308,7 +311,7 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                         <p className="text-xl font-bold text-blue-600">
                           ${totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-2">{investments.length} active positions</p>
+                        <p className="text-xs text-muted-foreground mt-2">{safeInvestments.length} active positions</p>
                       </CardContent>
                     </Card>
 
@@ -339,7 +342,9 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                         <p className="text-xs text-muted-foreground mb-1">Avg Progress</p>
                         <p className="text-xl font-bold text-orange-600">
                           {Math.round(
-                            investments.reduce((sum, inv) => sum + calculateProgress(inv.startDate, inv.endDate, inv.status), 0) / investments.length
+                            safeInvestments.length > 0
+                              ? safeInvestments.reduce((sum, inv) => sum + calculateProgress(inv.startDate, inv.endDate, inv.status), 0) / safeInvestments.length
+                              : 0
                           )}%
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">completion rate</p>
@@ -349,11 +354,11 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                 )}
 
                 {/* Detailed Investment Cards */}
-                {investments.length > 0 && (
+                {safeInvestments.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-card-foreground mb-4">Investment Details</h3>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-                      {investments.map((inv) => {
+                      {safeInvestments.map((inv) => {
                         const progress = calculateProgress(inv.startDate, inv.endDate, inv.status)
                         const progressColor =
                           progress >= 75
@@ -440,10 +445,10 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                 {/* Table View */}
                 <div>
                   <h3 className="text-lg font-semibold text-card-foreground mb-4">All Positions</h3>
-                  <ActiveInvestmentsTable investments={investments} />
+                  <ActiveInvestmentsTable investments={safeInvestments} />
                 </div>
 
-                {investments.length === 0 && (
+                {safeInvestments.length === 0 && (
                   <div className="text-center py-12">
                     <Target className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-card-foreground mb-2">No Active Investments</h3>
@@ -524,7 +529,7 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                     <CardContent className="p-4">
                       <p className="text-xs text-muted-foreground mb-1">Active Positions</p>
                       <p className="text-xl font-bold text-orange-600">
-                        {investments.length}
+                        {safeInvestments.length}
                       </p>
                       <p className="text-xs text-muted-foreground mt-2">investments running</p>
                     </CardContent>

@@ -18,7 +18,9 @@ import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Calendar, DollarSign, Zap, Clock } from "lucide-react"
 import type { ActiveInvestment } from "@/lib/types"
 
-export function ActiveInvestmentsTable({ investments }: { investments: ActiveInvestment[] }) {
+export function ActiveInvestmentsTable({ investments = [] }: { investments?: ActiveInvestment[] | null }) {
+  const safeInvestments = Array.isArray(investments) ? investments : []
+  
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("en-US", {
       month: "short",
@@ -100,7 +102,7 @@ export function ActiveInvestmentsTable({ investments }: { investments: ActiveInv
               </TableRow>
             </TableHeader>
             <TableBody>
-              {investments.length === 0 ? (
+              {safeInvestments.length === 0 ? (
                 <TableRow className="hover:bg-transparent border-0">
                   <TableCell colSpan={7} className="text-center py-12">
                     <Zap className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
@@ -113,7 +115,7 @@ export function ActiveInvestmentsTable({ investments }: { investments: ActiveInv
                   </TableCell>
                 </TableRow>
               ) : (
-                investments.map((investment, idx) => (
+                safeInvestments.map((investment, idx) => (
                   <TableRow 
                     key={investment.id}
                     className="border-b border-border/20 hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-300 group animate-in fade-in duration-500"
