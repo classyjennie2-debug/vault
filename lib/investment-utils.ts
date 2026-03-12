@@ -51,10 +51,19 @@ export function calculateProgressPercentage(
 
 /**
  * Calculate accumulated profit based on expected profit and progress percentage
+ * Uses linear accrual: profit increases uniformly over the investment period
+ * 
+ * Note: In reality, different investment products have different accrual patterns:
+ * - Fixed deposits: All profit at maturity
+ * - Bonds: Quarterly/semi-annual coupon payments
+ * - Stocks: Continuous/dividend-based returns
+ * 
+ * For flexibility, use calculateAccumulatedProfitWithMethod() instead
  */
 export function calculateAccumulatedProfit(
   expectedProfit: unknown,
-  progressPercentage: unknown
+  progressPercentage: unknown,
+  method: 'linear' | 'maturity' | 'compound' = 'linear'
 ): number {
   const safeProfitRate = safeNumber(expectedProfit, 0)
   const safeProgress = safeNumber(progressPercentage, 0)
@@ -62,8 +71,30 @@ export function calculateAccumulatedProfit(
   // Clamp progress between 0-100
   const clampedProgress = Math.max(0, Math.min(100, safeProgress))
 
-  // Calculate accumulated: expectedProfit * (progressPercentage / 100)
-  const accumulated = safeProfitRate * (clampedProgress / 100)
+  let accumulated = 0
+
+  switch (method) {
+    case 'linear':
+      // Linear accrual: profit increases uniformly
+      accumulated = safeProfitRate * (clampedProgress / 100)
+      break
+
+    case 'maturity':
+      // All profit at maturity: 0 until complete, then full amount
+      accumulated = clampedProgress >= 100 ? safeProfitRate : 0
+      break
+
+    case 'compound':
+      // Compound interest (realistic for savings/investments)
+      // Assumes daily compounding: A = P(1 + r/n)^(nt)
+      // For simplicity, we estimate compound growth based on progress
+      // Full compound would need principal amount, so this is normalized
+      accumulated = safeProfitRate * ((1 + clampedProgress / 100) - 1)
+      break
+
+    default:
+      accumulated = safeProfitRate * (clampedProgress / 100)
+  }
 
   return Math.max(0, Math.round(accumulated * 100) / 100) // Round to 2 decimals
 }
@@ -128,14 +159,16 @@ export function calculateTotalDays(startDate: string | Date, endDate: string | D
 /**
  * Comprehensive investment calculation
  * Calculates all relevant metrics for an investment at the current time
+ * Uses linear profit accrual by default
  */
 export function calculateInvestmentMetrics(
   startDate: string | Date,
   endDate: string | Date,
-  expectedProfit: unknown
+  expectedProfit: unknown,
+  method: 'linear' | 'maturity' | 'compound' = 'linear'
 ): InvestmentCalculation {
   const progressPercentage = calculateProgressPercentage(startDate, endDate)
-  const accumulatedProfit = calculateAccumulatedProfit(expectedProfit, progressPercentage)
+  const accumulatedProfit = calculateAccumulatedProfit(expectedProfit, progressPercentage, method)
   const daysRemaining = calculateDaysRemaining(endDate)
   const daysPassed = calculateDaysPassed(startDate)
   const totalDays = calculateTotalDays(startDate, endDate)

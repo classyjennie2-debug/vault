@@ -7,8 +7,13 @@ import {
   createTransaction,
   getUserById,
   getUserActiveInvestmentsWithProfit,
+  getDb,
 } from "@/lib/db"
 import { safeNumber, validateInvestmentAmount, calculateExpectedProfit } from "@/lib/investment-utils"
+import { validate, investmentSchema } from "@/lib/validation"
+import { mapErrorToResponse, createErrorResponse, InsufficientFundsError, NotFoundError, ValidationError } from "@/lib/error-handling"
+import { investmentLogger } from "@/lib/logging"
+import { rateLimitConfigs, checkRateLimit, getClientIp } from "@/lib/rate-limiting"
 
 export async function GET(req: NextRequest) {
   try {
@@ -30,45 +35,75 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const clientIp = await getClientIp(req)
+  
   try {
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user
-    
+
+    // Apply rate limiting
+    const rateLimitKey = `investment_${user.id}`
+    const rateLimitResult = await checkRateLimit(rateLimitKey, rateLimitConfigs.investment)
+    if (rateLimitResult.limited) {
+      investmentLogger.warn('Investment endpoint rate limited', { userId: user.id, ip: clientIp })
+      return new Response(
+        JSON.stringify({
+          error: 'Too many investment requests. Please try again later.',
+          retryAfter: rateLimitResult.retryAfter,
+        }),
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimitResult.retryAfter),
+          },
+        }
+      )
+    }
+
     const body = await req.json()
-    const { planId, amount } = body as { planId: string; amount: number }
 
-    // Validate input with safe number conversion
-    if (!planId || amount == null) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    // Validate input using schema
+    const validationResult = validate(investmentSchema, {
+      amount: body.amount,
+      planId: body.planId,
+      depositMethod: body.depositMethod || 'bank_transfer',
+    })
+
+    if (!validationResult.success) {
+      investmentLogger.warn('Investment validation failed', { userId: user.id, errors: validationResult.details })
+      const appError = mapErrorToResponse(new ValidationError('Invalid investment input', validationResult.details))
+      return createErrorResponse(appError)
     }
 
+    const { amount, planId } = validationResult.data
     const safeAmount = safeNumber(amount, 0)
-
-    if (safeAmount <= 0) {
-      return NextResponse.json({ error: "Investment amount must be positive" }, { status: 400 })
-    }
 
     // Get current user to check balance
     const currentUser = await getUserById(user.id)
     if (!currentUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+      investmentLogger.error('User not found', new Error('User not found'), {}, user.id)
+      const appError = mapErrorToResponse(new NotFoundError('User'))
+      return createErrorResponse(appError)
     }
 
     const userBalance = safeNumber(currentUser.balance, 0)
 
     // Check balance
     if (userBalance < safeAmount) {
-      return NextResponse.json(
-        { error: `Insufficient balance. You have $${userBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}, but investment requires $${safeAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}` },
-        { status: 400 }
+      investmentLogger.warn('Insufficient funds for investment', 
+        { userId: user.id, balance: userBalance, required: safeAmount }
       )
+      const appError = mapErrorToResponse(new InsufficientFundsError(userBalance, safeAmount))
+      return createErrorResponse(appError)
     }
 
     // Validate plan
     const plans = await getInvestmentPlansFromDb()
     const plan = plans.find((p) => p.id === planId)
     if (!plan) {
-      return NextResponse.json({ error: "Plan not found" }, { status: 404 })
+      investmentLogger.warn('Investment plan not found', { userId: user.id, planId })
+      const appError = mapErrorToResponse(new NotFoundError('Investment plan'))
+      return createErrorResponse(appError)
     }
 
     // Safe min/max values with full validation
@@ -76,12 +111,13 @@ export async function POST(req: NextRequest) {
     const maxAmount = safeNumber(plan.maxAmount, Infinity)
 
     // Validate amount against plan constraints
-    const validation = validateInvestmentAmount(safeAmount, minAmount, maxAmount)
-    if (!validation.isValid) {
-      return NextResponse.json(
-        { error: validation.error || "Invalid investment amount" },
-        { status: 400 }
+    const amountValidation = validateInvestmentAmount(safeAmount, minAmount, maxAmount)
+    if (!amountValidation.isValid) {
+      investmentLogger.warn('Investment amount validation failed', 
+        { userId: user.id, error: amountValidation.error }
       )
+      const appError = mapErrorToResponse(new ValidationError(amountValidation.error || 'Invalid investment amount'))
+      return createErrorResponse(appError)
     }
 
     // Calculate expected profit safely
@@ -104,53 +140,79 @@ export async function POST(req: NextRequest) {
     }
     
     const endDate = end.toISOString()
-
     const investmentId = uuidv4()
 
-    // Insert active investment with initial progress = 0
-    await run(
-      `INSERT INTO active_investments (id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        investmentId,
-        user.id,
-        plan.id,
-        plan.name || "Unknown Plan",
-        safeAmount,
-        expectedProfit,
-        startDate,
-        endDate,
-        "active",
-        0, // Progress starts at 0%
-      ]
-    )
+    // Execute operations in a transaction for data consistency
+    try {
+      const db = getDb()
+      db.exec('BEGIN TRANSACTION')
+      
+      try {
+        // Insert active investment
+        db.prepare(
+          `INSERT INTO active_investments (id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).run(
+          investmentId,
+          user.id,
+          plan.id,
+          plan.name || "Unknown Plan",
+          safeAmount,
+          expectedProfit,
+          startDate,
+          endDate,
+          "active",
+          0
+        )
 
-    // Deduct from user balance
-    await run(`UPDATE users SET balance = balance - ? WHERE id = ?`, [safeAmount, user.id])
+        // Deduct from user balance
+        db.prepare(`UPDATE users SET balance = balance - ? WHERE id = ?`).run(safeAmount, user.id)
 
-    // Create corresponding transaction record
-    await createTransaction({
-      userId: user.id,
-      type: "investment",
-      amount: safeAmount,
-      status: "approved",
-      description: `${plan.name || "Investment"} - Investment started`,
-    })
+        // Create transaction record
+        const transactionId = uuidv4()
+        db.prepare(
+          `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`
+        ).run(
+          transactionId,
+          user.id,
+          'investment',
+          safeAmount,
+          'approved',
+          `${plan.name || "Investment"} - Investment started`,
+          new Date().toISOString()
+        )
 
-    return NextResponse.json({ 
-      success: true, 
-      investmentId,
-      investment: {
-        id: investmentId,
-        planId,
-        amount: safeAmount,
-        expectedProfit,
-        startDate,
-        endDate,
+        db.exec('COMMIT')
+        
+        investmentLogger.info('Investment created successfully', 
+          { investmentId, planId, amount: safeAmount, expectedProfit },
+          user.id
+        )
+
+        return NextResponse.json({ 
+          success: true, 
+          investmentId,
+          investment: {
+            id: investmentId,
+            planId,
+            amount: safeAmount,
+            expectedProfit,
+            startDate,
+            endDate,
+          }
+        })
+      } catch (txError) {
+        db.exec('ROLLBACK')
+        throw txError
       }
-    })
+    } catch (error: any) {
+      investmentLogger.error('Transaction failed', error, { planId, amount: safeAmount }, user.id)
+      const appError = mapErrorToResponse(error)
+      return createErrorResponse(appError)
+    }
   } catch (err: unknown) {
-    console.error("investment API error", err)
-    const message = err instanceof Error ? err.message : "Something went wrong"
-    return NextResponse.json({ error: message }, { status: 500 })
+    investmentLogger.error("Investment API error", err as Error, {})
+    const appError = mapErrorToResponse(err)
+    return createErrorResponse(appError)
   }
 }

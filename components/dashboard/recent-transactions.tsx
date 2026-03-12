@@ -81,8 +81,8 @@ export function RecentTransactions() {
           </div>
         ) : (
           userTransactions.map((tx, idx) => {
-            const Icon = typeIcons[tx.type as keyof typeof typeIcons]
-            const bgColor = typeBgColors[tx.type as keyof typeof typeBgColors]
+            const Icon = typeIcons[tx.type as keyof typeof typeIcons] || TrendingUp
+            const bgColor = typeBgColors[tx.type as keyof typeof typeBgColors] || "bg-primary/10 text-primary"
             const isPositive = tx.type === "deposit" || tx.type === "return"
             const statusColor = statusColors[tx.status as keyof typeof statusColors] || statusColors.approved
             return (
