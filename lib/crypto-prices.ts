@@ -13,7 +13,7 @@ const coinToCmcSymbol: Record<CoinType, string> = {
 const priceCache: Record<string, { price: number; timestamp: number }> = {}
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
-const CMC_API_KEY = "99267b1933d34ba6bb9c8e8d693b4aea"
+const CMC_API_KEY = process.env.CMC_API_KEY || ""
 
 /**
  * Fetch the current price of a cryptocurrency in USD using CoinMarketCap API
