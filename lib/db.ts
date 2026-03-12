@@ -618,9 +618,23 @@ export async function consumeVerificationCode(code: string): Promise<boolean> {
 
 export async function getInvestmentPlansFromDb() {
   const rows: InvestmentPlan[] = await all("SELECT * FROM investment_plans")
-  // map to include optional fields expected by the UI
+  
+  // Log for debugging
+  if (rows.length > 0) {
+    console.log("Plans from DB:", JSON.stringify(rows.slice(0, 1), null, 2))
+  }
+  
+  // map to include optional fields expected by the UI and ensure correct defaults
   return rows.map((p) => ({
     ...p,
+    // Ensure numeric fields have proper values
+    minAmount: Number.isFinite(p.minAmount) && p.minAmount > 0 ? p.minAmount : 1000,
+    maxAmount: Number.isFinite(p.maxAmount) && p.maxAmount > 0 ? p.maxAmount : 500000,
+    returnRate: Number.isFinite(p.returnRate) && p.returnRate > 0 ? p.returnRate : 8,
+    duration: Number.isFinite(p.duration) && p.duration > 0 ? p.duration : 6,
+    durationUnit: p.durationUnit || "months",
+    risk: p.risk || "Medium",
+    // Optional fields
     fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
     category: p.category || "",
   }))

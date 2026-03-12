@@ -7,6 +7,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { getInvestmentPlansFromDb } from "@/lib/db"
+import { safeNumber, formatCurrency } from "@/lib/investment-utils"
 import { Shield, TrendingUp, AlertTriangle, Clock, DollarSign } from "lucide-react"
 
 const riskConfig = {
@@ -47,8 +48,15 @@ export default async function PlansPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {plans.map((plan) => {
-          const risk = riskConfig[plan.risk as keyof typeof riskConfig]
+          // Safe value extraction
+          const minAmount = safeNumber(plan.minAmount, 0)
+          const maxAmount = safeNumber(plan.maxAmount, Infinity)
+          const returnRate = safeNumber(plan.returnRate, 0)
+          const duration = safeNumber(plan.duration, 0)
+          const durationUnit = plan.durationUnit || "months"
+          const risk = riskConfig[plan.risk as keyof typeof riskConfig] || riskConfig.Medium
           const RiskIcon = risk.icon
+          
           return (
             <Card
               key={plan.id}
@@ -64,29 +72,29 @@ export default async function PlansPage() {
                     </div>
                     <div>
                       <CardTitle className="text-base text-card-foreground">
-                        {plan.name}
+                        {plan.name || "Investment Plan"}
                       </CardTitle>
                       <Badge
                         variant="outline"
                         className={`mt-1 text-[10px] ${risk.badge}`}
                       >
-                        {plan.risk} Risk
+                        {plan.risk || "Medium"} Risk
                       </Badge>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-accent">
-                      {plan.returnRate}%
+                      {returnRate.toFixed(1)}%
                     </p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                      Returns
+                      Annual Return
                     </p>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col">
                 <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-                  {plan.description}
+                  {plan.description || "Diversified investment opportunity"}
                 </p>
                 <div className="mt-auto grid grid-cols-3 gap-4 border-t border-border pt-4">
                   <div className="flex items-center gap-2">
@@ -94,7 +102,7 @@ export default async function PlansPage() {
                     <div>
                       <p className="text-[10px] text-muted-foreground">Min</p>
                       <p className="text-xs font-semibold text-card-foreground">
-                        ${(plan.minAmount || 0).toLocaleString()}
+                        {minAmount > 0 ? `$${minAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "N/A"}
                       </p>
                     </div>
                   </div>
@@ -103,7 +111,7 @@ export default async function PlansPage() {
                     <div>
                       <p className="text-[10px] text-muted-foreground">Max</p>
                       <p className="text-xs font-semibold text-card-foreground">
-                        ${(plan.maxAmount || 0).toLocaleString()}
+                        {maxAmount !== Infinity ? `$${maxAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "Unlimited"}
                       </p>
                     </div>
                   </div>
@@ -114,7 +122,7 @@ export default async function PlansPage() {
                         Duration
                       </p>
                       <p className="text-xs font-semibold text-card-foreground">
-                        {plan.duration} {plan.durationUnit}
+                        {duration > 0 ? `${duration} ${durationUnit}` : "Flexible"}
                       </p>
                     </div>
                   </div>
