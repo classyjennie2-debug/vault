@@ -520,15 +520,38 @@ export interface UserRow {
 }
 
 export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
-  return (await get("SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar FROM users WHERE email = ?", [email])) as
-    | UserRow
-    | undefined
+  // run the query and then normalize the column names so they match
+  // our UserRow type (camelCase) even when using Postgres, which
+  // returns lowercase column names.
+  const row = (await get(
+    "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar FROM users WHERE email = ?",
+    [email]
+  )) as UserRow | undefined
+
+  if (row) {
+    // Postgres returns column names in lowercase by default
+    // so `passwordHash` may come back as `passwordhash`.
+    if ((row as any).passwordhash && !(row as any).passwordHash) {
+      ;(row as any).passwordHash = (row as any).passwordhash as string
+    }
+  }
+
+  return row
 }
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
-  return (await get("SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar FROM users WHERE id = ?", [id])) as
-    | UserRow
-    | undefined
+  const row = (await get(
+    "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar FROM users WHERE id = ?",
+    [id]
+  )) as UserRow | undefined
+
+  if (row) {
+    if ((row as any).passwordhash && !(row as any).passwordHash) {
+      ;(row as any).passwordHash = (row as any).passwordhash as string
+    }
+  }
+
+  return row
 }
 
 export async function createUser(user: {
