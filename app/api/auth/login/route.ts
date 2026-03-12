@@ -11,19 +11,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 })
   }
   const user = await getUserByEmail(email)
-  console.log('user from DB', user ? { email: user.email, verified: user.verified } : null)
+  const valid = user ? await verifyPassword(password, user.passwordHash) : false
+  // single combined log entry so it isn't truncated in Vercel logs
+  console.log('login debug', {
+    email,
+    user: user ? { email: user.email, verified: user.verified } : null,
+    passwordValid: valid,
+  })
   if (!user) {
-    console.log('invalid credentials - user not found')
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
   }
   if (!user.verified) {
-    console.log('email not verified')
     return NextResponse.json({ error: "Email not verified" }, { status: 403 })
   }
-  const valid = await verifyPassword(password, user.passwordHash)
-  console.log('password valid?', valid)
   if (!valid) {
-    console.log('invalid credentials - bad password')
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
   }
 
