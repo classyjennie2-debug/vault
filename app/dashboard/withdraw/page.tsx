@@ -115,7 +115,8 @@ export default function WithdrawPage() {
 
   if (submitted) {
     return (
-      <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
+      <div className="w-full max-w-full">
+        <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/dashboard">
@@ -147,11 +148,13 @@ export default function WithdrawPage() {
           </CardContent>
         </Card>
       </div>
+    </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4 md:gap-6">
+    <div className="w-full max-w-full">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4 md:gap-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -340,5 +343,6 @@ export default function WithdrawPage() {
         </div>
       )}
     </form>
+    </div>
   )
 }

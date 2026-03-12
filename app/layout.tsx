@@ -81,8 +81,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="overflow-x-hidden">
-      <body className="font-sans antialiased overflow-x-hidden">
+    <html lang="en">
+      <body className="font-sans antialiased">
         {children}
         <Analytics />
         <TawkChat />
