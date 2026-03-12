@@ -115,7 +115,7 @@ export function NotificationBell() {
             {notification.message}
           </p>
           <p className="text-xs text-muted-foreground/60 mt-2">
-            {new Date(notification.timestamp).toLocaleString()}
+            {notification.timestamp ? new Date(notification.timestamp).toLocaleString() : "Recently"}
           </p>
         </div>
       </div>

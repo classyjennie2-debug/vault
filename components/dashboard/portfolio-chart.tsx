@@ -147,15 +147,15 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
         <div className="mt-6 grid grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700">
           <div>
             <p className="text-xs text-muted-foreground font-medium">30-Day High</p>
-            <p className="text-sm font-bold text-card-foreground mt-1">${thirtyDayHigh.toLocaleString()}</p>
+            <p className="text-sm font-bold text-card-foreground mt-1">${(thirtyDayHigh || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground font-medium">30-Day Low</p>
-            <p className="text-sm font-bold text-card-foreground mt-1">${thirtyDayLow.toLocaleString()}</p>
+            <p className="text-sm font-bold text-card-foreground mt-1">${(thirtyDayLow || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground font-medium">Avg Value</p>
-            <p className="text-sm font-bold text-card-foreground mt-1">${avgValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            <p className="text-sm font-bold text-card-foreground mt-1">${(avgValue || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
         </div>
       </CardContent>

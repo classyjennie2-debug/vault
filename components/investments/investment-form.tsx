@@ -32,16 +32,20 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isValid) return
+    if (!isValid || amountNum <= 0) {
+      setError("Please enter a valid investment amount")
+      return
+    }
 
     setIsLoading(true)
     setError(null)
 
     try {
+      const roundedAmount = Math.round(amountNum * 100) / 100
       const res = await fetch("/api/investments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: plan.id, amount: amountNum }),
+        body: JSON.stringify({ planId: plan.id, amount: roundedAmount }),
       })
       const data = await res.json()
       if (!res.ok) {

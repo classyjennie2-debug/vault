@@ -107,7 +107,7 @@ export function RecentTransactions() {
                   }`}
                 >
                   {isPositive ? "+" : "-"}$
-                  {tx.amount.toLocaleString()}
+                  {(tx.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </p>
                 <Badge
                   className={`text-[10px] px-2 py-0.5 font-semibold border ${statusColor}`}

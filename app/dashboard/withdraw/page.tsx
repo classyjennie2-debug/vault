@@ -70,8 +70,9 @@ export default function WithdrawPage() {
       return
     }
 
-    if (!cryptoAddress.trim()) {
-      setError("Please enter a valid crypto address")
+    const trimmedAddress = cryptoAddress.trim()
+    if (!trimmedAddress || trimmedAddress.length < 20) {
+      setError(`Please enter a valid ${selectedCoin} address (min 20 characters)`)
       return
     }
 
@@ -81,24 +82,25 @@ export default function WithdrawPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: amountNum,
+          amount: amountNum > 0 ? Math.round(amountNum * 100) / 100 : 0,
           method: "crypto",
-          cryptoAddress: cryptoAddress.trim(),
+          cryptoAddress: trimmedAddress,
           coin: selectedCoin,
         }),
       })
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || "Something went wrong")
-        setIsSubmitting(false)
         return
       }
       setSubmitted(true)
       setTimeout(() => {
         router.push("/dashboard")
       }, 2000)
-    } catch (err) {
-      setError("An error occurred. Please try again.")
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An error occurred. Please try again."
+      setError(message)
+    } finally {
       setIsSubmitting(false)
     }
   }

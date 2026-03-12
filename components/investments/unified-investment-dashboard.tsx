@@ -346,7 +346,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                           +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
                         <p className="text-xs text-green-600/70 mt-2">
-                          {totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(1) : '0'}% avg return
+                          {totalInvested > 0 && totalReturns >= 0 ? ((totalReturns / Math.max(totalInvested, 1)) * 100).toFixed(1) : '0'}% avg return
                         </p>
                       </CardContent>
                     </Card>

@@ -88,7 +88,7 @@ export function DashboardHero({ user, stats }: DashboardHeroProps) {
 
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">ROI</p>
-          <p className="text-2xl font-bold text-accent mt-2">{totalBalance > 0 ? ((totalProfit / (totalBalance - totalProfit)) * 100).toFixed(1) : "0"}%</p>
+          <p className="text-2xl font-bold text-accent mt-2">{totalProfit >= 0 ? ((totalProfit / Math.max(totalBalance, 1)) * 100).toFixed(1) : "0"}%</p>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Return on investment</p>
         </div>
       </div>

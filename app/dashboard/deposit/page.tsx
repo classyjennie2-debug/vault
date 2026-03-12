@@ -154,19 +154,22 @@ export default function DepositPage() {
 
     setIsSubmitting(true)
     try {
+      const roundedAmount = Math.round(parseFloat(amount) * 100) / 100
       const res = await fetch("/api/deposits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           coin: selectedCoin,
           network: selectedNetwork,
-          amount: parseFloat(amount),
+          amount: roundedAmount,
           coinAmount: coinAmount,
           walletId: assignedWallet.id,
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Failed to submit deposit")
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit deposit")
+      }
       
       // Reset form and close modal
       setShowModal(false)
@@ -175,6 +178,7 @@ export default function DepositPage() {
       setAssignedWallet(null)
       setSelectedCoin(null)
       setSelectedNetwork(null)
+      setError(null)
       
       router.push("/dashboard")
     } catch (err: unknown) {
@@ -271,6 +275,7 @@ export default function DepositPage() {
                 return (
                   <button
                     key={network}
+                    type="button"
                     onClick={() => handleNetworkSelect(network)}
                     className={`flex items-center gap-2 rounded-lg border-2 px-5 py-3 text-sm font-medium transition-all ${
                       isSelected

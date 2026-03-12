@@ -72,13 +72,13 @@ export default function TransactionsPage() {
 
   const totalDeposits = userTransactions
     .filter((t) => t.type === "deposit" && t.status === "approved")
-    .reduce((sum, t) => sum + t.amount, 0)
+    .reduce((sum, t) => sum + (t.amount || 0), 0)
   const totalWithdrawals = userTransactions
     .filter((t) => t.type === "withdrawal" && t.status === "approved")
-    .reduce((sum, t) => sum + t.amount, 0)
+    .reduce((sum, t) => sum + (t.amount || 0), 0)
   const totalReturns = userTransactions
     .filter((t) => t.type === "return" && t.status === "approved")
-    .reduce((sum, t) => sum + t.amount, 0)
+    .reduce((sum, t) => sum + (t.amount || 0), 0)
 
   return (
     <div className="flex flex-col gap-6">
@@ -119,7 +119,7 @@ export default function TransactionsPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">Total Deposits</p>
                   <p className="text-lg font-bold text-card-foreground">
-                    ${totalDeposits.toLocaleString()}
+                    ${(totalDeposits || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export default function TransactionsPage() {
                     Total Withdrawals
                   </p>
                   <p className="text-lg font-bold text-card-foreground">
-                    ${totalWithdrawals.toLocaleString()}
+                    ${(totalWithdrawals || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
@@ -151,7 +151,7 @@ export default function TransactionsPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">Total Returns</p>
                   <p className="text-lg font-bold text-card-foreground">
-                    ${totalReturns.toLocaleString()}
+                    ${(totalReturns || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
