@@ -26,6 +26,9 @@ interface DashboardCardsProps {
   activeInvestments: number
   pendingDeposits: number
   totalWithdrawn: number
+  monthlyGain?: number
+  monthlyReturns?: number
+  totalReturnRate?: number
 }
 
 const gradients = [
@@ -103,6 +106,9 @@ export function DashboardCards({
   activeInvestments,
   pendingDeposits,
   totalWithdrawn,
+  monthlyGain = 0,
+  monthlyReturns = 0,
+  totalReturnRate = 0,
 }: DashboardCardsProps) {
   const formattedBalance = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -134,14 +140,21 @@ export function DashboardCards({
     minimumFractionDigits: 2,
   }).format(totalWithdrawn)
 
+  // Format monthly metrics
+  const monthlyGainFormatted = monthlyGain >= 0 
+    ? `+${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(monthlyGain)}`
+    : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(monthlyGain)
+
+  const returnRateFormatted = `${totalReturnRate.toFixed(2)}%`
+
   return (
     <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6 animate-in fade-in slide-in-from-top duration-700">
       <StatCard
         icon={Wallet}
         label="Total Balance"
         value={formattedBalance}
-        trend="+$12,450 this month"
-        trendColor="text-emerald-600 dark:text-emerald-500 font-medium"
+        trend={monthlyGain !== 0 ? `${monthlyGainFormatted} this month` : "No activity this month"}
+        trendColor={monthlyGain >= 0 ? "text-emerald-600 dark:text-emerald-500 font-medium" : "text-red-600 dark:text-red-500 font-medium"}
         gradientIndex={0}
       />
       <StatCard
@@ -163,8 +176,8 @@ export function DashboardCards({
         icon={Award}
         label="Total Profit"
         value={formattedProfit}
-        trend="From investments"
-        trendColor="text-emerald-600 dark:text-emerald-500 font-medium"
+        trend={totalReturnRate > 0 ? `${returnRateFormatted} return rate` : "From investments"}
+        trendColor={totalReturnRate > 0 ? "text-emerald-600 dark:text-emerald-500 font-medium" : "text-slate-600 dark:text-slate-400"}
         gradientIndex={3}
       />
       <StatCard

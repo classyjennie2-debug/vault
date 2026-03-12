@@ -116,7 +116,7 @@ export const notificationSchema = z.object({
 export const adminApprovalSchema = z.object({
   transactionId: z.string().uuid('Invalid transaction ID'),
   approved: z.boolean(),
-  notes: z.string().optional().max(500),
+  notes: z.string().max(500).optional(),
 })
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -8,6 +8,7 @@ import { ActiveInvestmentsTable } from "@/components/investments/active-investme
 import LiveChatButton from "@/components/live-chat-button"
 import { requireAuth } from "@/lib/auth"
 import { getUserStats, generatePortfolioData, getUserActiveInvestments } from "@/lib/db"
+import { calculateMonthlyMetrics, calculateReturnRate } from "@/lib/monthly-metrics"
 
 export default async function DashboardPage() {
   // server component can fetch user and stats
@@ -15,6 +16,8 @@ export default async function DashboardPage() {
   const stats = await getUserStats(user.id)
   const portfolioData = await generatePortfolioData(user.id)
   const activeInvestments = await getUserActiveInvestments(user.id)
+  const monthlyMetrics = await calculateMonthlyMetrics(user.id)
+  const totalReturnRate = calculateReturnRate(stats.totalProfit, stats.totalInvested)
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,6 +33,9 @@ export default async function DashboardPage() {
         activeInvestments={stats.activeInvestments}
         pendingDeposits={stats.pendingDeposits}
         totalWithdrawn={stats.totalWithdrawn}
+        monthlyGain={monthlyMetrics.monthlyGain}
+        monthlyReturns={monthlyMetrics.monthlyReturns}
+        totalReturnRate={totalReturnRate}
       />
 
       <div className="grid gap-6 lg:grid-cols-5">

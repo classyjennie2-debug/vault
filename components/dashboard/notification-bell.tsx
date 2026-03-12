@@ -18,22 +18,30 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
 
-  useEffect(() => {
-    async function fetchNotifications() {
-      try {
-        const response = await fetch("/api/notifications")
-        if (response.ok) {
-          const data = await response.json()
-          setNotifications(data)
-        } else {
-          console.error("Failed to fetch notifications")
-        }
-      } catch (error) {
-        console.error("Error fetching notifications:", error)
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch("/api/notifications")
+      if (response.ok) {
+        const data = await response.json()
+        setNotifications(data)
+      } else {
+        console.error("Failed to fetch notifications")
       }
+    } catch (error) {
+      console.error("Error fetching notifications:", error)
     }
+  }
+
+  useEffect(() => {
     fetchNotifications()
   }, [])
+
+  // Refetch notifications when sheet opens to ensure latest state
+  useEffect(() => {
+    if (isOpen) {
+      fetchNotifications()
+    }
+  }, [isOpen])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const unreadNotifications = notifications.filter((n) => !n.isRead)

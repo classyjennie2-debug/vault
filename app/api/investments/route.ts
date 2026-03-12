@@ -7,7 +7,6 @@ import {
   createTransaction,
   getUserById,
   getUserActiveInvestmentsWithProfit,
-  getDb,
 } from "@/lib/db"
 import { safeNumber, validateInvestmentAmount, calculateExpectedProfit } from "@/lib/investment-utils"
 import { validate, investmentSchema } from "@/lib/validation"
@@ -142,17 +141,13 @@ export async function POST(req: NextRequest) {
     const endDate = end.toISOString()
     const investmentId = uuidv4()
 
-    // Execute operations in a transaction for data consistency
+    // Execute operations to create investment
     try {
-      const db = getDb()
-      db.exec('BEGIN TRANSACTION')
-      
-      try {
-        // Insert active investment
-        db.prepare(
-          `INSERT INTO active_investments (id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).run(
+      // Insert active investment
+      await run(
+        `INSERT INTO active_investments (id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
           investmentId,
           user.id,
           plan.id,
@@ -163,16 +158,17 @@ export async function POST(req: NextRequest) {
           endDate,
           "active",
           0
-        )
+        ]
+      )
 
-        // Deduct from user balance
-        db.prepare(`UPDATE users SET balance = balance - ? WHERE id = ?`).run(safeAmount, user.id)
+      // Deduct from user balance
+      await run(`UPDATE users SET balance = balance - ? WHERE id = ?`, [safeAmount, user.id])
 
-        // Create transaction record
-        const transactionId = uuidv4()
-        db.prepare(
-          `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`
-        ).run(
+      // Create transaction record
+      const transactionId = uuidv4()
+      await run(
+        `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
           transactionId,
           user.id,
           'investment',
@@ -180,33 +176,28 @@ export async function POST(req: NextRequest) {
           'approved',
           `${plan.name || "Investment"} - Investment started`,
           new Date().toISOString()
-        )
+        ]
+      )
+      
+      investmentLogger.info('Investment created successfully', 
+        { investmentId, planId, amount: safeAmount, expectedProfit },
+        user.id
+      )
 
-        db.exec('COMMIT')
-        
-        investmentLogger.info('Investment created successfully', 
-          { investmentId, planId, amount: safeAmount, expectedProfit },
-          user.id
-        )
-
-        return NextResponse.json({ 
-          success: true, 
-          investmentId,
-          investment: {
-            id: investmentId,
-            planId,
-            amount: safeAmount,
-            expectedProfit,
-            startDate,
-            endDate,
-          }
-        })
-      } catch (txError) {
-        db.exec('ROLLBACK')
-        throw txError
-      }
+      return NextResponse.json({ 
+        success: true, 
+        investmentId,
+        investment: {
+          id: investmentId,
+          planId,
+          amount: safeAmount,
+          expectedProfit,
+          startDate,
+          endDate,
+        }
+      })
     } catch (error: any) {
-      investmentLogger.error('Transaction failed', error, { planId, amount: safeAmount }, user.id)
+      investmentLogger.error('Investment creation error', error, { planId, amount: safeAmount }, user.id)
       const appError = mapErrorToResponse(error)
       return createErrorResponse(appError)
     }
