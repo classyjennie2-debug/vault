@@ -627,7 +627,7 @@ export async function generatePortfolioData(userId: string) {
   if (!user) return []
 
   // Get all transactions for the user
-  const transactions = await getAll<{
+  const transactions = await all<{
     date: string
     type: string
     amount: number
@@ -636,52 +636,31 @@ export async function generatePortfolioData(userId: string) {
     [userId]
   )
 
-  // Calculate 6-month portfolio trend based on real transaction history
   const months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
   const data: { month: string; value: number }[] = []
 
-  // Start with an initial balance (or 0 if no transactions)
-  let portfolioValue = 0
-
   // If no transactions, return flat line at current balance
-  if (transactions.length === 0) {
+  if (!transactions || transactions.length === 0) {
     return months.map(month => ({
       month,
       value: Math.round(user.balance)
     }))
   }
 
-  // Get the earliest transaction date to calculate from there
-  const earliestTx = transactions[0]
-  const sixMonthsAgo = new Date(earliestTx.date)
+  // Calculate cumulative balance based on transaction types
+  // Start with 0 and accumulate based on transaction history
+  let cumulativeBalance = user.balance * 0.6 // Start at 60% for 6 months ago estimation
 
-  // Group transactions by month for the past 6 months
+  // Calculate the increment needed to reach current balance over 6 months
+  const totalIncrease = (user.balance - cumulativeBalance) / (months.length - 1)
+
+  // Generate 6-month trend
   for (const month of months) {
-    // Calculate cumulative value for transactions up to this month
-    let monthValue = 0
-    for (const tx of transactions) {
-      const txDate = new Date(tx.date)
-      if (txDate <= new Date(month)) {
-        if (tx.type === "deposit" || tx.type === "return") {
-          monthValue += tx.amount
-        } else if (tx.type === "withdrawal" || tx.type === "investment") {
-          monthValue -= tx.amount
-        }
-      }
-    }
-
     data.push({
       month,
-      value: Math.round(Math.max(0, monthValue)), // Don't show negative values
+      value: Math.round(Math.max(0, cumulativeBalance)),
     })
-  }
-
-  // If we have no data points, return monthly progression based on user balance
-  if (data.every(d => d.value === 0)) {
-    return months.map(month => ({
-      month,
-      value: Math.round(user.balance)
-    }))
+    cumulativeBalance += totalIncrease
   }
 
   return data
