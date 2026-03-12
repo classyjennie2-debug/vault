@@ -125,7 +125,7 @@ export default function DashboardLayoutClient({ children, user }: Props) {
             </div>
           </header>
 
-          {/* Mobile Navigation */}
+          {/* Mobile Navigation - Static Menu */}
           {mobileMenuOpen && (
             <div className="border-b border-border bg-card p-3 sm:p-4 lg:hidden">
               <nav className="flex flex-col gap-1">
@@ -133,7 +133,6 @@ export default function DashboardLayoutClient({ children, user }: Props) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2 sm:py-2.5 text-sm transition-colors min-h-[44px]",
                       pathname === item.href

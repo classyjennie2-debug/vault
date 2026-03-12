@@ -120,45 +120,45 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
   }, 0)
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      {/* Header Section */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight text-card-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-serif">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-700">
+      {/* Header Section - Mobile Responsive */}
+      <div className="text-center space-y-3 sm:space-y-4 px-2">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-card-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent font-serif">
           Investment Dashboard
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
           Discover, calculate, and manage your investments all in one place
         </p>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto mt-6 sm:mt-8">
           <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
-            <CardContent className="p-6 text-center">
-              <DollarSign className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-card-foreground">
+            <CardContent className="p-4 sm:p-6 text-center">
+              <DollarSign className="h-6 sm:h-8 w-6 sm:w-8 text-blue-600 mx-auto mb-2" />
+              <p className="text-lg sm:text-2xl font-bold text-card-foreground">
                 ${totalInvested.toLocaleString()}
               </p>
-              <p className="text-sm text-muted-foreground">Total Invested</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Total Invested</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20">
-            <CardContent className="p-6 text-center">
-              <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-green-600">
-                +${totalReturns.toLocaleString()}
+            <CardContent className="p-4 sm:p-6 text-center">
+              <TrendingUp className="h-6 sm:h-8 w-6 sm:w-8 text-green-600 mx-auto mb-2" />
+              <p className="text-lg sm:text-2xl font-bold text-green-600">
+                +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </p>
               <p className="text-sm text-muted-foreground">Expected Returns</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
-            <CardContent className="p-6 text-center">
-              <Target className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <p className="text-2xl font-bold text-card-foreground">
+            <CardContent className="p-4 sm:p-6 text-center">
+              <Target className="h-6 sm:h-8 w-6 sm:w-8 text-purple-600 mx-auto mb-2" />
+              <p className="text-lg sm:text-2xl font-bold text-card-foreground">
                 {safeInvestments.length}
               </p>
-              <p className="text-sm text-muted-foreground">Active Investments</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Active Investments</p>
             </CardContent>
           </Card>
         </div>
@@ -167,51 +167,80 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
       {/* Trust Badges */}
       <TrustBadges />
 
-      {/* Main Content Tabs */}
+      {/* Main Content Tabs - Mobile Responsive */}
       <Card className="border-0 shadow-2xl bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-xl">
         <CardContent className="p-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="border-b border-border/50 px-6 pt-6">
-              <TabsList className="grid w-full grid-cols-4 bg-secondary/50 backdrop-blur-sm">
+            <div className="border-b border-border/50 px-3 sm:px-6 pt-3 sm:pt-6 overflow-x-auto">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-secondary/50 backdrop-blur-sm gap-1 sm:gap-0">
                 <TabsTrigger
                   value="plans"
-                  className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                  className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 py-2 sm:py-3"
                 >
-                  <BarChart3 className="h-4 w-4" />
-                  Investment Plans
+                  <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="hidden sm:inline">Investment Plans</span>
+                  <span className="sm:hidden">Plans</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="active-investments"
-                  className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                  className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 py-2 sm:py-3"
                 >
-                  <Target className="h-4 w-4" />
-                  Active Investments
+                  <Target className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="hidden sm:inline">Active Investments</span>
+                  <span className="sm:hidden">Active</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="calculator"
-                  className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                  className="hidden sm:flex flex-row items-center justify-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 py-3"
                 >
                   <Calculator className="h-4 w-4" />
                   Calculator
                 </TabsTrigger>
                 <TabsTrigger
                   value="portfolio"
-                  className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                  className="hidden sm:flex flex-row items-center justify-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 py-3"
                 >
                   <TrendingUp className="h-4 w-4" />
                   Portfolio
                 </TabsTrigger>
               </TabsList>
+              {/* Mobile-only additional tab buttons */}
+              <div className="flex gap-1 sm:hidden mt-3 -mx-3 -mb-3 px-3 pb-3">
+                <button
+                  onClick={() => setActiveTab("calculator")}
+                  className={cn(
+                    "flex-1 py-2 px-2 rounded text-xs font-medium transition-all duration-300 flex items-center justify-center gap-1",
+                    activeTab === "calculator"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                  )}
+                >
+                  <Calculator className="h-3 w-3" />
+                  <span>Calc</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("portfolio")}
+                  className={cn(
+                    "flex-1 py-2 px-2 rounded text-xs font-medium transition-all duration-300 flex items-center justify-center gap-1",
+                    activeTab === "portfolio"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                  )}
+                >
+                  <TrendingUp className="h-3 w-3" />
+                  <span>Folio</span>
+                </button>
+              </div>
             </div>
 
             {/* Investment Plans Tab */}
-            <TabsContent value="plans" className="p-6">
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-card-foreground mb-2">
+            <TabsContent value="plans" className="p-3 sm:p-6">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="text-center px-2">
+                  <h2 className="text-xl sm:text-2xl font-bold text-card-foreground mb-2">
                     Choose Your Investment Plan
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Select from our carefully curated investment options
                   </p>
                 </div>
@@ -238,19 +267,19 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                           className={`h-full flex flex-col bg-gradient-to-br ${getBgGradient(index)} hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border backdrop-blur-sm relative overflow-hidden cursor-pointer ${isPopular(index) ? "ring-2 ring-purple-500/30" : ""}`}>
                           <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                          <CardHeader className="pb-3">
-                            <div className="flex items-start justify-between gap-3">
+                          <CardHeader className="pb-2 sm:pb-3">
+                            <div className="flex items-start justify-between gap-2 sm:gap-3">
                               <div className="flex-1 min-w-0">
-                                <CardTitle className="text-lg leading-tight">{plan.name}</CardTitle>
+                                <CardTitle className="text-base sm:text-lg leading-tight">{plan.name}</CardTitle>
                                 <Badge className={`mt-2 text-xs ${getRiskColor(plan.risk)}`}>
                                   {plan.risk} Risk
                                 </Badge>
                               </div>
-                              <Shield className="h-5 w-5 text-muted-foreground/50 flex-shrink-0" />
+                              <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground/50 flex-shrink-0" />
                             </div>
                           </CardHeader>
 
-                          <CardContent className="flex-1 flex flex-col gap-3">
+                          <CardContent className="flex-1 flex flex-col gap-2 sm:gap-3">
                             <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
                               {plan.description}
                             </p>
@@ -319,20 +348,20 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             </TabsContent>
 
             {/* Active Investments Tab */}
-            <TabsContent value="active-investments" className="p-6">
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-card-foreground mb-2">
+            <TabsContent value="active-investments" className="p-3 sm:p-6">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="text-center px-2">
+                  <h2 className="text-xl sm:text-2xl font-bold text-card-foreground mb-2">
                     Your Active Investments
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Track and monitor your ongoing investment positions in detail
                   </p>
                 </div>
 
                 {/* Active Investments Summary */}
                 {safeInvestments.length > 0 && (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                     <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
                       <CardContent className="p-4">
                         <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
@@ -384,8 +413,8 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                 {/* Detailed Investment Cards */}
                 {safeInvestments.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-semibold text-card-foreground mb-4">Investment Details</h3>
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+                    <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">Investment Details</h3>
+                    <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
                       {safeInvestments.map((inv) => {
                         const progress = calculateProgress(inv.startDate, inv.endDate, inv.status)
                         const progressColor =
@@ -477,15 +506,15 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                 {/* Table View */}
                 <div>
-                  <h3 className="text-lg font-semibold text-card-foreground mb-4">All Positions</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">All Positions</h3>
                   <ActiveInvestmentsTable investments={safeInvestments} />
                 </div>
 
                 {safeInvestments.length === 0 && (
-                  <div className="text-center py-12">
-                    <Target className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-card-foreground mb-2">No Active Investments</h3>
-                    <p className="text-muted-foreground mb-4">
+                  <div className="text-center py-8 sm:py-12 px-2">
+                    <Target className="h-10 sm:h-12 w-10 sm:w-12 text-muted-foreground/50 mx-auto mb-3 sm:mb-4" />
+                    <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-2">No Active Investments</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                       You don't have any active investments yet. Start by choosing a plan from the Investment Plans tab.
                     </p>
                     <Button onClick={() => setActiveTab("plans")} variant="outline">
@@ -498,13 +527,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             </TabsContent>
 
             {/* Calculator Tab */}
-            <TabsContent value="calculator" className="p-6">
+            <TabsContent value="calculator" className="p-3 sm:p-6">
               <div className="max-w-2xl mx-auto">
-                <div className="text-center mb-6">
-                  <h2 className="text-2xl font-bold text-card-foreground mb-2">
+                <div className="text-center mb-4 sm:mb-6 px-2">
+                  <h2 className="text-xl sm:text-2xl font-bold text-card-foreground mb-2">
                     Investment Calculator
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Calculate potential returns and plan your investments
                   </p>
                 </div>
@@ -513,19 +542,19 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             </TabsContent>
 
             {/* Portfolio Tab */}
-            <TabsContent value="portfolio" className="p-6">
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold text-card-foreground mb-2">
+            <TabsContent value="portfolio" className="p-3 sm:p-6">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="text-center px-2">
+                  <h2 className="text-xl sm:text-2xl font-bold text-card-foreground mb-2">
                     Portfolio Overview
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     High-level view of your investment portfolio performance
                   </p>
                 </div>
 
                 {/* Portfolio Summary Cards */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
                     <CardContent className="p-4">
                       <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
@@ -591,7 +620,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                 </Card>
 
                 {/* Quick Actions */}
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                   <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
                     <CardContent className="p-6">
                       <h3 className="font-semibold text-card-foreground mb-2">Ready to Invest More?</h3>
