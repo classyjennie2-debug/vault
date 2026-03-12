@@ -231,13 +231,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               <div className="bg-white/5 rounded-md p-2 backdrop-blur-sm">
                                 <p className="text-xs text-muted-foreground">Min</p>
                                 <p className="text-sm font-bold text-card-foreground">
-                                  ${plan.minAmount.toLocaleString()}
+                                  ${(plan.minAmount || 0).toLocaleString()}
                                 </p>
                               </div>
                               <div className="bg-white/5 rounded-md p-2 backdrop-blur-sm">
                                 <p className="text-xs text-muted-foreground">Max</p>
                                 <p className="text-sm font-bold text-card-foreground">
-                                  ${plan.maxAmount.toLocaleString()}
+                                  ${(plan.maxAmount || 0).toLocaleString()}
                                 </p>
                               </div>
                             </div>
@@ -322,7 +322,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                           +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
                         <p className="text-xs text-green-600/70 mt-2">
-                          {((totalReturns / totalInvested) * 100).toFixed(1)}% avg return
+                          {totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(1) : '0'}% avg return
                         </p>
                       </CardContent>
                     </Card>
@@ -394,7 +394,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                                 <div className="bg-white/5 rounded-lg p-3">
                                   <p className="text-xs text-muted-foreground mb-1">Amount Invested</p>
                                   <p className="text-lg font-bold text-blue-600">
-                                    ${inv.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                  ${(inv.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                   </p>
                                 </div>
                                 <div className="bg-white/5 rounded-lg p-3">
@@ -431,7 +431,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               <div className="bg-white/5 rounded-lg p-3 border border-border/20">
                                 <p className="text-xs text-muted-foreground mb-1">Return on Investment</p>
                                 <p className="text-base font-bold text-accent">
-                                  {((((inv.expectedProfit || 0) / inv.amount) * 100)).toFixed(2)}%
+                                  {((inv.amount || 0) > 0 ? (((inv.expectedProfit || 0) / (inv.amount || 1)) * 100) : 0).toFixed(2)}%
                                 </p>
                               </div>
                             </CardContent>
