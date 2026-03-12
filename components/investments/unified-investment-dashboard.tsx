@@ -113,7 +113,11 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
   }
 
   const totalInvested = safeInvestments.reduce((sum, inv) => sum + (inv?.amount || 0), 0)
-  const totalReturns = safeInvestments.reduce((sum, inv) => sum + (inv?.expectedProfit || 0), 0)
+  // Use accumulated profit if available, otherwise use expected profit
+  const totalReturns = safeInvestments.reduce((sum, inv) => {
+    const accumulated = (inv as any)?.accumulatedProfit
+    return sum + (accumulated != null ? accumulated : (inv?.expectedProfit || 0))
+  }, 0)
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">

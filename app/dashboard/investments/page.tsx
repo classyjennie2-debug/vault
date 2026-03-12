@@ -1,12 +1,13 @@
 import { UnifiedInvestmentDashboard } from "@/components/investments/unified-investment-dashboard"
 import { requireAuth } from "@/lib/auth"
-import { getInvestmentPlansFromDb, getUserActiveInvestments } from "@/lib/db"
+import { getInvestmentPlansFromDb, getUserActiveInvestmentsWithProfit } from "@/lib/db"
 
 export default async function InvestmentsPage() {
   try {
     const user = await requireAuth()
     const plans = await getInvestmentPlansFromDb()
-    const investments = await getUserActiveInvestments(user.id)
+    // Use the new function that calculates accumulated profit
+    const investments = await getUserActiveInvestmentsWithProfit(user.id)
 
     return (
       <div className="container mx-auto px-4 py-8">

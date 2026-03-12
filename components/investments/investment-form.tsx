@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import type { InvestmentPlan } from "@/lib/types"
 import { AlertCircle, Check } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { safeNumber, validateInvestmentAmount, calculateExpectedProfit } from "@/lib/investment-utils"
 
 interface InvestmentFormProps {
   plan: InvestmentPlan
@@ -14,21 +15,25 @@ interface InvestmentFormProps {
 }
 
 export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
-  const [amount, setAmount] = useState<string>((plan.minAmount || 0).toString())
+  // Safe plan values with proper null checking
+  const minAmount = safeNumber(plan.minAmount, 0)
+  const maxAmount = safeNumber(plan.maxAmount, Infinity)
+  const initialAmount = minAmount > 0 ? minAmount : 100
+  
+  const [amount, setAmount] = useState<string>(initialAmount.toString())
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const amountNum = parseFloat(amount) || 0
-  const minAmount = plan.minAmount || 0
-  const maxAmount = plan.maxAmount || 0
-  const isValid = amountNum >= minAmount && amountNum <= maxAmount
+  const amountNum = safeNumber(amount, 0)
+  
+  // Use the imported validation function for min/max checking
+  const validation = validateInvestmentAmount(amountNum, minAmount, maxAmount)
+  const isValid = validation.isValid && amountNum > 0
 
-  // Calculate expected profit based on return rate
-  // NOTE: This is the gross profit without deducting any fees
-  // Actual fees (if applicable) would reduce this amount
-  const expectedProfit = (amountNum * (plan.returnRate || 0)) / 100
-  const totalReturn = amountNum + expectedProfit
+  // Calculate expected profit based on return rate safely using utility function
+  const expectedProfit = calculateExpectedProfit(amountNum, plan.returnRate)
+  const totalReturn = Math.round((amountNum + expectedProfit) * 100) / 100
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -110,7 +115,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          Range: ${minAmount.toLocaleString()} - ${maxAmount.toLocaleString()}
+          Range: ${minAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} - ${maxAmount === Infinity ? "Unlimited" : maxAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
         </p>
       </div>
 
@@ -118,9 +123,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {amountNum < minAmount
-              ? `Minimum investment is $${minAmount.toLocaleString()}`
-              : `Maximum investment is $${maxAmount.toLocaleString()}`}
+            {validation.error || "Please enter a valid investment amount"}
           </AlertDescription>
         </Alert>
       )}

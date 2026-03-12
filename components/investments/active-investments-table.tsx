@@ -130,10 +130,20 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
                         ${investment.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                       </div>
                     </TableCell>
-                    <TableCell className="text-right text-green-700 dark:text-green-300 font-bold">
-                      <div className="flex items-center justify-end gap-2">
-                        <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        +${(investment.expectedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                    <TableCell className="text-right">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">Expected:</div>
+                        <div className="text-sm font-semibold text-green-700 dark:text-green-300">
+                          +${(investment.expectedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        </div>
+                        {(investment as any).accumulatedProfit != null && (investment as any).accumulatedProfit !== investment.expectedProfit && (
+                          <div>
+                            <div className="text-xs text-muted-foreground mt-1 mb-0.5">Accumulated:</div>
+                            <div className="text-sm font-bold text-accent">
+                              +${((investment as any).accumulatedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
@@ -154,14 +164,14 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
                           <div
                             className={`h-full bg-gradient-to-r ${getProgressGradient(investment.status)} rounded-full transition-all duration-1000 ease-out shadow-lg group-hover:shadow-xl`}
                             style={{
-                              width: `${calculateProgress(investment.startDate, investment.endDate, investment.status)}%`,
+                              width: `${Math.max(0, Math.min(100, (investment as any).progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status)))}%`,
                               animation: `slideInProgress 0.8s ease-out ${idx * 0.1}s both`,
                               animationDelay: `${idx * 50}ms`,
                             }}
                           />
                         </div>
                         <span className="text-xs text-muted-foreground font-bold">
-                          {calculateProgress(investment.startDate, investment.endDate, investment.status)}%
+                          {Math.max(0, Math.min(100, (investment as any).progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status))).toFixed(0)}%
                         </span>
                       </div>
                     </TableCell>

@@ -734,6 +734,49 @@ export async function getUserActiveInvestments(userId: string): Promise<ActiveIn
   )) as ActiveInvestment[]
 }
 
+/**
+ * Get active investments with calculated accumulated profits
+ * This recalculates progress percentage and accumulated profit based on current time
+ */
+export async function getUserActiveInvestmentsWithProfit(userId: string) {
+  const investments = await getUserActiveInvestments(userId)
+  
+  return investments.map((inv) => {
+    try {
+      const now = new Date().getTime()
+      const startTime = new Date(inv.startDate).getTime()
+      const endTime = new Date(inv.endDate).getTime()
+      
+      // Calculate progress percentage (0-100)
+      const totalDuration = endTime - startTime
+      const elapsed = now - startTime
+      let progressPercentage = 0
+      
+      if (elapsed > 0 && totalDuration > 0) {
+        progressPercentage = Math.min(100, (elapsed / totalDuration) * 100)
+      }
+      
+      // Calculate accumulated profit based on progress
+      const expectedProfit = inv.expectedProfit || 0
+      const accumulatedProfit = Math.max(0, (expectedProfit * progressPercentage) / 100)
+      
+      // Mark as completed if matured
+      if (progressPercentage >= 100) {
+        progressPercentage = 100
+      }
+      
+      return {
+        ...inv,
+        progressPercentage: Math.round(progressPercentage * 100) / 100,
+        accumulatedProfit: Math.round(accumulatedProfit * 100) / 100,
+      }
+    } catch (error) {
+      console.error('Error calculating investment profit:', error)
+      return inv
+    }
+  })
+}
+
 export async function generatePortfolioData(userId: string) {
   const user = await getUserById(userId)
 
