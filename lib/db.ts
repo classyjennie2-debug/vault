@@ -31,14 +31,13 @@ async function initializePostgres() {
   // Create the initialization promise to prevent concurrent initializations
   pgInitPromise = (async () => {
     try {
-      // Create tables for PostgreSQL
-      await pgPool.query(`
-        CREATE TABLE IF NOT EXISTS _meta (
+      // Create tables for PostgreSQL (must execute as separate statements)
+      const tableDefs = [
+        `CREATE TABLE IF NOT EXISTS _meta (
           key TEXT PRIMARY KEY,
           value TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS users (
+        )`,
+        `CREATE TABLE IF NOT EXISTS users (
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
           email TEXT UNIQUE NOT NULL,
@@ -48,9 +47,8 @@ async function initializePostgres() {
           balance REAL NOT NULL DEFAULT 0,
           joinedAt TEXT NOT NULL,
           avatar TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS transactions (
+        )`,
+        `CREATE TABLE IF NOT EXISTS transactions (
           id TEXT PRIMARY KEY,
           userId TEXT NOT NULL,
           type TEXT NOT NULL,
@@ -59,9 +57,8 @@ async function initializePostgres() {
           description TEXT NOT NULL,
           date TEXT NOT NULL,
           FOREIGN KEY (userId) REFERENCES users(id)
-        );
-
-        CREATE TABLE IF NOT EXISTS investment_plans (
+        )`,
+        `CREATE TABLE IF NOT EXISTS investment_plans (
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
           minAmount REAL NOT NULL,
@@ -71,9 +68,8 @@ async function initializePostgres() {
           durationUnit TEXT NOT NULL,
           risk TEXT NOT NULL,
           description TEXT NOT NULL
-        );
-
-        CREATE TABLE IF NOT EXISTS active_investments (
+        )`,
+        `CREATE TABLE IF NOT EXISTS active_investments (
           id TEXT PRIMARY KEY,
           userId TEXT NOT NULL,
           planId TEXT NOT NULL,
@@ -86,9 +82,8 @@ async function initializePostgres() {
           progressPercentage REAL NOT NULL DEFAULT 0,
           FOREIGN KEY (userId) REFERENCES users(id),
           FOREIGN KEY (planId) REFERENCES investment_plans(id)
-        );
-
-        CREATE TABLE IF NOT EXISTS wallet_addresses (
+        )`,
+        `CREATE TABLE IF NOT EXISTS wallet_addresses (
           id TEXT PRIMARY KEY,
           coin TEXT NOT NULL,
           network TEXT NOT NULL,
@@ -97,9 +92,8 @@ async function initializePostgres() {
           assignedAt TEXT,
           createdAt TEXT NOT NULL,
           FOREIGN KEY (assignedTo) REFERENCES users(id)
-        );
-
-        CREATE TABLE IF NOT EXISTS notifications (
+        )`,
+        `CREATE TABLE IF NOT EXISTS notifications (
           id TEXT PRIMARY KEY,
           userId TEXT NOT NULL,
           title TEXT NOT NULL,
@@ -109,16 +103,19 @@ async function initializePostgres() {
           timestamp TEXT NOT NULL,
           actionUrl TEXT,
           FOREIGN KEY (userId) REFERENCES users(id)
-        );
-
-        CREATE TABLE IF NOT EXISTS verification_codes (
+        )`,
+        `CREATE TABLE IF NOT EXISTS verification_codes (
           id TEXT PRIMARY KEY,
           email TEXT NOT NULL,
           code TEXT NOT NULL,
           expiresAt TEXT NOT NULL,
           used INTEGER NOT NULL DEFAULT 0
-        );
-      `)
+        )`
+      ]
+
+      for (const sql of tableDefs) {
+        await pgPool.query(sql)
+      }
 
       // Check if already seeded
       try {
