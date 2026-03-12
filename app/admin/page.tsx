@@ -1,15 +1,70 @@
+"use client"
+
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { allUsers, transactions } from "@/lib/mock-data"
 import { Users, DollarSign, Clock, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+
+interface User {
+  id: string
+  name: string
+  email: string
+  balance: number
+  role: string
+  joinedAt: string
+  avatar: string
+}
+
+interface Transaction {
+  id: string
+  userId: string
+  amount: number
+  type: string
+  status: string
+  description: string
+  date: string
+}
 
 export default function AdminOverviewPage() {
-  const totalBalance = allUsers.reduce((sum, u) => sum + u.balance, 0)
+  const [users, setUsers] = useState<User[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [usersRes, txRes] = await Promise.all([
+          fetch("/api/admin/users"),
+          fetch("/api/admin/transactions"),
+        ])
+
+        if (!usersRes.ok || !txRes.ok) {
+          throw new Error("Failed to fetch data")
+        }
+
+        const usersData = await usersRes.json()
+        const txData = await txRes.json()
+
+        setUsers(usersData || [])
+        setTransactions(txData || [])
+      } catch (err) {
+        console.error("Error fetching admin data:", err)
+        setError("Failed to load admin data")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  const totalBalance = users.reduce((sum, u) => sum + u.balance, 0)
   const pendingTx = transactions.filter((t) => t.status === "pending")
   const approvedTx = transactions.filter((t) => t.status === "approved")
   const approvedVolume = approvedTx.reduce((sum, t) => sum + t.amount, 0)
@@ -17,7 +72,7 @@ export default function AdminOverviewPage() {
   const stats = [
     {
       label: "Total Users",
-      value: allUsers.length.toString(),
+      value: users.length.toString(),
       icon: Users,
       color: "text-foreground",
       bg: "bg-secondary",
@@ -48,6 +103,22 @@ export default function AdminOverviewPage() {
       href: "/admin/transactions",
     },
   ]
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-muted-foreground">Loading admin data...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <p className="text-destructive">{error}</p>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -107,7 +178,7 @@ export default function AdminOverviewPage() {
           ) : (
             <div className="flex flex-col gap-3">
               {pendingTx.slice(0, 5).map((tx) => {
-                const user = allUsers.find((u) => u.id === tx.userId)
+                const user = users.find((u) => u.id === tx.userId)
                 return (
                   <div
                     key={tx.id}
@@ -152,7 +223,7 @@ export default function AdminOverviewPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3">
-            {allUsers.map((user) => (
+            {users.slice(0, 5).map((user) => (
               <div
                 key={user.id}
                 className="flex items-center justify-between rounded-lg border border-border p-4"

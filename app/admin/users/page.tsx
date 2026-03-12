@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -24,12 +24,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import type { User } from "@/lib/types"
-import { allUsers } from "@/lib/mock-data"
 import { Search, DollarSign, Edit3, X, Check, Users, Trash2, AlertCircle, Bell } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([...allUsers])
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [newBalance, setNewBalance] = useState("")
@@ -42,6 +42,28 @@ export default function AdminUsersPage() {
   const [isLoadingDelete, setIsLoadingDelete] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
+
+  // Fetch users from API on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("/api/admin/users")
+        if (res.ok) {
+          const data = await res.json()
+          setUsers(data || [])
+        } else {
+          setErrorMessage("Failed to fetch users")
+        }
+      } catch (err) {
+        console.error("Error fetching users:", err)
+        setErrorMessage("Failed to fetch users")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUsers()
+  }, [])
 
   const filteredUsers = users.filter(
     (u) =>
