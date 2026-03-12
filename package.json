@@ -1,14 +1,12 @@
 {
-  "name": "vault-capital",
-  "version": "1.0.0",
-  "description": "Institutional Investment Management Platform",
+  "name": "my-project",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
