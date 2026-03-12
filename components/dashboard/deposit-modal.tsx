@@ -104,7 +104,7 @@ export function DepositModal({
                     You'll Send
                   </p>
                   <Badge variant="secondary" className="flex items-center gap-1.5">
-                    <CoinIcon coin={coin!} size={14} />
+                    <CoinIcon coin={coin} size={14} />
                     <span className="font-semibold">{coin}</span>
                   </Badge>
                 </div>

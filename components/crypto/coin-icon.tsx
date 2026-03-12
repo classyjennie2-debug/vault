@@ -105,13 +105,46 @@ const coinSvgs: Record<CoinType, { viewBox: string; path: React.ReactNode }> = {
 }
 
 interface CoinIconProps {
-  coin: CoinType
+  coin: CoinType | null | undefined
   size?: number
   className?: string
 }
 
 export function CoinIcon({ coin, size = 24, className }: CoinIconProps) {
+  if (!coin) {
+    // Return a placeholder if coin is null/undefined
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        className={className}
+        aria-label="unknown coin"
+        role="img"
+      >
+        <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.1" />
+      </svg>
+    )
+  }
+
   const svg = coinSvgs[coin]
+  
+  if (!svg) {
+    // Return placeholder if coin type not found
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        className={className}
+        aria-label={`${coin} icon (not available)`}
+        role="img"
+      >
+        <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.1" />
+      </svg>
+    )
+  }
+
   return (
     <svg
       width={size}
