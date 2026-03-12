@@ -102,23 +102,24 @@ export default function DashboardLayoutClient({ children, user }: Props) {
 
         {/* Mobile Header */}
         <div className="flex flex-1 flex-col">
-          <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 lg:hidden">
-            <div className="flex items-center gap-2">
+          <header className="flex h-14 sm:h-16 items-center justify-between border-b border-border bg-card px-3 sm:px-4 lg:hidden sticky top-0 z-30">
+            <div className="flex items-center gap-2 min-w-0">
               <Logo showText={false} size="sm" />
-              <span className="font-semibold text-foreground font-serif">Vault Capital</span>
+              <span className="font-semibold text-sm sm:text-base text-foreground font-serif truncate">Vault Capital</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <NotificationBell />
               <UserMenu user={user} />
               <Button
                 variant="ghost"
                 size="icon"
+                className="h-8 w-8 sm:h-10 sm:w-10"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? (
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
                 ) : (
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
                 )}
               </Button>
             </div>
@@ -126,7 +127,7 @@ export default function DashboardLayoutClient({ children, user }: Props) {
 
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
-            <div className="border-b border-border bg-card p-4 lg:hidden">
+            <div className="border-b border-border bg-card p-3 sm:p-4 lg:hidden">
               <nav className="flex flex-col gap-1">
                 {navItems.map((item) => (
                   <Link
@@ -134,13 +135,13 @@ export default function DashboardLayoutClient({ children, user }: Props) {
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                      "flex items-center gap-3 rounded-lg px-3 py-2 sm:py-2.5 text-sm transition-colors min-h-[44px]",
                       pathname === item.href
                         ? "bg-secondary text-foreground font-medium"
                         : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
                     {item.label}
                   </Link>
                 ))}
@@ -149,7 +150,7 @@ export default function DashboardLayoutClient({ children, user }: Props) {
           )}
 
           {/* Main content */}
-          <main className="flex-1 overflow-y-auto p-4 lg:p-8">{children}</main>
+          <main className="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 lg:p-6 pb-24 sm:pb-20 md:pb-4">{children}</main>
         </div>
       </div>
     </div>

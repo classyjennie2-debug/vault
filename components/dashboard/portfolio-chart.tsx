@@ -54,20 +54,20 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
 
   return (
     <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in slide-in-from-left duration-700">
-      <CardHeader className="border-b border-slate-200 dark:border-slate-700">
+      <CardHeader className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
         <div className="flex items-start justify-between">
-        <div className="flex-1">
-            <CardTitle className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
-              <Activity className="h-4 w-4 text-primary" />
-              Portfolio Performance
+          <div className="flex-1 min-w-0">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+              <Activity className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="truncate">Portfolio Performance</span>
             </CardTitle>
-            <div className="mt-4">
-              <p className="text-3xl font-bold text-slate-900 dark:text-white">
+            <div className="mt-2 sm:mt-3 lg:mt-4">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white">
                 ${balance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </p>
-              <div className="flex items-center gap-2 mt-2">
-                <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />
-                <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-500">
+              <div className="flex items-center gap-2 mt-1 sm:mt-2">
+                <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600 dark:text-emerald-500 flex-shrink-0" />
+                <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-500">
                   +{monthlyChange}% this month
                 </span>
               </div>
@@ -75,12 +75,12 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-6">
-        <div className="h-72 w-full">
+      <CardContent className="pt-3 sm:pt-4 lg:pt-6">
+        <div className="h-40 sm:h-56 md:h-64 lg:h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
-              margin={{ top: 10, right: 30, bottom: 10, left: 0 }}
+              margin={{ top: 8, right: 16, bottom: 8, left: 0 }}
             >
               <defs>
                 {/* Green gradient for positive trend */}
@@ -117,13 +117,13 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
                 dataKey="month"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: "oklch(0.50 0.01 75)", fontSize: 12, fontWeight: 500 }}
+                tick={{ fill: "oklch(0.50 0.01 75)", fontSize: 11, fontWeight: 500 }}
                 stroke="oklch(0.90 0.005 75 / 0.5)"
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: "oklch(0.50 0.01 75)", fontSize: 12, fontWeight: 500 }}
+                tick={{ fill: "oklch(0.50 0.01 75)", fontSize: 11, fontWeight: 500 }}
                 tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
                 stroke="oklch(0.90 0.005 75 / 0.5)"
               />
@@ -132,7 +132,7 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
                 type="monotone"
                 dataKey="value"
                 stroke="rgb(34, 197, 94)"
-                strokeWidth={3}
+                strokeWidth={2}
                 fill="url(#colorValue)"
                 filter="url(#glowEffect)"
                 animationDuration={1200}
@@ -143,19 +143,19 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
           </ResponsiveContainer>
         </div>
 
-        {/* Stats footer */}
-        <div className="mt-6 grid grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700">
+        {/* Stats footer - responsive grid */}
+        <div className="mt-3 sm:mt-4 lg:mt-6 grid grid-cols-3 gap-2 sm:gap-3 p-2 sm:p-3 lg:p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700">
           <div>
-            <p className="text-xs text-muted-foreground font-medium">30-Day High</p>
-            <p className="text-sm font-bold text-card-foreground mt-1">${(thirtyDayHigh || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">30-Day High</p>
+            <p className="text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words">${(thirtyDayHigh || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">30-Day Low</p>
-            <p className="text-sm font-bold text-card-foreground mt-1">${(thirtyDayLow || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">30-Day Low</p>
+            <p className="text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words">${(thirtyDayLow || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground font-medium">Avg Value</p>
-            <p className="text-sm font-bold text-card-foreground mt-1">${(avgValue || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Avg Value</p>
+            <p className="text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words">${(avgValue || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
         </div>
       </CardContent>

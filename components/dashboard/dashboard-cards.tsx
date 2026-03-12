@@ -75,21 +75,21 @@ function StatCard({
 }) {
   return (
     <Card className={`group border hover:shadow-md transition-all duration-300 overflow-hidden ${gradients[gradientIndex]}`}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2 pt-3 px-4 gap-2">
-        <CardTitle className="text-xs font-semibold text-slate-600 dark:text-slate-400 tracking-wide">
+      <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 pt-2 sm:pt-3 px-3 sm:px-4 gap-2">
+        <CardTitle className="text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400 tracking-wide line-clamp-2">
           {label}
         </CardTitle>
-        <div className={`p-1.5 rounded-md flex-shrink-0 ${iconBgColors[gradientIndex]}`}>
-          <Icon className={`h-4 w-4 ${iconColors[gradientIndex]}`} />
+        <div className={`p-1 sm:p-1.5 rounded-md flex-shrink-0 ${iconBgColors[gradientIndex]}`}>
+          <Icon className={`h-3 w-3 sm:h-4 sm:w-4 ${iconColors[gradientIndex]}`} />
         </div>
       </CardHeader>
-      <CardContent className="pt-1 pb-3 px-4">
-        <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-tight">
+      <CardContent className="pt-0.5 sm:pt-1 pb-2 sm:pb-3 px-3 sm:px-4">
+        <p className="text-base sm:text-lg lg:text-xl font-bold text-slate-900 dark:text-white leading-tight break-words">
           {value}
         </p>
         {trend && (
-          <p className={`text-xs mt-2 flex items-center gap-0.5 font-medium ${trendColor || "text-slate-600 dark:text-slate-400"}`}>
-            {trend.includes("+") && <ArrowUpRight className="h-3 w-3 flex-shrink-0" />}
+          <p className={`text-[10px] sm:text-xs mt-1 sm:mt-2 flex items-center gap-0.5 font-medium ${trendColor || "text-slate-600 dark:text-slate-400"}`}>
+            {trend.includes("+") && <ArrowUpRight className="h-2 w-2 sm:h-3 sm:w-3 flex-shrink-0" />}
             {trend}
           </p>
         )}
@@ -148,7 +148,7 @@ export function DashboardCards({
   const returnRateFormatted = `${totalReturnRate.toFixed(2)}%`
 
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6 animate-in fade-in slide-in-from-top duration-700">
+    <div className="grid gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 animate-in fade-in slide-in-from-top duration-700">
       <StatCard
         icon={Wallet}
         label="Total Balance"

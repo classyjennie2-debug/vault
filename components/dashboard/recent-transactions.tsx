@@ -57,26 +57,26 @@ export function RecentTransactions() {
 
   return (
     <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in slide-in-from-right duration-700">
-      <CardHeader className="flex flex-row items-center justify-between border-b border-slate-200 dark:border-slate-700">
-        <CardTitle className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
-          <Clock className="h-4 w-4 text-primary" />
-          Recent Transactions
+      <CardHeader className="flex flex-row items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+          <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+          <span className="truncate">Recent Transactions</span>
         </CardTitle>
         <Link
           href="/dashboard/transactions"
-          className="text-xs font-semibold text-accent hover:text-accent/80 hover:underline flex items-center gap-1 transition-colors duration-300"
+          className="text-[10px] sm:text-xs font-semibold text-accent hover:text-accent/80 hover:underline flex items-center gap-0.5 transition-colors duration-300 flex-shrink-0"
         >
           View all
-          <Eye className="h-3 w-3" />
+          <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
         </Link>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 pt-6">
+      <CardContent className="flex flex-col gap-2 sm:gap-3 pt-3 sm:pt-4 lg:pt-6">
         {loading ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex items-center justify-center py-6 sm:py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : userTransactions.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-center py-6 sm:py-8 text-muted-foreground text-sm">
             No recent transactions
           </div>
         ) : (
@@ -88,36 +88,36 @@ export function RecentTransactions() {
             return (
               <div
                 key={tx.id}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-l-2 hover:border-l-primary transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
-              style={{ animationDelay: `${idx * 75}ms` }}
-            >
-              <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 font-bold`}>
-                <Icon className={`h-5 w-5`} />
+                className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-l-2 hover:border-l-primary transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
+                style={{ animationDelay: `${idx * 75}ms` }}
+              >
+                <div className={`flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 font-bold`}>
+                  <Icon className={`h-3.5 w-3.5 sm:h-5 sm:w-5`} />
+                </div>
+                <div className="flex-1 overflow-hidden min-w-0">
+                  <p className="truncate text-xs sm:text-sm font-semibold text-card-foreground group-hover:text-accent transition-colors">
+                    {tx.description}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground/70 truncate">{tx.date}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-1">
+                  <p
+                    className={`text-xs sm:text-sm font-bold transition-colors duration-300 whitespace-nowrap ${
+                      isPositive ? "text-emerald-600 dark:text-emerald-500" : "text-slate-900 dark:text-slate-100"
+                    }`}
+                  >
+                    {isPositive ? "+" : "-"}$
+                    {(tx.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                  </p>
+                  <Badge
+                    className={`text-[8px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 font-semibold border ${statusColor}`}
+                  >
+                    {tx.status}
+                  </Badge>
+                </div>
               </div>
-              <div className="flex-1 overflow-hidden">
-                <p className="truncate text-sm font-semibold text-card-foreground group-hover:text-accent transition-colors">
-                  {tx.description}
-                </p>
-                <p className="text-xs text-muted-foreground/70">{tx.date}</p>
-              </div>
-              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                <p
-                  className={`text-sm font-bold transition-colors duration-300 ${
-                    isPositive ? "text-emerald-600 dark:text-emerald-500" : "text-slate-900 dark:text-slate-100"
-                  }`}
-                >
-                  {isPositive ? "+" : "-"}$
-                  {(tx.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                </p>
-                <Badge
-                  className={`text-[10px] px-2 py-0.5 font-semibold border ${statusColor}`}
-                >
-                  {tx.status}
-                </Badge>
-              </div>
-            </div>
-          )
-        })
+            )
+          })
         )}
       </CardContent>
     </Card>

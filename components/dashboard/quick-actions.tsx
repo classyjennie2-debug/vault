@@ -32,27 +32,27 @@ export function QuickActions() {
 
   return (
     <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in duration-700">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+      <CardHeader className="pb-2 sm:pb-3 lg:pb-4">
+        <CardTitle className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
           Quick Actions
         </CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-3 gap-3 pt-2">
+      <CardContent className="grid grid-cols-3 gap-2 sm:gap-3 pt-1 sm:pt-2 lg:pt-2">
         {actions.map((action, idx) => {
           const Icon = action.icon
           return (
             <Button
               key={action.label}
               variant="outline"
-              className="flex flex-col items-center justify-center gap-2 h-auto py-4 px-3 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-300 animate-in fade-in slide-in-from-left duration-500"
+              className="flex flex-col items-center justify-center gap-1 sm:gap-2 h-auto py-3 sm:py-4 lg:py-5 px-2 sm:px-3 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-300 animate-in fade-in slide-in-from-left duration-500 min-h-[48px] sm:min-h-[56px]"
               style={{ animationDelay: `${idx * 100}ms` }}
               asChild
             >
-              <Link href={action.href} className="flex flex-col items-center gap-2 w-full">
+              <Link href={action.href} className="flex flex-col items-center gap-1 sm:gap-2 w-full">
                 <div className="rounded-lg">
-                  <Icon className={`h-5 w-5 ${action.color} transition-colors duration-300`} />
+                  <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${action.color} transition-colors duration-300`} />
                 </div>
-                <span className="text-xs font-semibold text-slate-900 dark:text-white text-center leading-tight">
+                <span className="text-[10px] sm:text-xs font-semibold text-slate-900 dark:text-white text-center leading-tight line-clamp-2">
                   {action.label}
                 </span>
               </Link>

@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   const totalReturnRate = calculateReturnRate(stats.totalProfit, stats.totalInvested)
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
       <DashboardHero user={user} stats={stats} />
 
       <QuickActions />
@@ -38,7 +38,7 @@ export default async function DashboardPage() {
         totalReturnRate={totalReturnRate}
       />
 
-      <div className="grid gap-6 lg:grid-cols-5">
+      <div className="grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-5">
         <div className="lg:col-span-3">
           <PortfolioChart data={portfolioData} balance={user.balance} />
         </div>
@@ -49,14 +49,14 @@ export default async function DashboardPage() {
 
       {activeInvestments && activeInvestments.length > 0 && (
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-4">Active Investment Plans</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">Active Investment Plans</h2>
           <ActiveInvestmentsTable investments={activeInvestments} />
         </div>
       )}
 
       <RecentActivities userId={user.id} />
 
-      <div>
+      <div className="pb-4 sm:pb-0">
         <LiveChatButton />
       </div>
     </div>
