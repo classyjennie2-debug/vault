@@ -54,13 +54,24 @@ export function InvestmentCalculator() {
 
   // Calculate returns with optional fees
   const grossProfit = (investmentAmount * selectedPlan.returnRate) / 100
+  
+  // Convert duration to years for fee calculation
+  let durationInYears = selectedPlan.duration || 0
+  if (selectedPlan.durationUnit === "months") {
+    durationInYears = selectedPlan.duration / 12
+  } else if (selectedPlan.durationUnit === "days") {
+    durationInYears = selectedPlan.duration / 365
+  }
+  // else: duration is already in years
+  
   const managementFee =
-    investmentAmount * (fees.management / 100) *
-    (selectedPlan.duration / (selectedPlan.durationUnit === "months" ? 12 : 365))
+    investmentAmount * (fees.management / 100) * durationInYears
   const performanceFee = grossProfit * (fees.performance / 100)
   const totalFees = managementFee + performanceFee
+  // Net profit is what you actually keep after fees are deducted
   const netProfit = grossProfit - totalFees
   const totalReturn = investmentAmount + netProfit
+  // Net return rate shows the effective return after all fees
   const netReturnRate = investmentAmount > 0 ? (netProfit / investmentAmount) * 100 : 0
 
   return (

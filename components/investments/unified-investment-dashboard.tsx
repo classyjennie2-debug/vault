@@ -88,6 +88,30 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
   const isPopular = (index: number) => index === 1
 
+  const calculateROI = (investment: ActiveInvestment): number => {
+    // ROI as percentage: (profit / initial amount) * 100
+    const amount = investment.amount || 1
+    const profit = investment.expectedProfit || 0
+    return (profit / amount) * 100
+  }
+
+  const calculateAnnualizedROI = (investment: ActiveInvestment): number => {
+    // Annualized ROI accounts for time: shows what the return would be if extended to a full year
+    const amount = investment.amount || 1
+    const profit = investment.expectedProfit || 0
+    const simpleROI = (profit / amount) * 100
+    
+    // Calculate investment duration in years
+    const startDate = new Date(investment.startDate).getTime()
+    const endDate = new Date(investment.endDate).getTime()
+    const durationMs = endDate - startDate
+    const durationYears = durationMs / (365.25 * 24 * 60 * 60 * 1000)
+    
+    if (durationYears <= 0) return 0
+    // Annualized = simple ROI * (365.25 days / actual duration days)
+    return simpleROI / durationYears
+  }
+
   const totalInvested = safeInvestments.reduce((sum, inv) => sum + (inv?.amount || 0), 0)
   const totalReturns = safeInvestments.reduce((sum, inv) => sum + (inv?.expectedProfit || 0), 0)
 
@@ -430,9 +454,14 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               {/* ROI */}
                               <div className="bg-white/5 rounded-lg p-3 border border-border/20">
                                 <p className="text-xs text-muted-foreground mb-1">Return on Investment</p>
-                                <p className="text-base font-bold text-accent">
-                                  {((inv.amount || 0) > 0 ? (((inv.expectedProfit || 0) / (inv.amount || 1)) * 100) : 0).toFixed(2)}%
-                                </p>
+                                <div className="space-y-1">
+                                  <p className="text-base font-bold text-accent">
+                                    {calculateROI(inv).toFixed(2)}%
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Annualized: {calculateAnnualizedROI(inv).toFixed(2)}%
+                                  </p>
+                                </div>
                               </div>
                             </CardContent>
                           </Card>

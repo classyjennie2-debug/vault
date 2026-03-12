@@ -24,6 +24,9 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
   const maxAmount = plan.maxAmount || 0
   const isValid = amountNum >= minAmount && amountNum <= maxAmount
 
+  // Calculate expected profit based on return rate
+  // NOTE: This is the gross profit without deducting any fees
+  // Actual fees (if applicable) would reduce this amount
   const expectedProfit = (amountNum * (plan.returnRate || 0)) / 100
   const totalReturn = amountNum + expectedProfit
 
