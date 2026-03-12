@@ -27,6 +27,21 @@ export function ActiveInvestmentsTable({ investments }: { investments: ActiveInv
     })
   }
 
+  const calculateProgress = (startDate: string, endDate: string, status: string): number => {
+    if (status === "completed") return 100
+    if (status === "withdrawn") return 100
+    
+    const start = new Date(startDate).getTime()
+    const end = new Date(endDate).getTime()
+    const now = new Date().getTime()
+    
+    if (now <= start) return 0
+    if (now >= end) return 100
+    
+    const progress = ((now - start) / (end - start)) * 100
+    return Math.min(100, Math.max(0, Math.round(progress)))
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -137,14 +152,14 @@ export function ActiveInvestmentsTable({ investments }: { investments: ActiveInv
                           <div
                             className={`h-full bg-gradient-to-r ${getProgressGradient(investment.status)} rounded-full transition-all duration-1000 ease-out shadow-lg group-hover:shadow-xl`}
                             style={{
-                              width: `${investment.progressPercentage}%`,
+                              width: `${calculateProgress(investment.startDate, investment.endDate, investment.status)}%`,
                               animation: `slideInProgress 0.8s ease-out ${idx * 0.1}s both`,
                               animationDelay: `${idx * 50}ms`,
                             }}
                           />
                         </div>
                         <span className="text-xs text-muted-foreground font-bold">
-                          {investment.progressPercentage}%
+                          {calculateProgress(investment.startDate, investment.endDate, investment.status)}%
                         </span>
                       </div>
                     </TableCell>

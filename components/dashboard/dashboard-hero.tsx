@@ -22,49 +22,49 @@ export function DashboardHero({ user, stats }: DashboardHeroProps) {
 
   return (
     <div className="w-full mb-8 animate-in fade-in slide-in-from-top duration-700">
-      {/* Main Hero Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/90 via-purple-600/90 to-pink-600/90 backdrop-blur-xl border border-white/10 shadow-2xl">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse delay-700" />
+      {/* Main Hero Banner - Professional Navy & White Design */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+        {/* Subtle accent gradient overlay */}
+        <div className="absolute inset-0 overflow-hidden opacity-30">
+          <div className="absolute -top-32 right-0 w-64 h-64 bg-gradient-to-l from-primary/10 to-transparent blur-3xl" />
+          <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-gradient-to-r from-accent/10 to-transparent blur-3xl" />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 px-8 py-10">
+        <div className="relative z-10 px-8 py-12 md:px-12 md:py-14">
           <div className="flex items-start justify-between gap-8">
             <div className="flex-1">
-              <p className="text-white/80 text-sm font-medium mb-2">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">
                 Welcome back,
               </p>
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
                 {user.name}
               </h1>
-              <p className="text-white/70 text-lg max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+              <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
                 Your portfolio is performing exceptionally well. Keep investing and watch your wealth grow!
               </p>
             </div>
 
             {/* Balance Display */}
-            <div className="hidden md:flex flex-col items-end gap-4 animate-in fade-in slide-in-from-right duration-700 delay-300">
+            <div className="hidden md:flex flex-col items-end gap-6 animate-in fade-in slide-in-from-right duration-700 delay-300">
               <div className="text-right">
-                <p className="text-white/70 text-sm font-medium mb-1">Total Balance</p>
-                <p className="text-5xl font-bold text-white">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Total Balance</p>
+                <p className="text-5xl font-bold text-slate-900 dark:text-white">
                   ${totalBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </p>
               </div>
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-7">
                 <div className="text-right">
-                  <p className="text-white/70 text-xs mb-1">Monthly Gain</p>
-                  <p className="flex items-center gap-1 text-green-300 font-semibold">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Monthly Gain</p>
+                  <p className="flex items-center gap-1 text-emerald-600 dark:text-emerald-500 font-semibold text-sm">
                     <ArrowUpRight className="h-4 w-4" />
                     +$12,450
                   </p>
                 </div>
-                <div className="w-px h-10 bg-white/20" />
+                <div className="w-px h-10 bg-slate-300 dark:bg-slate-600" />
                 <div className="text-right">
-                  <p className="text-white/70 text-xs mb-1">Total Returns</p>
-                  <p className="text-white font-semibold">+25.8%</p>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Total Returns</p>
+                  <p className="text-slate-900 dark:text-white font-semibold text-sm">+25.8%</p>
                 </div>
               </div>
             </div>
@@ -72,24 +72,24 @@ export function DashboardHero({ user, stats }: DashboardHeroProps) {
         </div>
       </div>
 
-      {/* Quick Stats Bar */}
-      <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom duration-700 delay-300">
-        <div className="bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl p-4 backdrop-blur-lg hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300">
-          <p className="text-xs text-muted-foreground">Total Profit</p>
-          <p className="text-xl font-bold text-green-500 mt-1">${(totalProfit).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
-          <p className="text-xs text-green-500/70 mt-1">From all investments</p>
+      {/* Quick Stats Bar - Professional Minimal Design */}
+      <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-bottom duration-700 delay-300">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Profit</p>
+          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-500 mt-2">${(totalProfit).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">From all investments</p>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl p-4 backdrop-blur-lg hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
-          <p className="text-xs text-muted-foreground">Active Plans</p>
-          <p className="text-xl font-bold text-blue-500 mt-1">{activeInvestments}</p>
-          <p className="text-xs text-blue-500/70 mt-1">Active investments</p>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Active Plans</p>
+          <p className="text-2xl font-bold text-primary mt-2">{activeInvestments}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Active investments</p>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500/20 to-yellow-500/20 border border-orange-500/30 rounded-xl p-4 backdrop-blur-lg hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300">
-          <p className="text-xs text-muted-foreground">ROI</p>
-          <p className="text-xl font-bold text-orange-500 mt-1">{totalBalance > 0 ? ((totalProfit / (totalBalance - totalProfit)) * 100).toFixed(1) : "0"}%</p>
-          <p className="text-xs text-orange-500/70 mt-1">Return on investment</p>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-5 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">ROI</p>
+          <p className="text-2xl font-bold text-accent mt-2">{totalBalance > 0 ? ((totalProfit / (totalBalance - totalProfit)) * 100).toFixed(1) : "0"}%</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">Return on investment</p>
         </div>
       </div>
     </div>

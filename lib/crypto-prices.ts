@@ -1,14 +1,5 @@
 import type { CoinType } from "./types"
 
-const coinToCoingeckoId: Record<CoinType, string> = {
-  USDT: "tether",
-  BTC: "bitcoin",
-  ETH: "ethereum",
-  BNB: "binancecoin",
-  TRX: "tron",
-  SOL: "solana",
-}
-
 const coinToCmcSymbol: Record<CoinType, string> = {
   USDT: "USDT",
   BTC: "BTC",
@@ -22,9 +13,11 @@ const coinToCmcSymbol: Record<CoinType, string> = {
 const priceCache: Record<string, { price: number; timestamp: number }> = {}
 const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
+const CMC_API_KEY = "99267b1933d34ba6bb9c8e8d693b4aea"
+
 /**
- * Fetch the current price of a cryptocurrency in USD using CoinGecko and CoinMarketCap APIs
- * Falls back to mock data if APIs are unavailable
+ * Fetch the current price of a cryptocurrency in USD using CoinMarketCap API
+ * Falls back to mock data if API is unavailable
  */
 export async function getCryptoPriceInUSD(coin: CoinType): Promise<number> {
   const cacheKey = `price_${coin}`
@@ -35,18 +28,19 @@ export async function getCryptoPriceInUSD(coin: CoinType): Promise<number> {
   }
 
   try {
-    // Try CoinGecko first (free, no API key required)
-    const coingeckoId = coinToCoingeckoId[coin]
-    const coingeckoResponse = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=usd`, {
+    // Use CoinMarketCap API
+    const cmcSymbol = coinToCmcSymbol[coin]
+    const cmcResponse = await fetch(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${cmcSymbol}&convert=USD`, {
       method: "GET",
       headers: {
+        "X-CMC_PRO_API_KEY": CMC_API_KEY,
         "Content-Type": "application/json",
       },
     })
 
-    if (coingeckoResponse.ok) {
-      const data = await coingeckoResponse.json()
-      const price = data[coingeckoId]?.usd
+    if (cmcResponse.ok) {
+      const data = await cmcResponse.json()
+      const price = data.data[cmcSymbol]?.quote?.USD?.price
       if (price) {
         // Cache the price
         priceCache[cacheKey] = {
@@ -57,34 +51,7 @@ export async function getCryptoPriceInUSD(coin: CoinType): Promise<number> {
       }
     }
 
-    // Fallback to CoinMarketCap if CoinGecko fails
-    // Note: CoinMarketCap requires API key, add CMC_API_KEY to environment variables
-    const cmcApiKey = process.env.CMC_API_KEY
-    if (cmcApiKey) {
-      const cmcSymbol = coinToCmcSymbol[coin]
-      const cmcResponse = await fetch(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=${cmcSymbol}&convert=USD`, {
-        method: "GET",
-        headers: {
-          "X-CMC_PRO_API_KEY": cmcApiKey,
-          "Content-Type": "application/json",
-        },
-      })
-
-      if (cmcResponse.ok) {
-        const data = await cmcResponse.json()
-        const price = data.data[cmcSymbol]?.quote?.USD?.price
-        if (price) {
-          // Cache the price
-          priceCache[cacheKey] = {
-            price,
-            timestamp: Date.now(),
-          }
-          return price
-        }
-      }
-    }
-
-    throw new Error("Both APIs failed")
+    throw new Error("CoinMarketCap API failed")
   } catch (error) {
     console.error(`Failed to fetch price for ${coin}:`, error)
     

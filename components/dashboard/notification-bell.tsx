@@ -63,14 +63,14 @@ export function NotificationBell() {
   ) => {
     switch (type) {
       case "success":
-        return "bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30 shadow-lg shadow-green-500/10"
+        return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
       case "warning":
-        return "bg-orange-500/20 text-orange-700 dark:text-orange-400 border-orange-500/30 shadow-lg shadow-orange-500/10"
+        return "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
       case "error":
-        return "bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30 shadow-lg shadow-red-500/10"
+        return "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20"
       case "info":
       default:
-        return "bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30 shadow-lg shadow-blue-500/10"
+        return "bg-primary/10 text-primary border-primary/20"
     }
   }
 
@@ -90,7 +90,7 @@ export function NotificationBell() {
 
   const NotificationItem = ({ notification, idx }: { notification: Notification; idx: number }) => (
     <div
-      className="p-4 border-b border-border/30 hover:bg-gradient-to-r hover:from-white/50 hover:to-slate-50/50 dark:hover:from-slate-800/50 dark:hover:to-slate-900/50 cursor-pointer transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
+      className="p-4 border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
       style={{ animationDelay: `${idx * 50}ms` }}
       onClick={() => {
         handleMarkAsRead(notification.id)

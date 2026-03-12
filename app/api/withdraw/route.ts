@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { getUserById, createTransaction } from "@/lib/db"
+import { getUserById, createTransaction, get, run } from "@/lib/db"
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,8 +17,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    if (amount > userData.balance) {
-      return NextResponse.json({ error: "Insufficient balance" }, { status: 400 })
+    // Calculate available balance (total balance - invested amount + profits)
+    const totalInvestedRow: { sum: number } | undefined = await getUserById(user.id)
+    let availableBalance = userData.balance
+    
+    try {
+      const investedResult = await get(
+        "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'",
+        [user.id]
+      )
+      const profitResult = await get(
+        "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'",
+        [user.id]
+      )
+      const totalInvested = investedResult?.sum || 0
+      const totalProfit = profitResult?.sum || 0
+      availableBalance = userData.balance - totalInvested + totalProfit
+    } catch (e) {
+      // Fall back to total balance if calculation fails
+      availableBalance = userData.balance
+    }
+
+    if (amount > availableBalance) {
+      return NextResponse.json({ error: "Insufficient available balance" }, { status: 400 })
     }
 
     if (method === "bank" && !bankAccount) {
@@ -39,6 +60,9 @@ export async function POST(request: NextRequest) {
       bankAccount: method === "bank" ? bankAccount : undefined,
       cryptoAddress: method === "crypto" ? cryptoAddress : undefined,
     })
+
+    // Deduct from user balance (will be returned if withdrawal is rejected)
+    await run(`UPDATE users SET balance = balance - ? WHERE id = ?`, [amount, user.id])
 
     return NextResponse.json({
       message: "Withdrawal request submitted",

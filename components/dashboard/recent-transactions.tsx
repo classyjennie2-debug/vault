@@ -20,16 +20,16 @@ const typeIcons = {
 }
 
 const typeBgColors = {
-  deposit: "bg-green-500/20 text-green-600 dark:text-green-400",
-  withdrawal: "bg-red-500/20 text-red-600 dark:text-red-400",
-  investment: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
-  return: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
+  deposit: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  withdrawal: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
+  investment: "bg-primary/10 text-primary",
+  return: "bg-accent/10 text-accent",
 }
 
 const statusColors = {
-  approved: "bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30 shadow-lg shadow-green-500/10",
-  pending: "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30 shadow-lg shadow-yellow-500/10",
-  rejected: "bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30 shadow-lg shadow-red-500/10",
+  approved: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+  pending: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
+  rejected: "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20",
 }
 
 export function RecentTransactions() {
@@ -56,10 +56,10 @@ export function RecentTransactions() {
   }, [])
 
   return (
-    <Card className="border backdrop-blur-lg bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-950/50 dark:to-slate-900/30 animate-in fade-in slide-in-from-right duration-700">
-      <CardHeader className="flex flex-row items-center justify-between border-b border-border/50">
-        <CardTitle className="flex items-center gap-2 text-base text-muted-foreground font-normal">
-          <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in slide-in-from-right duration-700">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-slate-200 dark:border-slate-700">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
+          <Clock className="h-4 w-4 text-primary" />
           Recent Transactions
         </CardTitle>
         <Link
@@ -88,7 +88,7 @@ export function RecentTransactions() {
             return (
               <div
                 key={tx.id}
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gradient-to-r hover:from-white/50 hover:to-slate-50/50 dark:hover:from-slate-800/50 dark:hover:to-slate-900/50 transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-l-2 hover:border-l-primary transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
               style={{ animationDelay: `${idx * 75}ms` }}
             >
               <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 font-bold`}>
@@ -103,7 +103,7 @@ export function RecentTransactions() {
               <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                 <p
                   className={`text-sm font-bold transition-colors duration-300 ${
-                    isPositive ? "text-green-600 dark:text-green-400" : "text-card-foreground"
+                    isPositive ? "text-emerald-600 dark:text-emerald-500" : "text-slate-900 dark:text-slate-100"
                   }`}
                 >
                   {isPositive ? "+" : "-"}$

@@ -629,10 +629,43 @@ export async function markNotificationAsRead(notificationId: string): Promise<vo
 }
 
 export async function getRecentActivities(userId: string) {
-  return all(
+  const transactions = await all(
     "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 5",
     [userId]
   )
+  
+  // Transform transactions to activities format
+  return transactions.map((tx: any) => ({
+    id: tx.id,
+    userId: tx.userId,
+    type: tx.type,
+    title: getTitleFromType(tx.type),
+    message: tx.description,
+    timestamp: tx.date,
+    icon: getIconFromType(tx.type),
+  }))
+}
+
+function getTitleFromType(type: string): string {
+  const titles: { [key: string]: string } = {
+    investment: "Investment Started",
+    profit: "Profit Credited",
+    deposit: "Deposit Approved",
+    withdrawal: "Withdrawal Processed",
+    return: "Return Credited",
+  }
+  return titles[type] || "Transaction"
+}
+
+function getIconFromType(type: string): string {
+  const icons: { [key: string]: string } = {
+    investment: "TrendingUp",
+    profit: "Award",
+    deposit: "ArrowDown",
+    withdrawal: "ArrowUp",
+    return: "TrendingUp",
+  }
+  return icons[type] || "Zap"
 }
 export async function getUserStats(userId: string) {
   const totalInvestedRow: { sum: number } | undefined = await get(
@@ -655,9 +688,19 @@ export async function getUserStats(userId: string) {
     "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = 'active'",
     [userId]
   )
+  const userRow: { balance: number } | undefined = await get(
+    "SELECT balance FROM users WHERE id = ?",
+    [userId]
+  )
+  const totalInvested = totalInvestedRow?.sum || 0
+  const totalProfit = totalProfitRow?.sum || 0
+  const userBalance = userRow?.balance || 0
+  const availableBalance = userBalance - totalInvested + totalProfit
+  
   return {
-    totalInvested: totalInvestedRow?.sum || 0,
-    totalProfit: totalProfitRow?.sum || 0,
+    totalInvested,
+    totalProfit,
+    availableBalance: Math.max(0, availableBalance),
     pendingDeposits: pendingDepositsRow?.cnt || 0,
     totalWithdrawn: totalWithdrawnRow?.sum || 0,
     activeInvestments: activeCountRow?.cnt || 0,
@@ -791,6 +834,40 @@ export function updateUserSettings(userId: string, settings: Record<string, unkn
   // In a real app, this would update user settings in the database
   console.log(`Updating settings for user ${userId}:`, settings)
   return true
+}
+
+export async function createNotification(notification: {
+  userId: string
+  title: string
+  message: string
+  type: "success" | "info" | "warning" | "error"
+  actionUrl?: string
+}) {
+  const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  await run(
+    "INSERT INTO notifications (id, userId, title, message, type, isRead, timestamp, actionUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [
+      notificationId,
+      notification.userId,
+      notification.title,
+      notification.message,
+      notification.type,
+      0, // isRead = false
+      new Date().toISOString(),
+      notification.actionUrl || null,
+    ]
+  )
+  return notificationId
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  // Delete all user-related data first
+  await run("DELETE FROM notifications WHERE userId = ?", [userId])
+  await run("DELETE FROM transactions WHERE userId = ?", [userId])
+  await run("DELETE FROM active_investments WHERE userId = ?", [userId])
+  await run("DELETE FROM wallet_addresses WHERE userId = ?", [userId])
+  // Finally delete the user
+  await run("DELETE FROM users WHERE id = ?", [userId])
 }
 
 export default getDb

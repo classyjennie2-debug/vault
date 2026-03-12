@@ -15,42 +15,44 @@ import {
   Clock,
   LogOut,
   ArrowUpRight,
+  DollarSign,
 } from "lucide-react"
 
 interface DashboardCardsProps {
   totalBalance: number
   totalInvested: number
   totalProfit: number
+  availableBalance: number
   activeInvestments: number
   pendingDeposits: number
   totalWithdrawn: number
 }
 
 const gradients = [
-  "from-blue-500/20 to-cyan-500/20 border-blue-500/30 shadow-lg shadow-blue-500/10",
-  "from-purple-500/20 to-pink-500/20 border-purple-500/30 shadow-lg shadow-purple-500/10",
-  "from-green-500/20 to-emerald-500/20 border-green-500/30 shadow-lg shadow-green-500/10",
-  "from-orange-500/20 to-yellow-500/20 border-orange-500/30 shadow-lg shadow-orange-500/10",
-  "from-indigo-500/20 to-blue-500/20 border-indigo-500/30 shadow-lg shadow-indigo-500/10",
-  "from-rose-500/20 to-red-500/20 border-rose-500/30 shadow-lg shadow-rose-500/10",
+  "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-blue-200 dark:border-blue-700",
+  "bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-purple-200 dark:border-purple-700",
+  "bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/30 border-emerald-200 dark:border-emerald-700",
+  "bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 border-orange-200 dark:border-orange-700",
+  "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 border-amber-200 dark:border-amber-700",
+  "bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/30 dark:to-rose-800/30 border-rose-200 dark:border-rose-700",
 ]
 
 const iconBgColors = [
-  "bg-blue-500/20",
-  "bg-purple-500/20",
-  "bg-green-500/20",
-  "bg-orange-500/20",
-  "bg-indigo-500/20",
-  "bg-rose-500/20",
+  "bg-primary/10 dark:bg-primary/20",
+  "bg-accent/10 dark:bg-accent/20",
+  "bg-emerald-500/10 dark:bg-emerald-500/20",
+  "bg-blue-500/10 dark:bg-blue-500/20",
+  "bg-amber-500/10 dark:bg-amber-500/20",
+  "bg-slate-500/10 dark:bg-slate-500/20",
 ]
 
 const iconColors = [
-  "text-blue-600",
-  "text-purple-600",
-  "text-green-600",
-  "text-orange-600",
-  "text-indigo-600",
-  "text-rose-600",
+  "text-primary",
+  "text-accent",
+  "text-emerald-600 dark:text-emerald-500",
+  "text-blue-600 dark:text-blue-500",
+  "text-amber-600 dark:text-amber-500",
+  "text-slate-600 dark:text-slate-400",
 ]
 
 function StatCard({
@@ -69,22 +71,22 @@ function StatCard({
   gradientIndex?: number
 }) {
   return (
-    <Card className={`group bg-gradient-to-br ${gradients[gradientIndex]} border hover:shadow-lg hover:shadow-current transition-all duration-500 hover:scale-103 backdrop-blur-lg`}>
-      <CardHeader className="flex flex-row items-center justify-between pb-1 pt-3 px-3">
-        <CardTitle className="text-xs font-medium text-muted-foreground">
+    <Card className={`group border hover:shadow-md transition-all duration-300 overflow-hidden ${gradients[gradientIndex]}`}>
+      <CardHeader className="flex flex-row items-center justify-between pb-2 pt-3 px-4 gap-2">
+        <CardTitle className="text-xs font-semibold text-slate-600 dark:text-slate-400 tracking-wide">
           {label}
         </CardTitle>
-        <div className={`${iconBgColors[gradientIndex]} p-1.5 rounded-lg group-hover:scale-105 transition-transform duration-300`}>
+        <div className={`p-1.5 rounded-md flex-shrink-0 ${iconBgColors[gradientIndex]}`}>
           <Icon className={`h-4 w-4 ${iconColors[gradientIndex]}`} />
         </div>
       </CardHeader>
-      <CardContent className="pt-1 pb-3 px-3">
-        <p className="text-lg font-bold bg-gradient-to-r from-card-foreground to-card-foreground/80 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-2 duration-700 overflow-hidden text-ellipsis line-clamp-2">
+      <CardContent className="pt-1 pb-3 px-4">
+        <p className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-tight">
           {value}
         </p>
         {trend && (
-          <p className={`text-[10px] mt-1.5 flex items-center gap-0.5 ${trendColor || "text-muted-foreground"}`}>
-            {trend.includes("+") && <ArrowUpRight className="h-2.5 w-2.5" />}
+          <p className={`text-xs mt-2 flex items-center gap-0.5 font-medium ${trendColor || "text-slate-600 dark:text-slate-400"}`}>
+            {trend.includes("+") && <ArrowUpRight className="h-3 w-3 flex-shrink-0" />}
             {trend}
           </p>
         )}
@@ -97,6 +99,7 @@ export function DashboardCards({
   totalBalance,
   totalInvested,
   totalProfit,
+  availableBalance,
   activeInvestments,
   pendingDeposits,
   totalWithdrawn,
@@ -119,6 +122,12 @@ export function DashboardCards({
     minimumFractionDigits: 2,
   }).format(totalProfit)
 
+  const formattedAvailable = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(availableBalance)
+
   const formattedWithdrawn = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -126,43 +135,43 @@ export function DashboardCards({
   }).format(totalWithdrawn)
 
   return (
-    <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-6 animate-in fade-in slide-in-from-top duration-700">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6 animate-in fade-in slide-in-from-top duration-700">
       <StatCard
         icon={Wallet}
         label="Total Balance"
         value={formattedBalance}
         trend="+$12,450 this month"
-        trendColor="text-green-500 font-semibold"
+        trendColor="text-emerald-600 dark:text-emerald-500 font-medium"
         gradientIndex={0}
+      />
+      <StatCard
+        icon={DollarSign}
+        label="Available Balance"
+        value={formattedAvailable}
+        trend="Ready to withdraw"
+        trendColor="text-emerald-600 dark:text-emerald-500 font-medium"
+        gradientIndex={1}
       />
       <StatCard
         icon={TrendingUp}
         label="Total Invested"
         value={formattedInvested}
         trend="Across all plans"
-        gradientIndex={1}
+        gradientIndex={2}
       />
       <StatCard
         icon={Award}
         label="Total Profit"
         value={formattedProfit}
         trend="From investments"
-        trendColor="text-green-500 font-semibold"
-        gradientIndex={2}
-      />
-      <StatCard
-        icon={Zap}
-        label="Active Investments"
-        value={activeInvestments.toString()}
-        trend="Currently running"
+        trendColor="text-emerald-600 dark:text-emerald-500 font-medium"
         gradientIndex={3}
       />
       <StatCard
         icon={Clock}
-        label="Pending Deposits"
-        value={pendingDeposits.toString()}
-        trend="Under review"
-        trendColor="text-yellow-600 font-semibold"
+        label="Active Investments"
+        value={activeInvestments.toString()}
+        trend="Currently running"
         gradientIndex={4}
       />
       <StatCard

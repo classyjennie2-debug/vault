@@ -1,6 +1,12 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import {
+  type CoinType,
+  coinDetails,
+} from "@/lib/types"
+import { CoinIcon } from "@/components/crypto/coin-icon"
 import {
   Card,
   CardContent,
@@ -11,134 +17,130 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle, ArrowLeft } from "lucide-react"
+import { AlertCircle, CheckCircle, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { Textarea } from "@/components/ui/textarea"
+
+const coins: CoinType[] = ["USDT", "BTC", "ETH", "BNB", "TRX", "SOL"]
 
 export default function WithdrawPage() {
+  const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null)
   const [amount, setAmount] = useState<string>("")
-  const [method, setMethod] = useState<string>("bank")
-  const [bankAccount, setBankAccount] = useState<string>("")
   const [cryptoAddress, setCryptoAddress] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string>("")
+  const [availableBalance, setAvailableBalance] = useState<number>(0)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
-  const availableBalance = 9000
+  useEffect(() => {
+    async function fetchBalance() {
+      try {
+        const response = await fetch("/api/user/balance")
+        if (response.ok) {
+          const data = await response.json()
+          setAvailableBalance(data.availableBalance)
+        }
+      } catch (err) {
+        console.error("Failed to fetch balance:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchBalance()
+  }, [])
+
   const amountNum = parseFloat(amount) || 0
   const isValidAmount =
     amountNum > 0 && amountNum <= availableBalance && amount !== ""
+  const isValid = selectedCoin && cryptoAddress && isValidAmount && !isSubmitting
+
+  const handleCoinSelect = (coin: CoinType) => {
+    setSelectedCoin(coin)
+    setError("")
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
-    if (!isValidAmount) {
-      setError("Please enter a valid withdrawal amount")
+    if (!isValid) {
+      setError("Please select a coin, enter a valid amount, and provide a withdrawal address")
       return
     }
 
-    if (method === "bank" && !bankAccount) {
-      setError("Please enter your bank account information")
-      return
-    }
-
-    if (method === "crypto" && !cryptoAddress) {
+    if (!cryptoAddress.trim()) {
       setError("Please enter a valid crypto address")
       return
     }
 
     setIsSubmitting(true)
-    // Call API
-    const res = await fetch("/api/withdraw", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount: amountNum,
-        method,
-        bankAccount: method === "bank" ? bankAccount : undefined,
-        cryptoAddress: method === "crypto" ? cryptoAddress : undefined,
-      }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error || "Something went wrong")
+    try {
+      const res = await fetch("/api/withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: amountNum,
+          method: "crypto",
+          cryptoAddress: cryptoAddress.trim(),
+          coin: selectedCoin,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || "Something went wrong")
+        setIsSubmitting(false)
+        return
+      }
+      setSubmitted(true)
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 2000)
+    } catch (err) {
+      setError("An error occurred. Please try again.")
       setIsSubmitting(false)
-      return
     }
-    setIsSubmitting(false)
-    setSubmitted(true)
+  }
 
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setSubmitted(false)
-      setAmount("")
-      setBankAccount("")
-      setCryptoAddress("")
-      setMethod("bank")
-    }, 3000)
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
   if (submitted) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-accent hover:underline text-sm mb-4"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Link>
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/dashboard">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back to dashboard</span>
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Withdraw Crypto
+            </h1>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="pt-12">
-            <div className="flex flex-col items-center justify-center gap-4 py-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-card-foreground">
-                  Withdrawal Pending
-                </h2>
-                <p className="text-muted-foreground mt-2">
-                  Your withdrawal request of ${amountNum.toLocaleString()} has been submitted
+        <Card className="border-green-500/20 bg-green-50/50 dark:bg-green-950/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-green-900 dark:text-green-100">
+                  Withdrawal Request Submitted!
+                </h3>
+                <p className="text-sm text-green-800/70 dark:text-green-200/70 mt-1">
+                  Your withdrawal of ${amountNum.toLocaleString()} has been submitted for processing.
+                  You'll receive your {selectedCoin} shortly.
                 </p>
               </div>
-
-              <Alert className="mt-6 bg-blue-50 border-blue-200">
-                <AlertCircle className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-800">
-                  Your withdrawal will be processed within 1-2 business days. You'll
-                  receive a confirmation email shortly.
-                </AlertDescription>
-              </Alert>
-
-              <div className="space-y-2 text-sm mt-6 w-full">
-                <div className="flex justify-between p-3 bg-secondary rounded">
-                  <span className="text-muted-foreground">Amount:</span>
-                  <span className="font-semibold">
-                    ${amountNum.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                  </span>
-                </div>
-                <div className="flex justify-between p-3 bg-secondary rounded">
-                  <span className="text-muted-foreground">Method:</span>
-                  <span className="font-semibold capitalize">
-                    {method === "bank" ? "Bank Transfer" : "Crypto"}
-                  </span>
-                </div>
-              </div>
-
-              <Link href="/dashboard">
-                <Button className="w-full mt-6">Return to Dashboard</Button>
-              </Link>
             </div>
           </CardContent>
         </Card>
@@ -147,58 +149,103 @@ export default function WithdrawPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-2 text-accent hover:underline text-sm mb-4"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Dashboard
-      </Link>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/dashboard">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back to dashboard</span>
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Withdraw Crypto
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Select a coin, enter your address, and amount to withdraw.
+          </p>
+        </div>
+      </div>
 
+      {/* Error Alert */}
+      {error && (
+        <Alert className="border-red-500/50 bg-red-50/50 dark:bg-red-950/20">
+          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+          <AlertDescription className="text-red-800 dark:text-red-200">
+            {error}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Step 1 - Select Coin */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Withdraw Funds</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base">
+            <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+              1
+            </span>
+            Select Cryptocurrency
+          </CardTitle>
           <CardDescription>
-            Request a withdrawal from your account to your preferred method
+            Choose the cryptocurrency you want to withdraw.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Available Balance */}
-            <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg p-4">
-              <p className="text-sm text-muted-foreground">Available Balance</p>
-              <p className="text-3xl font-bold text-card-foreground mt-1">
-                ${availableBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </p>
-            </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {coins.map((coin) => {
+              const details = coinDetails[coin]
+              const isSelected = selectedCoin === coin
+              return (
+                <button
+                  key={coin}
+                  type="button"
+                  onClick={() => handleCoinSelect(coin)}
+                  className={`flex flex-col items-center gap-2.5 rounded-xl border-2 p-4 transition-all ${
+                    isSelected
+                      ? "border-accent bg-accent/5 shadow-sm"
+                      : "border-border bg-card hover:border-muted-foreground/30 hover:bg-secondary/50"
+                  }`}
+                >
+                  <CoinIcon coin={coin} size={36} />
+                  <div className="text-center">
+                    <p
+                      className={`text-sm font-semibold ${isSelected ? "text-foreground" : "text-card-foreground"}`}
+                    >
+                      {coin}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {details.name}
+                    </p>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
-            {/* Withdrawal Method */}
-            <div className="space-y-2">
-              <Label htmlFor="method">Withdrawal Method</Label>
-              <Select value={method} onValueChange={setMethod}>
-                <SelectTrigger id="method">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="bank">Bank Transfer</SelectItem>
-                  <SelectItem value="crypto">Cryptocurrency</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {method === "bank"
-                  ? "Funds will be transferred to your bank account within 1-2 business days"
-                  : "Send crypto directly to your wallet address"}
-              </p>
-            </div>
-
+      {/* Step 2 - Enter Details */}
+      {selectedCoin && (
+        <Card className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base">
+              <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                2
+              </span>
+              Withdrawal Details
+            </CardTitle>
+            <CardDescription>
+              Enter your {selectedCoin} address and the amount you want to withdraw.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
             {/* Amount */}
             <div className="space-y-2">
-              <Label htmlFor="amount">Withdrawal Amount ($)</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  $
-                </span>
+              <Label htmlFor="amount" className="text-sm font-medium">
+                Withdrawal Amount (USD)
+              </Label>
+              <div className="space-y-1.5">
                 <Input
                   id="amount"
                   type="number"
@@ -206,111 +253,90 @@ export default function WithdrawPage() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   max={availableBalance}
-                  step="100"
-                  className="pl-7"
+                  step="0.01"
+                  min="0"
+                  className="border-border"
                 />
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    Available: ${availableBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAmount(availableBalance.toString())}
+                    className="text-accent hover:text-accent/80 font-medium"
+                  >
+                    Max
+                  </button>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Maximum: ${availableBalance.toLocaleString()}
+            </div>
+
+            {/* Crypto Address */}
+            <div className="space-y-2">
+              <Label htmlFor="address" className="text-sm font-medium">
+                {selectedCoin} Withdrawal Address
+              </Label>
+              <Input
+                id="address"
+                type="text"
+                placeholder={`Enter your ${selectedCoin} address`}
+                value={cryptoAddress}
+                onChange={(e) => setCryptoAddress(e.target.value)}
+                className="border-border font-mono text-xs"
+              />
+              <p className="text-xs text-muted-foreground/70">
+                Make sure this is correct. Withdrawals sent to wrong addresses cannot be recovered.
               </p>
             </div>
 
-            {/* Method-specific fields */}
-            {method === "bank" ? (
-              <div className="space-y-2">
-                <Label htmlFor="bank-account">Bank Account Details</Label>
-                <Textarea
-                  id="bank-account"
-                  placeholder="Enter your bank account details (Account Number, Routing Number, Bank Name, Account Holder Name)"
-                  value={bankAccount}
-                  onChange={(e) => setBankAccount(e.target.value)}
-                  className="h-24 resize-none"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Your banking information is encrypted and secure
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Select defaultValue="">
-                  <SelectTrigger className="mb-2">
-                    <SelectValue placeholder="Select cryptocurrency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="usdt">USDT</SelectItem>
-                    <SelectItem value="btc">Bitcoin</SelectItem>
-                    <SelectItem value="eth">Ethereum</SelectItem>
-                    <SelectItem value="bnb">BNB</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Label htmlFor="crypto-address">Wallet Address</Label>
-                <Input
-                  id="crypto-address"
-                  placeholder="Enter your crypto wallet address"
-                  value={cryptoAddress}
-                  onChange={(e) => setCryptoAddress(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Make sure the address matches the cryptocurrency you selected
-                </p>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
             {/* Summary */}
-            {isValidAmount && (
-              <div className="bg-secondary rounded-lg p-4 space-y-2">
-                <h4 className="font-semibold text-sm text-card-foreground">
-                  Withdrawal Summary
-                </h4>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Amount:</span>
-                    <span className="font-semibold">
-                      ${amountNum.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Processing Fee:</span>
-                    <span className="font-semibold">$0</span>
-                  </div>
-                  <div className="flex justify-between border-t border-border pt-2">
-                    <span className="font-semibold">You'll receive:</span>
-                    <span className="font-bold text-accent">
-                      ${amountNum.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
+            {isValidAmount && selectedCoin && (
+              <div className="mt-6 rounded-lg bg-secondary/50 p-4 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Amount to Withdraw:</span>
+                  <span className="font-semibold text-foreground">${amountNum.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Coin:</span>
+                  <span className="font-semibold text-foreground">{selectedCoin}</span>
+                </div>
+                <div className="border-t border-border/30 pt-2 mt-2 flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Status:</span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">Pending Review</span>
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!isValidAmount || isSubmitting}
-              size="lg"
-            >
-              {isSubmitting ? "Processing..." : "Request Withdrawal"}
-            </Button>
-
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Withdrawals are processed within 1-2 business days. You'll receive a
-                confirmation email with the transaction details.
-              </AlertDescription>
-            </Alert>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+      {/* Submit Button */}
+      {selectedCoin && (
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            asChild
+            className="flex-1"
+          >
+            <Link href="/dashboard">Cancel</Link>
+          </Button>
+          <Button
+            type="submit"
+            disabled={!isValid}
+            className="flex-1"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Request Withdrawal"
+            )}
+          </Button>
+        </div>
+      )}
+    </form>
   )
 }

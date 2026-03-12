@@ -8,15 +8,40 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type { User } from "@/lib/types"
 import { allUsers } from "@/lib/mock-data"
-import { Search, DollarSign, Edit3, X, Check, Users } from "lucide-react"
+import { Search, DollarSign, Edit3, X, Check, Users, Trash2, AlertCircle, Bell } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([...allUsers])
   const [search, setSearch] = useState("")
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [newBalance, setNewBalance] = useState("")
+  const [notificationUser, setNotificationUser] = useState<string | null>(null)
+  const [notificationTitle, setNotificationTitle] = useState("")
+  const [notificationMessage, setNotificationMessage] = useState("")
+  const [notificationType, setNotificationType] = useState<"info" | "success" | "warning" | "error">("info")
+  const [isLoadingNotification, setIsLoadingNotification] = useState(false)
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState<string | null>(null)
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
 
   const filteredUsers = users.filter(
     (u) =>
@@ -40,6 +65,80 @@ export default function AdminUsersPage() {
       )
       setEditingUser(null)
       setNewBalance("")
+      setSuccessMessage("User balance updated successfully")
+      setTimeout(() => setSuccessMessage(""), 3000)
+    } else {
+      setErrorMessage("Failed to update user balance")
+      setTimeout(() => setErrorMessage(""), 3000)
+    }
+  }
+
+  const handleSendNotification = async () => {
+    if (!notificationUser || !notificationTitle || !notificationMessage) {
+      setErrorMessage("Please fill in all notification fields")
+      setTimeout(() => setErrorMessage(""), 3000)
+      return
+    }
+
+    setIsLoadingNotification(true)
+    try {
+      const res = await fetch("/api/admin/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: notificationUser,
+          title: notificationTitle,
+          message: notificationMessage,
+          type: notificationType,
+        }),
+      })
+
+      if (res.ok) {
+        setSuccessMessage("Notification sent successfully!")
+        setNotificationUser(null)
+        setNotificationTitle("")
+        setNotificationMessage("")
+        setNotificationType("info")
+        setTimeout(() => setSuccessMessage(""), 3000)
+      } else {
+        const data = await res.json()
+        setErrorMessage(data.error || "Failed to send notification")
+        setTimeout(() => setErrorMessage(""), 3000)
+      }
+    } catch (error) {
+      console.error("Error sending notification:", error)
+      setErrorMessage("Failed to send notification")
+      setTimeout(() => setErrorMessage(""), 3000)
+    } finally {
+      setIsLoadingNotification(false)
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    setIsLoadingDelete(true)
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      })
+
+      if (res.ok) {
+        setUsers((prev) => prev.filter((u) => u.id !== userId))
+        setDeleteConfirmUser(null)
+        setSuccessMessage("User deleted successfully")
+        setTimeout(() => setSuccessMessage(""), 3000)
+      } else {
+        const data = await res.json()
+        setErrorMessage(data.error || "Failed to delete user")
+        setTimeout(() => setErrorMessage(""), 3000)
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error)
+      setErrorMessage("Failed to delete user")
+      setTimeout(() => setErrorMessage(""), 3000)
+    } finally {
+      setIsLoadingDelete(false)
     }
   }
 
@@ -55,6 +154,20 @@ export default function AdminUsersPage() {
           View, search, and update user accounts and balances.
         </p>
       </div>
+
+      {/* Success/Error Messages */}
+      {successMessage && (
+        <Alert className="border-green-500/50 bg-green-50/50 dark:bg-green-950/20">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert className="border-red-500/50 bg-red-50/50 dark:bg-red-950/20">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      )}
 
       {/* Summary */}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -117,92 +230,206 @@ export default function AdminUsersPage() {
           filteredUsers.map((user) => (
             <Card key={user.id} className="transition-all hover:shadow-sm">
               <CardContent className="pt-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  {/* User info */}
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-foreground">
-                      {user.avatar}
+                <div className="flex flex-col gap-4">
+                  {/* User info row */}
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    {/* User info */}
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium text-foreground">
+                        {user.avatar}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-card-foreground">
+                          {user.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.email}
+                        </p>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground">
+                          Joined {user.joinedAt}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-card-foreground">
-                        {user.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {user.email}
-                      </p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">
-                        Joined {user.joinedAt}
-                      </p>
+
+                    {/* Balance and edit */}
+                    <div className="flex items-center gap-3">
+                      {editingUser === user.id ? (
+                        <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-1.5">
+                            <Label
+                              htmlFor={`balance-${user.id}`}
+                              className="sr-only"
+                            >
+                              New balance
+                            </Label>
+                            <Input
+                              id={`balance-${user.id}`}
+                              type="number"
+                              placeholder="New balance"
+                              value={newBalance}
+                              onChange={(e) => setNewBalance(e.target.value)}
+                              className="h-9 w-36"
+                              min={0}
+                              step={0.01}
+                            />
+                          </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-9 w-9 text-accent hover:text-accent"
+                            onClick={() => handleUpdateBalance(user.id)}
+                          >
+                            <Check className="h-4 w-4" />
+                            <span className="sr-only">Confirm</span>
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-9 w-9 text-muted-foreground"
+                            onClick={() => {
+                              setEditingUser(null)
+                              setNewBalance("")
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Cancel</span>
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="text-right">
+                            <p className="text-xs text-muted-foreground">
+                              Balance
+                            </p>
+                            <p className="text-lg font-bold text-card-foreground">
+                              ${user.balance.toLocaleString()}
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingUser(user.id)
+                              setNewBalance(user.balance.toString())
+                            }}
+                          >
+                            <Edit3 className="mr-1.5 h-3.5 w-3.5" />
+                            Edit
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
 
-                  {/* Balance and edit */}
-                  <div className="flex items-center gap-3">
-                    {editingUser === user.id ? (
-                      <div className="flex items-center gap-2">
-                        <div className="flex flex-col gap-1.5">
-                          <Label
-                            htmlFor={`balance-${user.id}`}
-                            className="sr-only"
-                          >
-                            New balance
-                          </Label>
-                          <Input
-                            id={`balance-${user.id}`}
-                            type="number"
-                            placeholder="New balance"
-                            value={newBalance}
-                            onChange={(e) => setNewBalance(e.target.value)}
-                            className="h-9 w-36"
-                            min={0}
-                            step={0.01}
-                          />
-                        </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-9 w-9 text-accent hover:text-accent"
-                          onClick={() => handleUpdateBalance(user.id)}
-                        >
-                          <Check className="h-4 w-4" />
-                          <span className="sr-only">Confirm</span>
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-9 w-9 text-muted-foreground"
-                          onClick={() => {
-                            setEditingUser(null)
-                            setNewBalance("")
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                          <span className="sr-only">Cancel</span>
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">
-                            Balance
-                          </p>
-                          <p className="text-lg font-bold text-card-foreground">
-                            ${user.balance.toLocaleString()}
-                          </p>
-                        </div>
+                  {/* Actions row */}
+                  <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+                    {/* Send Notification Button */}
+                    <Dialog open={notificationUser === user.id} onOpenChange={(open) => {
+                      if (!open) {
+                        setNotificationUser(null)
+                        setNotificationTitle("")
+                        setNotificationMessage("")
+                        setNotificationType("info")
+                      }
+                    }}>
+                      <DialogTrigger asChild>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            setEditingUser(user.id)
-                            setNewBalance(user.balance.toString())
-                          }}
+                          onClick={() => setNotificationUser(user.id)}
                         >
-                          <Edit3 className="mr-1.5 h-3.5 w-3.5" />
-                          Edit
+                          <Bell className="mr-1.5 h-3.5 w-3.5" />
+                          Send Notification
                         </Button>
-                      </>
-                    )}
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Send Notification to {user.name}</DialogTitle>
+                          <DialogDescription>
+                            Create and send a notification message to this user.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="notif-title">Title</Label>
+                            <Input
+                              id="notif-title"
+                              placeholder="Notification title"
+                              value={notificationTitle}
+                              onChange={(e) => setNotificationTitle(e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="notif-message">Message</Label>
+                            <Input
+                              id="notif-message"
+                              placeholder="Notification message"
+                              value={notificationMessage}
+                              onChange={(e) => setNotificationMessage(e.target.value)}
+                              className="min-h-[80px]"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="notif-type">Type</Label>
+                            <Select value={notificationType} onValueChange={(val: any) => setNotificationType(val)}>
+                              <SelectTrigger id="notif-type">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="info">Info</SelectItem>
+                                <SelectItem value="success">Success</SelectItem>
+                                <SelectItem value="warning">Warning</SelectItem>
+                                <SelectItem value="error">Error</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button
+                            onClick={handleSendNotification}
+                            disabled={isLoadingNotification}
+                            className="w-full"
+                          >
+                            {isLoadingNotification ? "Sending..." : "Send"}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Delete Button */}
+                    <Dialog open={deleteConfirmUser === user.id} onOpenChange={(open) => {
+                      if (!open) setDeleteConfirmUser(null)
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setDeleteConfirmUser(user.id)}
+                        >
+                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                          Delete
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Delete User</DialogTitle>
+                          <DialogDescription>
+                            Are you sure you want to delete <strong>{user.name}</strong>? This action cannot be undone. All user data will be permanently removed.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex gap-3">
+                          <Button variant="outline" onClick={() => setDeleteConfirmUser(null)} className="flex-1">
+                            Cancel
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => handleDeleteUser(user.id)}
+                            disabled={isLoadingDelete}
+                            className="flex-1"
+                          >
+                            {isLoadingDelete ? "Deleting..." : "Delete"}
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </CardContent>

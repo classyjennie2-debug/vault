@@ -21,25 +21,18 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case "Low":
-        return "bg-green-500/20 text-green-700 border-green-500/30 hover:shadow-lg hover:shadow-green-500/20"
+        return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-500 border-emerald-500/20"
       case "Medium":
-        return "bg-yellow-500/20 text-yellow-700 border-yellow-500/30 hover:shadow-lg hover:shadow-yellow-500/20"
+        return "bg-amber-500/10 text-amber-700 dark:text-amber-500 border-amber-500/20"
       case "High":
-        return "bg-red-500/20 text-red-700 border-red-500/30 hover:shadow-lg hover:shadow-red-500/20"
+        return "bg-slate-500/10 text-slate-700 dark:text-slate-500 border-slate-500/20"
       default:
         return ""
     }
   }
 
   const getBgGradient = (index: number) => {
-    const gradients = [
-      "from-blue-500/10 to-cyan-500/10 border-blue-500/20",
-      "from-purple-500/10 to-pink-500/10 border-purple-500/20",
-      "from-green-500/10 to-emerald-500/10 border-green-500/20",
-      "from-orange-500/10 to-yellow-500/10 border-orange-500/20",
-      "from-indigo-500/10 to-blue-500/10 border-indigo-500/20",
-    ]
-    return gradients[index % gradients.length]
+    return "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
   }
 
   const formatDuration = (duration: number, unit: string) => {
@@ -65,7 +58,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
             {/* Popular Badge */}
             {isPopular(index) && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 animate-in fade-in slide-in-from-top duration-700">
-                <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 shadow-lg shadow-purple-600/50 uppercase text-xs font-bold tracking-wider">
+                <Badge className="bg-primary text-white border-0 shadow-md uppercase text-xs font-bold tracking-wider">
                   ⭐ Most Popular
                 </Badge>
               </div>
@@ -75,9 +68,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
               if (open) setSelectedPlan(plan.id)
               else setSelectedPlan(null)
             }}>
-              <Card className={`h-full flex flex-col bg-gradient-to-br ${getBgGradient(index)} hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 border backdrop-blur-lg relative overflow-hidden group ${isPopular(index) ? "ring-2 ring-purple-500/50 lg:scale-105" : ""}`}>
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <Card className={`h-full flex flex-col ${getBgGradient(index)} hover:shadow-md transition-all duration-300 hover:border-primary/30 border relative overflow-hidden group ${isPopular(index) ? "ring-2 ring-primary/20" : ""}`}>
 
                 <CardHeader className="relative z-10">
                   <div className="flex items-start justify-between gap-4">
@@ -131,7 +122,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                     <Button
                       className={`w-full mt-4 group/btn font-semibold transition-all duration-300 ${
                         isPopular(index)
-                          ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-lg hover:shadow-purple-600/50"
+                          ? "bg-primary hover:bg-primary/90"
                           : ""
                       }`}
                       size="sm"

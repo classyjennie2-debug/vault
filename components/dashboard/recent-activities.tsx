@@ -31,14 +31,14 @@ const activityBgColors = {
   withdrawal: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
 }
 
-export function RecentActivities() {
+export function RecentActivities({ userId }: { userId: string }) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchActivities() {
       try {
-        const response = await fetch("/api/activities")
+        const response = await fetch(`/api/activities?userId=${userId}`)
         if (response.ok) {
           const data = await response.json()
           setActivities(data)
@@ -52,7 +52,7 @@ export function RecentActivities() {
       }
     }
     fetchActivities()
-  }, [])
+  }, [userId])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -84,7 +84,7 @@ export function RecentActivities() {
           <Eye className="h-3 w-3" />
         </a>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 pt-6">
+      <CardContent className="flex flex-col gap-4 pt-6">
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -100,28 +100,28 @@ export function RecentActivities() {
             return (
               <div
                 key={tx.id}
-                className="flex items-start gap-4 p-3 rounded-lg hover:bg-gradient-to-r hover:from-white/50 hover:to-slate-50/50 dark:hover:from-slate-800/50 dark:hover:to-slate-900/50 transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
+                className="flex items-center gap-4 p-4 rounded-lg hover:bg-gradient-to-r hover:from-white/50 hover:to-slate-50/50 dark:hover:from-slate-800/50 dark:hover:to-slate-900/50 transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500 border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
                 style={{ animationDelay: `${idx * 75}ms` }}
               >
-                <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 font-bold border border-white/20 shadow-lg`}>
-                  <Icon className="h-5 w-5" />
+                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 font-bold border border-white/20 shadow-md`}>
+                  <Icon className="h-4 w-4" />
                 </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-card-foreground group-hover:text-accent transition-colors">
-                  {tx.title}
-                </p>
-                <p className="text-xs text-muted-foreground/70 mt-1 line-clamp-2">
-                  {tx.message}
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-card-foreground group-hover:text-accent transition-colors break-words">
+                    {tx.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground/70 mt-1 break-words line-clamp-3">
+                    {tx.message}
+                  </p>
+                </div>
+                <div className="flex items-center justify-end gap-1 flex-shrink-0">
+                  <p className="text-xs font-medium text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
+                    {formatDate(tx.timestamp)}
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                <p className="text-xs font-semibold text-muted-foreground/60 whitespace-nowrap group-hover:text-muted-foreground transition-colors">
-                  {formatDate(tx.timestamp)}
-                </p>
-              </div>
-            </div>
-          )
-        })
+            )
+          })
         )}
       </CardContent>
     </Card>

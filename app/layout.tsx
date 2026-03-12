@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import React from "react"
 import { Inter, Playfair_Display } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import TawkChat from "@/components/tawk-chat"
 import "./globals.css"
 
 const inter = Inter({
@@ -95,6 +96,7 @@ export default function RootLayout({
       >
         {children}
         <Analytics />
+        <TawkChat />
       </body>
     </html>
   )

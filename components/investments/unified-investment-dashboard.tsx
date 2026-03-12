@@ -40,6 +40,21 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
   const [activeTab, setActiveTab] = useState("plans")
   const router = useRouter()
 
+  const calculateProgress = (startDate: string, endDate: string, status: string): number => {
+    if (status === "completed") return 100
+    if (status === "withdrawn") return 100
+    
+    const start = new Date(startDate).getTime()
+    const end = new Date(endDate).getTime()
+    const now = new Date().getTime()
+    
+    if (now <= start) return 0
+    if (now >= end) return 100
+    
+    const progress = ((now - start) / (end - start)) * 100
+    return Math.min(100, Math.max(0, Math.round(progress)))
+  }
+
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case "Low":
@@ -324,7 +339,7 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                         <p className="text-xs text-muted-foreground mb-1">Avg Progress</p>
                         <p className="text-xl font-bold text-orange-600">
                           {Math.round(
-                            investments.reduce((sum, inv) => sum + inv.progressPercentage, 0) / investments.length
+                            investments.reduce((sum, inv) => sum + calculateProgress(inv.startDate, inv.endDate, inv.status), 0) / investments.length
                           )}%
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">completion rate</p>
@@ -339,12 +354,13 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                     <h3 className="text-lg font-semibold text-card-foreground mb-4">Investment Details</h3>
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
                       {investments.map((inv) => {
+                        const progress = calculateProgress(inv.startDate, inv.endDate, inv.status)
                         const progressColor =
-                          inv.progressPercentage >= 75
+                          progress >= 75
                             ? "from-green-500 to-emerald-500"
-                            : inv.progressPercentage >= 50
+                            : progress >= 50
                               ? "from-blue-500 to-cyan-500"
-                              : inv.progressPercentage >= 25
+                              : progress >= 25
                                 ? "from-yellow-500 to-orange-500"
                                 : "from-orange-500 to-red-500"
 
@@ -396,12 +412,12 @@ export function UnifiedInvestmentDashboard({ plans, investments }: UnifiedInvest
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                   <p className="text-xs font-semibold text-muted-foreground">Progress</p>
-                                  <p className="text-sm font-bold text-card-foreground">{inv.progressPercentage}%</p>
+                                  <p className="text-sm font-bold text-card-foreground">{progress}%</p>
                                 </div>
                                 <div className="relative h-3 bg-slate-200/50 dark:bg-slate-700/50 rounded-full overflow-hidden">
                                   <div
                                     className={`h-full bg-gradient-to-r ${progressColor} rounded-full transition-all duration-700 ease-out`}
-                                    style={{ width: `${inv.progressPercentage}%` }}
+                                    style={{ width: `${progress}%` }}
                                   />
                                 </div>
                               </div>

@@ -5,6 +5,7 @@ import { RecentTransactions } from "@/components/dashboard/recent-transactions"
 import { RecentActivities } from "@/components/dashboard/recent-activities"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
+import LiveChatButton from "@/components/live-chat-button"
 import { requireAuth } from "@/lib/auth"
 import { getUserStats, generatePortfolioData, getUserActiveInvestments } from "@/lib/db"
 
@@ -25,6 +26,7 @@ export default async function DashboardPage() {
         totalBalance={user.balance}
         totalInvested={stats.totalInvested}
         totalProfit={stats.totalProfit}
+        availableBalance={stats.availableBalance}
         activeInvestments={stats.activeInvestments}
         pendingDeposits={stats.pendingDeposits}
         totalWithdrawn={stats.totalWithdrawn}
@@ -47,6 +49,10 @@ export default async function DashboardPage() {
       )}
 
       <RecentActivities userId={user.id} />
+
+      <div>
+        <LiveChatButton />
+      </div>
     </div>
   )
 }

@@ -122,7 +122,7 @@ export default function LandingPage() {
           <Button size="sm" asChild>
             <Link href="/register">
               Get Started
-              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -155,20 +155,20 @@ export default function LandingPage() {
             diversified portfolios, advanced analytics, and AI-powered strategies designed
             to maximize returns while managing risk effectively.
           </p>
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row justify-center">
-            <Button size="lg" className="h-12 px-8 text-base font-semibold" asChild>
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 w-full">
+            <Button size="lg" asChild className="shadow-lg hover:shadow-xl w-full sm:w-auto">
               <Link href="/register">
                 Start Investing Free
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
             <Button
               variant="outline"
               size="lg"
-              className="h-12 px-8 text-base"
               asChild
+              className="w-full sm:w-auto"
             >
-              <Link href="/login">View Live Dashboard</Link>
+              <Link href="/login">View Dashboard</Link>
             </Button>
           </div>
           
@@ -199,15 +199,15 @@ export default function LandingPage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group rounded-2xl border border-border bg-card p-8 transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10"
+                className="group rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-7 transition-all duration-300 hover:border-primary/40 dark:hover:border-primary/50 hover:shadow-md hover:shadow-primary/5"
               >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 group-hover:from-primary/30 group-hover:to-accent/30 transition-all">
-                  <feature.icon className="h-6 w-6 text-primary" />
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 group-hover:bg-primary/15 dark:group-hover:bg-primary/25 transition-all">
+                  <feature.icon className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="mb-3 text-lg font-semibold text-card-foreground group-hover:text-primary transition-colors">
+                <h3 className="mb-2 text-base font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
                   {feature.title}
                 </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                   {feature.description}
                 </p>
               </div>
@@ -219,19 +219,19 @@ export default function LandingPage() {
       {/* Stats */}
       <section
         id="stats"
-        className="border-y border-border bg-gradient-to-r from-primary/5 to-accent/5 px-6 py-20 lg:px-12 lg:py-28"
+        className="border-y border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-6 py-20 lg:px-12 lg:py-28"
       >
         <div className="mx-auto max-w-5xl">
           <div className="mb-16 text-center">
-            <h2 className="text-3xl font-bold text-foreground">Trusted by thousands</h2>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Trusted by thousands</h2>
           </div>
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-4xl font-bold text-foreground md:text-5xl">
+                <p className="text-4xl font-bold text-primary md:text-5xl">
                   {stat.value}
                 </p>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-400">
                   {stat.label}
                 </p>
               </div>
@@ -244,15 +244,15 @@ export default function LandingPage() {
       <section id="plans" className="px-6 py-20 lg:px-12 lg:py-28">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
-            <p className="mb-3 text-sm font-medium tracking-wider text-accent uppercase">
+            <p className="mb-3 text-sm font-semibold tracking-wider text-accent uppercase">
               Investment Plans
             </p>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">
               <span className="text-balance">
                 Plans for every investor
               </span>
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+            <p className="mx-auto mt-4 max-w-2xl text-slate-600 dark:text-slate-400">
               Start with as little as $1,000 and customize your investment strategy based on your risk tolerance.
             </p>
           </div>
@@ -283,10 +283,10 @@ export default function LandingPage() {
             ].map((plan) => (
               <div
                 key={plan.name}
-                className={`group relative rounded-2xl border p-8 transition-all ${
+                className={`group relative rounded-lg border p-7 transition-all duration-300 ${
                   plan.featured
-                    ? "border-accent bg-gradient-to-br from-accent/10 to-primary/10 shadow-xl shadow-accent/20"
-                    : "border-border bg-card hover:border-accent/30 hover:shadow-lg"
+                    ? "border-accent bg-gradient-to-br from-accent/5 to-primary/5 dark:from-accent/10 dark:to-primary/10 shadow-xl shadow-accent/10 dark:shadow-accent/20"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md"
                 }`}
               >
                 {plan.featured && (
@@ -294,26 +294,26 @@ export default function LandingPage() {
                     Most Popular
                   </div>
                 )}
-                <h3 className="text-xl font-bold text-foreground">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                   {plan.name}
                 </h3>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
                   {plan.risk}
                 </p>
-                <p className="mt-6 text-5xl font-bold text-foreground">
+                <p className="mt-5 text-5xl font-bold text-slate-900 dark:text-white">
                   {plan.rate}
                 </p>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">annual return*</p>
-                <p className="mt-4 text-sm text-muted-foreground">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">annual return*</p>
+                <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                   {plan.desc}
                 </p>
-                <div className="my-6 border-t border-border pt-6">
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">Min. Investment:</span> {plan.min}
+                <div className="my-6 border-t border-slate-200 dark:border-slate-700 pt-6">
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    <span className="font-semibold text-slate-900 dark:text-white">Min. Investment:</span> {plan.min}
                   </p>
                 </div>
                 <Button
-                  className="w-full font-semibold"
+                  className="w-full"
                   variant={plan.featured ? "default" : "outline"}
                   asChild
                 >
@@ -322,18 +322,18 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-          <p className="text-center text-xs text-muted-foreground mt-6">*Past performance does not guarantee future results</p>
+          <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-8">*Past performance does not guarantee future results</p>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="px-6 py-20 lg:px-12 lg:py-28 bg-secondary/30">
+      <section id="testimonials" className="px-6 py-20 lg:px-12 lg:py-28 bg-slate-50 dark:bg-slate-900/50">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
-            <p className="mb-3 text-sm font-medium tracking-wider text-accent uppercase">
+            <p className="mb-3 text-sm font-semibold tracking-wider text-accent uppercase">
               Success Stories
             </p>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-4xl">
               <span className="text-balance">
                 Trusted by investors worldwide
               </span>
@@ -343,23 +343,23 @@ export default function LandingPage() {
             {testimonials.map((testimonial) => (
               <div
                 key={testimonial.name}
-                className="rounded-2xl border border-border bg-card p-8 transition-all hover:shadow-lg hover:border-accent/30"
+                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-7 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600"
               >
-                <div className="mb-4 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-accent/20">
-                    <span className="text-sm font-bold text-foreground">{testimonial.avatar}</span>
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 flex-shrink-0">
+                    <span className="text-xs font-bold text-primary">{testimonial.avatar}</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{testimonial.name}</p>
-                    <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                    <p className="font-semibold text-slate-900 dark:text-white text-sm">{testimonial.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{testimonial.role}</p>
                   </div>
                 </div>
-                <p className="text-sm leading-relaxed text-muted-foreground italic">
+                <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 italic">
                   "{testimonial.quote}"
                 </p>
                 <div className="mt-4 flex gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-xs">⭐</span>
+                    <span key={i} className="text-amber-400">★</span>
                   ))}
                 </div>
               </div>
@@ -372,32 +372,32 @@ export default function LandingPage() {
       <section className="relative overflow-hidden px-6 py-20 lg:px-12 lg:py-28">
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute -top-40 right-0 h-80 w-80 bg-gradient-to-l from-primary/30 to-transparent blur-3xl" />
-          <div className="absolute -bottom-40 left-0 h-80 w-80 bg-gradient-to-r from-accent/30 to-transparent blur-3xl" />
+          <div className="absolute -top-40 right-0 h-80 w-80 bg-gradient-to-l from-primary/20 to-transparent blur-3xl" />
+          <div className="absolute -bottom-40 left-0 h-80 w-80 bg-gradient-to-r from-accent/20 to-transparent blur-3xl" />
         </div>
 
-        <div className="mx-auto max-w-3xl rounded-3xl bg-gradient-to-br from-primary to-primary/80 p-12 text-center md:p-16">
-          <h2 className="text-3xl font-bold text-primary-foreground md:text-4xl">
+        <div className="mx-auto max-w-3xl rounded-xl bg-gradient-to-br from-primary via-primary to-primary/95 p-12 text-center md:p-16 shadow-lg">
+          <h2 className="text-3xl font-bold text-white md:text-4xl">
             <span className="text-balance">
               Start building wealth today
             </span>
           </h2>
-          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-primary-foreground/80">
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-white/80">
             Join thousands of successful investors who are growing their wealth with Vault. 
             Create your account free and start investing in minutes.
           </p>
           <Button
             size="lg"
             variant="secondary"
-            className="mt-8 h-12 px-8 font-semibold"
+            className="mt-8 shadow-lg hover:shadow-xl"
             asChild
           >
             <Link href="/register">
               Create Free Account
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
-          <p className="mt-4 text-xs text-primary-foreground/60">
+          <p className="mt-4 text-xs text-white/60">
             No credit card required • Free forever plan • Upgrade anytime
           </p>
         </div>

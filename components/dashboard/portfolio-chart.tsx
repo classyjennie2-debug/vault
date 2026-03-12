@@ -53,21 +53,21 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
   const avgValue = values.length > 0 ? values.reduce((sum, val) => sum + val, 0) / values.length : 0
 
   return (
-    <Card className="border backdrop-blur-lg bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-950/50 dark:to-slate-900/30 animate-in fade-in slide-in-from-left duration-700">
-      <CardHeader className="border-b border-border/50">
+    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in slide-in-from-left duration-700">
+      <CardHeader className="border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-start justify-between">
         <div className="flex-1">
-            <CardTitle className="flex items-center gap-2 text-base text-muted-foreground font-normal">
-              <Activity className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+            <CardTitle className="flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
+              <Activity className="h-4 w-4 text-primary" />
               Portfolio Performance
             </CardTitle>
             <div className="mt-4">
-              <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
+              <p className="text-3xl font-bold text-slate-900 dark:text-white">
                 ${balance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </p>
               <div className="flex items-center gap-2 mt-2">
-                <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                <span className="text-sm font-semibold text-green-700 dark:text-green-300">
+                <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />
+                <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-500">
                   +{monthlyChange}% this month
                 </span>
               </div>
@@ -144,7 +144,7 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
         </div>
 
         {/* Stats footer */}
-        <div className="mt-6 grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/20">
+        <div className="mt-6 grid grid-cols-3 gap-4 p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700">
           <div>
             <p className="text-xs text-muted-foreground font-medium">30-Day High</p>
             <p className="text-sm font-bold text-card-foreground mt-1">${thirtyDayHigh.toLocaleString()}</p>
