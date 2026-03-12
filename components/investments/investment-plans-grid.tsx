@@ -91,13 +91,13 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                     <div className="bg-white/5 rounded-lg p-3 backdrop-blur-sm">
                       <p className="text-xs text-muted-foreground">Min Investment</p>
                       <p className="text-lg font-bold text-card-foreground mt-1">
-                        ${plan.minAmount.toLocaleString()}
+                        ${(plan.minAmount || 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="bg-white/5 rounded-lg p-3 backdrop-blur-sm">
                       <p className="text-xs text-muted-foreground">Max Investment</p>
                       <p className="text-lg font-bold text-card-foreground mt-1">
-                        ${plan.maxAmount.toLocaleString()}
+                        ${(plan.maxAmount || 0).toLocaleString()}}
                       </p>
                     </div>
                   </div>

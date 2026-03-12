@@ -106,7 +106,7 @@ export function InvestmentCalculator() {
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Min: ${selectedPlan.minAmount.toLocaleString()} | Max: ${selectedPlan.maxAmount.toLocaleString()}
+            Min: ${(selectedPlan?.minAmount || 0).toLocaleString()} | Max: ${(selectedPlan?.maxAmount || 0).toLocaleString()}
           </p>
         </div>
 

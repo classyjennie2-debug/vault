@@ -5,14 +5,39 @@ import {
   getInvestmentPlansFromDb,
   run,
   createTransaction,
+  getUserById,
 } from "@/lib/db"
 
 export async function POST(req: NextRequest) {
   try {
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user
+    
     const body = await req.json()
     const { planId, amount } = body as { planId: string; amount: number }
+
+    // Validate input
+    if (!planId || !amount) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    if (amount <= 0) {
+      return NextResponse.json({ error: "Investment amount must be positive" }, { status: 400 })
+    }
+
+    // Get current user to check balance
+    const currentUser = await getUserById(user.id)
+    if (!currentUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    // Check balance
+    if ((currentUser.balance || 0) < amount) {
+      return NextResponse.json(
+        { error: `Insufficient balance. You have $${(currentUser.balance || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}, but investment requires $${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}` },
+        { status: 400 }
+      )
+    }
 
     // validate plan
     const plans = await getInvestmentPlansFromDb()
@@ -21,20 +46,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Plan not found" }, { status: 404 })
     }
 
-    if (amount < plan.minAmount || amount > plan.maxAmount) {
-      return NextResponse.json({ error: "Amount outside allowed range" }, { status: 400 })
+    if (amount < (plan.minAmount || 0) || amount > (plan.maxAmount || Infinity)) {
+      return NextResponse.json(
+        { error: `Amount must be between $${plan.minAmount} and $${plan.maxAmount}` },
+        { status: 400 }
+      )
     }
 
     // compute expected profit based on returnRate
-    const expectedProfit = (amount * plan.returnRate) / 100
+    const expectedProfit = (amount * (plan.returnRate || 0)) / 100
 
     const startDate = new Date().toISOString()
     // compute end date by adding duration
     const end = new Date()
     if (plan.durationUnit === "months") {
-      end.setMonth(end.getMonth() + plan.duration)
+      end.setMonth(end.getMonth() + (plan.duration || 0))
     } else if (plan.durationUnit === "years") {
-      end.setFullYear(end.getFullYear() + plan.duration)
+      end.setFullYear(end.getFullYear() + (plan.duration || 0))
     }
     const endDate = end.toISOString()
 

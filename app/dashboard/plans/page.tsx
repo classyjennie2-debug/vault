@@ -94,7 +94,7 @@ export default async function PlansPage() {
                     <div>
                       <p className="text-[10px] text-muted-foreground">Min</p>
                       <p className="text-xs font-semibold text-card-foreground">
-                        ${plan.minAmount.toLocaleString()}
+                        ${(plan.minAmount || 0).toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -103,7 +103,7 @@ export default async function PlansPage() {
                     <div>
                       <p className="text-[10px] text-muted-foreground">Max</p>
                       <p className="text-xs font-semibold text-card-foreground">
-                        ${plan.maxAmount.toLocaleString()}
+                        ${(plan.maxAmount || 0).toLocaleString()}
                       </p>
                     </div>
                   </div>

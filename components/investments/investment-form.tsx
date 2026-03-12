@@ -14,14 +14,17 @@ interface InvestmentFormProps {
 }
 
 export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
-  const [amount, setAmount] = useState<string>(plan.minAmount.toString())
+  const [amount, setAmount] = useState<string>((plan.minAmount || 0).toString())
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const amountNum = parseFloat(amount) || 0
-  const isValid = amountNum >= plan.minAmount && amountNum <= plan.maxAmount
+  const minAmount = plan.minAmount || 0
+  const maxAmount = plan.maxAmount || 0
+  const isValid = amountNum >= minAmount && amountNum <= maxAmount
 
-  const expectedProfit = (amountNum * plan.returnRate) / 100
+  const expectedProfit = (amountNum * (plan.returnRate || 0)) / 100
   const totalReturn = amountNum + expectedProfit
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,6 +32,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
     if (!isValid) return
 
     setIsLoading(true)
+    setError(null)
 
     try {
       const res = await fetch("/api/investments", {
@@ -45,8 +49,9 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
         onSuccess()
       }, 500)
     } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred"
       console.error("investment submit error", err)
-      // TODO: show error toast
+      setError(errorMsg)
     } finally {
       setIsLoading(false)
     }
@@ -72,6 +77,13 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="amount">Investment Amount</Label>
         <div className="relative">
@@ -81,17 +93,17 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
           <Input
             id="amount"
             type="number"
-            placeholder={plan.minAmount.toString()}
+            placeholder={minAmount.toString()}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            min={plan.minAmount}
-            max={plan.maxAmount}
+            min={minAmount}
+            max={maxAmount}
             step="100"
             className="pl-7"
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          Range: ${plan.minAmount.toLocaleString()} - ${plan.maxAmount.toLocaleString()}
+          Range: ${minAmount.toLocaleString()} - ${maxAmount.toLocaleString()}
         </p>
       </div>
 
@@ -99,9 +111,9 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {amountNum < plan.minAmount
-              ? `Minimum investment is $${plan.minAmount.toLocaleString()}`
-              : `Maximum investment is $${plan.maxAmount.toLocaleString()}`}
+            {amountNum < minAmount
+              ? `Minimum investment is $${minAmount.toLocaleString()}`
+              : `Maximum investment is $${maxAmount.toLocaleString()}`}
           </AlertDescription>
         </Alert>
       )}
@@ -119,12 +131,12 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Return Rate:</span>
-            <span className="font-medium text-accent">{plan.returnRate}%</span>
+            <span className="font-medium text-accent">{(plan.returnRate || 0)}%</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Duration:</span>
             <span className="font-medium text-card-foreground">
-              {plan.duration} {plan.durationUnit}
+              {plan.duration || 0} {plan.durationUnit || "months"}
             </span>
           </div>
           <div className="border-t border-border pt-2 mt-2 flex justify-between">
