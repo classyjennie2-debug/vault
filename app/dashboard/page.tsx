@@ -20,8 +20,7 @@ export default async function DashboardPage() {
   const totalReturnRate = calculateReturnRate(stats.totalProfit, stats.totalInvested)
 
   return (
-    <div className="w-full max-w-full mx-auto">
-      <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
       <DashboardHero user={user} stats={stats} />
 
       <QuickActions />
@@ -60,7 +59,6 @@ export default async function DashboardPage() {
       <div className="pb-4 sm:pb-0">
         <LiveChatButton />
       </div>
-    </div>
     </div>
   )
 }

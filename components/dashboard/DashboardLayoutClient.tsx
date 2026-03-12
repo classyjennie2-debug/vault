@@ -149,10 +149,8 @@ export default function DashboardLayoutClient({ children, user }: Props) {
           )}
 
           {/* Main content */}
-          <main className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3 md:p-4 lg:p-6 pb-24 sm:pb-20 md:pb-4 w-full">
-            <div className="w-full max-w-full">
-              {children}
-            </div>
+          <main className="flex-1 overflow-y-auto overflow-x-auto p-2 sm:p-3 md:p-4 lg:p-6 pb-24 sm:pb-20 md:pb-4">
+            {children}
           </main>
         </div>
       </div>

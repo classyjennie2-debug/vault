@@ -190,8 +190,7 @@ export default function DepositPage() {
   }
 
   return (
-    <div className="w-full max-w-full">
-      <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/dashboard">
@@ -422,7 +421,6 @@ export default function DepositPage() {
           </CardContent>
         </Card>
       )}
-      </div>
     </div>
   )
 }

@@ -153,8 +153,7 @@ export default function WithdrawPage() {
   }
 
   return (
-    <div className="w-full max-w-full">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4 md:gap-6">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4 md:gap-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
@@ -343,6 +342,5 @@ export default function WithdrawPage() {
         </div>
       )}
     </form>
-    </div>
   )
 }
