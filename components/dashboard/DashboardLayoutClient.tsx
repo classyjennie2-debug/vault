@@ -45,7 +45,7 @@ export default function DashboardLayoutClient({ children, user }: Props) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-background flex-col">
+    <div className="flex min-h-screen bg-background flex-col w-full overflow-x-hidden">
       {/* Top Header - Desktop Only */}
       <header className="hidden lg:flex h-16 items-center justify-between border-b border-border bg-card px-8 sticky top-0 z-20">
         <div className="flex-1"></div>
@@ -149,7 +149,7 @@ export default function DashboardLayoutClient({ children, user }: Props) {
           )}
 
           {/* Main content */}
-          <main className="flex-1 overflow-y-auto p-2 sm:p-3 md:p-4 lg:p-6 pb-24 sm:pb-20 md:pb-4">{children}</main>
+          <main className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3 md:p-4 lg:p-6 pb-24 sm:pb-20 md:pb-4 w-full">{children}</main>
         </div>
       </div>
     </div>

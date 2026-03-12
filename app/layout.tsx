@@ -72,6 +72,7 @@ export const viewport: Viewport = {
   themeColor: "#1a1a18",
   width: "device-width",
   initialScale: 1,
+  minimumScale: 1,
 }
 
 export default function RootLayout({
@@ -80,8 +81,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
+    <html lang="en" className="overflow-x-hidden">
+      <body className="font-sans antialiased overflow-x-hidden">
         {children}
         <Analytics />
         <TawkChat />

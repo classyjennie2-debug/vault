@@ -43,7 +43,7 @@ export function UserMenu({ user }: UserMenuProps) {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-56 mt-2">
+      <DropdownMenuContent align="end" className="w-48 sm:w-56 mt-2 mx-2">
         {/* User Info */}
         <DropdownMenuLabel className="flex flex-col py-2">
           <p className="text-sm font-medium text-foreground">{user.name}</p>
