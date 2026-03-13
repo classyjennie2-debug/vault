@@ -67,13 +67,14 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
         }
         
         // Format specific error messages for better UX
-        if (errorMsg.includes("Insufficient balance")) {
+        const errorLower = errorMsg.toLowerCase()
+        if (errorLower.includes("insufficient balance")) {
           setError("❌ Your account balance is insufficient for this investment. Please deposit more funds first.")
-        } else if (errorMsg.includes("Invalid amount") || errorMsg.includes("minimum")) {
+        } else if (errorLower.includes("invalid amount") || errorLower.includes("minimum") || errorLower.includes("maximum")) {
           setError(`❌ Investment amount must be between $${minAmount.toLocaleString()} and $${maxAmount === Infinity ? "unlimited" : maxAmount.toLocaleString()}`)
-        } else if (errorMsg.includes("not found")) {
+        } else if (errorLower.includes("not found")) {
           setError("❌ This investment plan is no longer available. Please select another plan.")
-        } else if (errorMsg.includes("rate limit")) {
+        } else if (errorLower.includes("rate limit")) {
           setError("❌ Too many requests. Please wait a moment and try again.")
         } else {
           setError(`❌ ${errorMsg}`)
@@ -81,9 +82,10 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
         return
       }
       setSubmitted(true)
+      // Wait for user to see success message before closing dialog
       setTimeout(() => {
         onSuccess()
-      }, 500)
+      }, 1200)
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred"
       console.error("investment submit error", err)
