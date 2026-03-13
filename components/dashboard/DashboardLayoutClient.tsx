@@ -7,18 +7,15 @@ import {
   LayoutDashboard,
   TrendingUp,
   History,
-  Menu,
-  X,
   ArrowDownToLine,
   ArrowUpFromLine,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { useState } from "react"
 import { UserMenu } from "@/components/dashboard/user-menu"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { Logo } from "@/components/ui/logo"
+import { BottomNavBar } from "@/components/dashboard/bottom-nav-bar"
 
 interface Props {
   children: React.ReactNode
@@ -40,9 +37,10 @@ const navItems = [
   { href: "/dashboard/transactions", label: "Transactions", icon: History },
 ]
 
+const desktopNavItems = navItems // Keep original length for desktop sidebar
+
 export default function DashboardLayoutClient({ children, user }: Props) {
   const pathname = usePathname()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <div className="flex min-h-screen bg-background flex-col">
@@ -63,7 +61,7 @@ export default function DashboardLayoutClient({ children, user }: Props) {
             <span className="text-lg font-semibold text-foreground font-serif">Vault Capital</span>
           </div>
           <nav className="flex flex-1 flex-col gap-1 p-4">
-            {navItems.map((item) => (
+            {desktopNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -110,50 +108,18 @@ export default function DashboardLayoutClient({ children, user }: Props) {
             <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
               <NotificationBell />
               <UserMenu user={user} />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 sm:h-11 sm:w-11 bg-gradient-to-br from-primary/5 to-primary/0 hover:from-primary/15 hover:to-primary/5 hover:shadow-md shadow-sm transition-all duration-200 hover:scale-105 rounded-lg border border-primary/10 hover:border-primary/20"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? (
-                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
-                ) : (
-                  <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
-                )}
-              </Button>
             </div>
           </header>
 
-          {/* Mobile Navigation - Static Menu */}
-          {mobileMenuOpen && (
-            <div className="border-b border-border bg-card p-3 sm:p-4 lg:hidden">
-              <nav className="flex flex-col gap-1">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 sm:py-2.5 text-sm transition-colors min-h-[44px]",
-                      pathname === item.href
-                        ? "bg-secondary text-foreground font-medium"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                    )}
-                  >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-          )}
-
           {/* Main content */}
-          <main className="flex-1 overflow-y-auto overflow-x-auto p-2 sm:p-3 md:p-4 lg:p-6 pb-24 sm:pb-20 md:pb-4">
+          <main className="flex-1 overflow-y-auto overflow-x-auto p-2 sm:p-3 md:p-4 lg:p-6 pb-24 lg:pb-4">
             {children}
           </main>
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNavBar />
     </div>
   )
 }
