@@ -1,53 +1,28 @@
-"use client"
+import { requireAuth } from "@/lib/auth"
+import { AdminLayoutClient } from "./admin-layout-client"
 
-import React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import {
-  Lock,
-  LayoutDashboard,
-  Users,
-  History,
-  LogOut,
-  Menu,
-  X,
-  ShieldCheck,
-  Wallet,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { adminUser } from "@/lib/mock-data"
-import { useState } from "react"
-
-const navItems = [
-  { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Manage Users", icon: Users },
-  { href: "/admin/transactions", label: "Transactions", icon: History },
-  { href: "/admin/wallets", label: "Wallets", icon: Wallet },
-]
-
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const pathname = usePathname()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const user = await requireAuth()
 
-  return (
-    <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar */}
-      <aside className="hidden w-64 flex-shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
-        <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
-            <Lock className="h-4 w-4 text-sidebar-primary-foreground" />
-          </div>
-          <span className="text-lg font-semibold text-sidebar-foreground">
-            Vault
-          </span>
-          <span className="ml-auto rounded-md bg-sidebar-accent px-2 py-0.5 text-[10px] font-medium text-sidebar-accent-foreground">
-            Admin
+  if (user.role !== "admin") {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Access Denied</h1>
+          <p className="text-muted-foreground mb-6">You do not have permission to access the admin panel.</p>
+          <a href="/" className="text-accent hover:underline">
+            Return to home
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  return <AdminLayoutClient user={user}>{children}</AdminLayoutClient>
           </span>
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-4">
