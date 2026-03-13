@@ -129,13 +129,18 @@ export async function POST(req: NextRequest) {
         : `Your ${transaction.type} of $${transaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} has been rejected${notes ? ': ' + notes : '.'}`
       const notificationType = approved ? "success" : "error"
 
-      await createNotification({
-        userId: transaction.userId,
-        title,
-        message,
-        type: notificationType,
-        actionUrl: "/dashboard/transactions"
-      })
+      try {
+        await createNotification({
+          userId: transaction.userId,
+          title,
+          message,
+          type: notificationType,
+          actionUrl: "/dashboard/transactions"
+        })
+      } catch (notifError) {
+        console.error('⚠️ Failed to create notification:', notifError)
+        // Don't fail the entire request if notification fails
+      }
 
       // Audit log the successful approval
       logAuditEvent(
@@ -171,11 +176,20 @@ export async function POST(req: NextRequest) {
       })
     } catch (error: any) {
       transactionLogger.error('Transaction approval error', error, { transactionId }, user.id)
+      console.error('❌ Approval execution failed:', {
+        error: error?.message || error,
+        transactionId,
+        stack: error?.stack,
+      })
       logAuditEvent(user.id, 'approve_transaction', 'transaction', 'failure')
       const appError = mapErrorToResponse(error)
       return createErrorResponse(appError)
     }
   } catch (error: unknown) {
+    console.error("❌ Admin approval POST error:", {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+    })
     transactionLogger.error("Admin approval POST error", error as Error, {})
     const appError = mapErrorToResponse(error)
     return createErrorResponse(appError)

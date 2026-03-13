@@ -110,8 +110,19 @@ export default function AdminTransactionsPage() {
         alert("Transaction approved successfully!")
       } else {
         console.error("❌ Approval failed:", res.status, data)
-        const errorMsg = data?.error?.message || data?.error || data?.message || JSON.stringify(data)
-        alert(`Failed to approve: ${errorMsg}`)
+        // Extract error message from nested error object
+        let errorMsg = "Unknown error"
+        if (data?.error?.message) {
+          errorMsg = data.error.message
+        } else if (data?.error) {
+          errorMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error)
+        } else if (data?.message) {
+          errorMsg = data.message
+        } else {
+          errorMsg = JSON.stringify(data)
+        }
+        console.error("Detailed error:", errorMsg)
+        alert(`Failed to approve (${res.status}): ${errorMsg}`)
       }
     } catch (error) {
       console.error("Network error approving transaction:", error)
@@ -154,8 +165,19 @@ export default function AdminTransactionsPage() {
         alert("Transaction rejected successfully!")
       } else {
         console.error("❌ Rejection failed:", res.status, data)
-        const errorMsg = data?.error || data?.message || data?.description || JSON.stringify(data)
-        alert(`Failed to reject: ${errorMsg}`)
+        // Extract error message from nested error object
+        let errorMsg = "Unknown error"
+        if (data?.error?.message) {
+          errorMsg = data.error.message
+        } else if (data?.error) {
+          errorMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error)
+        } else if (data?.message) {
+          errorMsg = data.message
+        } else {
+          errorMsg = JSON.stringify(data)
+        }
+        console.error("Detailed error:", errorMsg)
+        alert(`Failed to reject (${res.status}): ${errorMsg}`)
       }
     } catch (error) {
       console.error("Network error rejecting transaction:", error)
