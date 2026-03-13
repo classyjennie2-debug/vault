@@ -26,11 +26,7 @@ export async function GET(req: NextRequest) {
       changes: { transactionsCount: transactions.length }
     })
 
-    return NextResponse.json({
-      success: true,
-      transactions,
-      count: transactions.length
-    })
+    return NextResponse.json(transactions)
   } catch (error) {
     transactionLogger.error("Admin transactions GET error", error as Error, {})
     const appError = mapErrorToResponse(error)
