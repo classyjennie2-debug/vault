@@ -351,7 +351,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                   ))}
                 </div>
               </div>
-
+            </TabsContent>
 
             {/* Active Investments Tab */}
             <TabsContent value="active-investments" className="p-3 sm:p-6">
