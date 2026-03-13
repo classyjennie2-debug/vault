@@ -136,18 +136,18 @@ export function NotificationBell() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative group hover:bg-accent/10 transition-all duration-300"
+          className="relative group h-9 w-9 sm:h-11 sm:w-11 bg-gradient-to-br from-amber-500/5 to-amber-500/0 hover:from-amber-500/15 hover:to-amber-500/5 hover:shadow-md shadow-sm transition-all duration-200 hover:scale-105 rounded-lg border border-amber-500/10 hover:border-amber-500/30"
         >
           <div className="relative">
-            <Bell className="h-5 w-5 group-hover:text-accent transition-colors duration-300" />
+            <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors duration-200" />
             {unreadCount > 0 && (
               <>
                 {/* Pulse animation rings */}
                 <div className="absolute inset-0 rounded-full animate-pulse">
-                  <div className="absolute inset-0 rounded-full border-2 border-accent/30 -m-1" />
+                  <div className="absolute inset-0 rounded-full border-2 border-red-500/30 -m-1" />
                 </div>
                 {/* Badge */}
-                <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center h-5 w-5 text-xs font-bold leading-none text-white bg-gradient-to-br from-accent to-accent/80 rounded-full shadow-lg shadow-accent/50 animate-in bounce duration-500">
+                <span className="absolute -top-2 -right-2 inline-flex items-center justify-center h-6 w-6 text-xs font-bold leading-none text-white bg-gradient-to-br from-red-500 to-red-600 rounded-full shadow-lg shadow-red-500/40 animate-pulse ring-2 ring-white dark:ring-slate-900">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               </>

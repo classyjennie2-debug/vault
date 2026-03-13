@@ -49,7 +49,7 @@ export default function DashboardLayoutClient({ children, user }: Props) {
       {/* Top Header - Desktop Only */}
       <header className="hidden lg:flex h-16 items-center justify-between border-b border-border bg-card px-8 sticky top-0 z-20">
         <div className="flex-1"></div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <NotificationBell />
           <UserMenu user={user} />
         </div>
@@ -107,19 +107,19 @@ export default function DashboardLayoutClient({ children, user }: Props) {
               <Logo showText={false} size="sm" />
               <span className="font-semibold text-sm sm:text-base text-foreground font-serif truncate">Vault Capital</span>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
               <NotificationBell />
               <UserMenu user={user} />
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 sm:h-10 sm:w-10"
+                className="h-9 w-9 sm:h-11 sm:w-11 bg-gradient-to-br from-primary/5 to-primary/0 hover:from-primary/15 hover:to-primary/5 hover:shadow-md shadow-sm transition-all duration-200 hover:scale-105 rounded-lg border border-primary/10 hover:border-primary/20"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? (
-                  <X className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
                 ) : (
-                  <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
                 )}
               </Button>
             </div>

@@ -28,7 +28,7 @@ export function UserMenu({ user }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center gap-2 h-10 px-2 hover:bg-secondary/50 transition-colors"
+          className="flex items-center gap-2 h-10 px-3 sm:px-4 bg-gradient-to-br from-secondary/5 to-secondary/0 hover:from-secondary/15 hover:to-secondary/5 hover:shadow-md shadow-sm transition-all duration-200 hover:scale-105 rounded-lg border border-secondary/10 hover:border-secondary/20 group"
         >
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-secondary text-foreground text-xs font-semibold">
