@@ -26,7 +26,7 @@ export default async function DashboardPage() {
       <QuickActions />
 
       <DashboardCards
-        totalBalance={user.balance}
+        totalBalance={stats.availableBalance + stats.totalInvested + stats.totalProfit}
         totalInvested={stats.totalInvested}
         totalProfit={stats.totalProfit}
         availableBalance={stats.availableBalance}

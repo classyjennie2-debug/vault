@@ -59,6 +59,24 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
     return Math.min(100, Math.max(0, Math.round(progress)))
   }
 
+  const formatDate = (date: string) => {
+    if (!date) return "N/A"
+    try {
+      const dateObj = new Date(date)
+      // Check if the date is valid
+      if (isNaN(dateObj.getTime())) {
+        return "Invalid date"
+      }
+      return dateObj.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    } catch (error) {
+      return "Invalid date"
+    }
+  }
+
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case "Low":
@@ -370,7 +388,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                   <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                     <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:border-blue-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
                       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <CardContent className="p-4 relative min-h-fit">
+                      <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
                         <p className="text-xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-300 origin-left">
                           ${totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -381,7 +399,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                     <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20 hover:border-green-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
                       <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <CardContent className="p-4 relative min-h-fit">
+                      <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Expected Returns</p>
                         <p className="text-xl font-bold text-green-600 group-hover:scale-105 transition-transform duration-300 origin-left">
                           +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -394,7 +412,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                     <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
                       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <CardContent className="p-4 relative min-h-fit">
+                      <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Total Value</p>
                         <p className="text-xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-300 origin-left">
                           ${(totalInvested + totalReturns).toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -405,7 +423,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                     <Card className="bg-gradient-to-br from-orange-500/10 to-yellow-500/10 border-orange-500/20 hover:border-orange-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
                       <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <CardContent className="p-4 relative min-h-fit">
+                      <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Avg Progress</p>
                         <p className="text-xl font-bold text-orange-600 group-hover:scale-105 transition-transform duration-300 origin-left">
                           {Math.round(
@@ -450,7 +468,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                                 <div className="flex-1 min-w-0">
                                   <CardTitle className="text-base text-card-foreground">{inv.planName}</CardTitle>
                                   <p className="text-xs text-muted-foreground mt-2 line-clamp-1">
-                                    {new Date(inv.startDate).toLocaleDateString()} – {new Date(inv.endDate).toLocaleDateString()}
+                                    {formatDate(inv.startDate)} – {formatDate(inv.endDate)}
                                   </p>
                                 </div>
                                 <Badge className="flex-shrink-0 bg-green-500/20 text-green-700 border-green-500/30 capitalize transition-all duration-300 group-hover:scale-105">

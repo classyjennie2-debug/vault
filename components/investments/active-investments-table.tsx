@@ -22,11 +22,21 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
   const safeInvestments = Array.isArray(investments) ? investments : []
   
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
+    if (!date) return "N/A"
+    try {
+      const dateObj = new Date(date)
+      // Check if the date is valid
+      if (isNaN(dateObj.getTime())) {
+        return "Invalid date"
+      }
+      return dateObj.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    } catch (error) {
+      return "Invalid date"
+    }
   }
 
   const calculateProgress = (startDate: string, endDate: string, status: string): number => {

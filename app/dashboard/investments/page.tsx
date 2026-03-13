@@ -2,6 +2,8 @@ import { UnifiedInvestmentDashboard } from "@/components/investments/unified-inv
 import { requireAuth } from "@/lib/auth"
 import { getInvestmentPlansFromDb, getUserActiveInvestmentsWithProfit } from "@/lib/db"
 
+export const dynamic = "force-dynamic"
+
 export default async function InvestmentsPage() {
   try {
     const user = await requireAuth()

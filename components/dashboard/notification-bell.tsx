@@ -17,13 +17,22 @@ import type { Notification } from "@/lib/types"
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
+  const [hasInitialFetch, setHasInitialFetch] = useState(false)
 
   const fetchNotifications = async () => {
     try {
       const response = await fetch("/api/notifications")
       if (response.ok) {
         const data = await response.json()
-        setNotifications(data)
+        // Merge server data with local state, preserving any local updates if they're more recent
+        setNotifications(data.map((serverNotif: Notification) => {
+          const localNotif = notifications.find(n => n.id === serverNotif.id)
+          // If the notification exists locally with isRead=true, keep it as read
+          if (localNotif && localNotif.isRead && !serverNotif.isRead) {
+            return { ...serverNotif, isRead: true }
+          }
+          return serverNotif
+        }))
       } else {
         console.error("Failed to fetch notifications")
       }
@@ -33,21 +42,24 @@ export function NotificationBell() {
   }
 
   useEffect(() => {
-    fetchNotifications()
-  }, [])
-
-  // Refetch notifications when sheet opens to ensure latest state
-  useEffect(() => {
-    if (isOpen) {
+    // Initial fetch only once
+    if (!hasInitialFetch) {
       fetchNotifications()
+      setHasInitialFetch(true)
     }
-  }, [isOpen])
+  }, [hasInitialFetch])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const unreadNotifications = notifications.filter((n) => !n.isRead)
   const readNotifications = notifications.filter((n) => n.isRead)
 
   const handleMarkAsRead = async (id: string) => {
+    // Optimistically update local state immediately
+    setNotifications(
+      notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    )
+    
+    // Then sync to server
     try {
       const response = await fetch("/api/notifications", {
         method: "PATCH",
@@ -56,12 +68,19 @@ export function NotificationBell() {
         },
         body: JSON.stringify({ notificationId: id }),
       })
-      if (response.ok) {
+      
+      if (!response.ok) {
+        // If the update failed, revert the optimistic update
         setNotifications(
-          notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+          notifications.map((n) => (n.id === id ? { ...n, isRead: false } : n))
         )
+        console.error("Failed to mark notification as read")
       }
     } catch (error) {
+      // If there's an error, revert the optimistic update
+      setNotifications(
+        notifications.map((n) => (n.id === id ? { ...n, isRead: false } : n))
+      )
       console.error("Error marking notification as read:", error)
     }
   }

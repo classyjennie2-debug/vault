@@ -10,15 +10,20 @@ interface DashboardHeroProps {
   stats?: {
     totalInvested: number
     totalProfit: number
+    availableBalance: number
     activeInvestments: number
     pendingDeposits: number
   }
 }
 
 export function DashboardHero({ user, stats }: DashboardHeroProps) {
-  const totalBalance = user.balance
-  const activeInvestments = stats?.activeInvestments || 0
+  // Total balance = available balance (wallet) + invested amount + profit earned
+  const availableBalance = stats?.availableBalance || 0
+  const totalInvested = stats?.totalInvested || 0
   const totalProfit = stats?.totalProfit || 0
+  const totalBalance = availableBalance + totalInvested + totalProfit
+  
+  const activeInvestments = stats?.activeInvestments || 0
 
   return (
     <div className="w-full mb-3 sm:mb-4 md:mb-6 lg:mb-8 animate-in fade-in slide-in-from-top duration-700">
