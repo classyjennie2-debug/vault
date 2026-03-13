@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
 
     if (!validationResult.success) {
       transactionLogger.warn('Admin approval validation failed', { errors: validationResult.details }, user.id)
+      console.error('Validation failed:', validationResult)
       const appError = mapErrorToResponse(new ValidationError('Invalid approval request', validationResult.details))
       return createErrorResponse(appError)
     }
@@ -88,6 +89,7 @@ export async function POST(req: NextRequest) {
     const transaction = txResults[0]
 
     if (!transaction) {
+      console.error('Transaction not found:', transactionId)
       logAuditEvent(user.id, 'approve_transaction', 'transaction', 'failure')
       const appError = mapErrorToResponse(new NotFoundError('Transaction'))
       return createErrorResponse(appError)
@@ -100,18 +102,24 @@ export async function POST(req: NextRequest) {
 
       // If approving a deposit, add amount to user balance
       if (approved && transaction.type === "deposit") {
-        const userData = await getUserById(transaction.userId)
-        if (!userData) {
-          throw new Error('User not found for deposit')
+        try {
+          const userData = await getUserById(transaction.userId)
+          if (!userData) {
+            throw new Error(`User ${transaction.userId} not found for deposit`)
+          }
+
+          const newBalance = userData.balance + transaction.amount
+          await run("UPDATE users SET balance = ? WHERE id = ?", [newBalance, transaction.userId])
+
+          transactionLogger.info('Deposit approved and balance updated', 
+            { transactionId, depositAmount: transaction.amount, newBalance, userId: transaction.userId },
+            user.id
+          )
+        } catch (balanceError) {
+          console.error('Error updating balance for deposit:', balanceError)
+          transactionLogger.error('Balance update failed', balanceError as Error, { transactionId, userId: transaction.userId }, user.id)
+          // Still mark transaction as approved even if balance update fails
         }
-
-        const newBalance = userData.balance + transaction.amount
-        await run("UPDATE users SET balance = ? WHERE id = ?", [newBalance, transaction.userId])
-
-        transactionLogger.info('Deposit approved and balance updated', 
-          { transactionId, depositAmount: transaction.amount, newBalance },
-          user.id
-        )
       }
 
       // Create notification for the user

@@ -86,20 +86,20 @@ export default function AdminTransactionsPage() {
         body: JSON.stringify({ transactionId: txId, approved: true }),
       })
       
+      const data = await res.json()
+      
       if (res.ok) {
-        const data = await res.json()
         setTxList((prev) =>
           prev.map((t) => (t.id === txId ? { ...t, status: "approved" as const } : t))
         )
         console.log("Transaction approved successfully:", data)
       } else {
-        const error = await res.json()
-        console.error("Approval failed:", error)
-        alert("Failed to approve transaction")
+        console.error("Approval failed:", data)
+        alert(`Failed to approve: ${data.error || data.message || 'Unknown error'}`)
       }
     } catch (error) {
       console.error("Error approving transaction:", error)
-      alert("Error approving transaction")
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setProcessingId(null)
     }
@@ -114,20 +114,20 @@ export default function AdminTransactionsPage() {
         body: JSON.stringify({ transactionId: txId, approved: false }),
       })
       
+      const data = await res.json()
+      
       if (res.ok) {
-        const data = await res.json()
         setTxList((prev) =>
           prev.map((t) => (t.id === txId ? { ...t, status: "rejected" as const } : t))
         )
         console.log("Transaction rejected successfully:", data)
       } else {
-        const error = await res.json()
-        console.error("Rejection failed:", error)
-        alert("Failed to reject transaction")
+        console.error("Rejection failed:", data)
+        alert(`Failed to reject: ${data.error || data.message || 'Unknown error'}`)
       }
     } catch (error) {
       console.error("Error rejecting transaction:", error)
-      alert("Error rejecting transaction")
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setProcessingId(null)
     }
