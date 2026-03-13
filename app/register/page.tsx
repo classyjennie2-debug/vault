@@ -23,6 +23,7 @@ export default function RegisterPage() {
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
     setError("")
+    setInfo("")
     setLoading(true)
     try {
       const res = await fetch("/api/auth/signup", {
@@ -33,10 +34,15 @@ export default function RegisterPage() {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || "Something went wrong")
+        console.error("Signup error response:", { status: res.status, data })
         return
       }
       setInfo("Verification code sent to your email")
       setStep(1)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Network error"
+      setError(`Failed to create account: ${message}`)
+      console.error("Signup fetch error:", err)
     } finally {
       setLoading(false)
     }
