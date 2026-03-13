@@ -198,10 +198,10 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col">
             {/* Tab Navigation */}
             <div className="border-b border-border/50 px-3 sm:px-6 pt-3 sm:pt-6 bg-gradient-to-r from-transparent via-card/30 to-transparent">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-secondary/30 hover:bg-secondary/40 backdrop-blur-sm gap-1 sm:gap-0 transition-colors duration-300">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2">
                 <TabsTrigger
                   value="plans"
-                  className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 py-2 sm:py-3 hover:bg-secondary/50"
+                  className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2"
                 >
                   <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="hidden sm:inline">Investment Plans</span>
@@ -209,7 +209,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                 </TabsTrigger>
                 <TabsTrigger
                   value="active-investments"
-                  className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 py-2 sm:py-3 hover:bg-secondary/50"
+                  className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2"
                 >
                   <Target className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="hidden sm:inline">Active Investments</span>
@@ -217,44 +217,44 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                 </TabsTrigger>
                 <TabsTrigger
                   value="calculator"
-                  className="hidden sm:flex flex-row items-center justify-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 py-3 hover:bg-secondary/50"
+                  className="hidden sm:flex flex-row items-center justify-center gap-2"
                 >
                   <Calculator className="h-4 w-4" />
                   Calculator
                 </TabsTrigger>
                 <TabsTrigger
                   value="portfolio"
-                  className="hidden sm:flex flex-row items-center justify-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300 py-3 hover:bg-secondary/50"
+                  className="hidden sm:flex flex-row items-center justify-center gap-2"
                 >
                   <TrendingUp className="h-4 w-4" />
                   Portfolio
                 </TabsTrigger>
               </TabsList>
               {/* Mobile-only additional tab buttons */}
-              <div className="flex gap-1 sm:hidden mt-3 -mx-3 -mb-3 px-3 pb-3">
+              <div className="flex gap-2 sm:hidden mt-4">
                 <button
                   onClick={() => setActiveTab("calculator")}
                   className={cn(
-                    "flex-1 py-2 px-2 rounded text-xs font-medium transition-all duration-300 flex items-center justify-center gap-1",
+                    "flex-1 py-2.5 px-3 rounded-md text-xs font-medium transition-all duration-300 flex items-center justify-center gap-1.5",
                     activeTab === "calculator"
-                      ? "bg-primary text-primary-foreground shadow-lg"
-                      : "bg-secondary/30 text-muted-foreground hover:bg-secondary/50"
+                      ? "bg-background text-foreground shadow-md"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
                   )}
                 >
-                  <Calculator className="h-3 w-3" />
-                  <span>Calc</span>
+                  <Calculator className="h-3.5 w-3.5" />
+                  <span>Calculator</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("portfolio")}
                   className={cn(
-                    "flex-1 py-2 px-2 rounded text-xs font-medium transition-all duration-300 flex items-center justify-center gap-1",
+                    "flex-1 py-2.5 px-3 rounded-md text-xs font-medium transition-all duration-300 flex items-center justify-center gap-1.5",
                     activeTab === "portfolio"
-                      ? "bg-primary text-primary-foreground shadow-lg"
-                      : "bg-secondary/30 text-muted-foreground hover:bg-secondary/50"
+                      ? "bg-background text-foreground shadow-md"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
                   )}
                 >
-                  <TrendingUp className="h-3 w-3" />
-                  <span>Folio</span>
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  <span>Portfolio</span>
                 </button>
               </div>
             </div>
