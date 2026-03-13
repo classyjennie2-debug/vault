@@ -73,7 +73,7 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
   // investments passed from parent
 
   return (
-    <Card className="border backdrop-blur-lg bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-950/50 dark:to-slate-900/30 animate-in fade-in slide-in-from-bottom-3 duration-700 overflow-x-auto">
+    <Card className="border backdrop-blur-lg bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-950/50 dark:to-slate-900/30 overflow-x-auto">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
