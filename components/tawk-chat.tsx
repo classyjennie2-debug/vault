@@ -1,29 +1,20 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { usePathname } from "next/navigation"
 
 declare global {
   interface Window {
     Tawk_API?: Record<string, any>
     Tawk_LoadStart?: Date
-    setupTawk?: () => void
   }
 }
 
 export default function TawkChat() {
   const scriptLoadedRef = useRef(false)
-  const pathname = usePathname()
-
-  // Don't load Tawk on auth pages where users aren't authenticated
-  const shouldLoadTawk = !pathname?.includes("/login") && 
-                        !pathname?.includes("/register") && 
-                        !pathname?.includes("/forgot-password") &&
-                        !pathname?.includes("/reset-password")
 
   useEffect(() => {
     // Prevent multiple script loads
-    if (scriptLoadedRef.current || !shouldLoadTawk) return
+    if (scriptLoadedRef.current) return
 
     const initTawk = async () => {
       const tawkPropertyId = process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID
@@ -36,14 +27,12 @@ export default function TawkChat() {
       }
 
       try {
-        // Initialize window properties for Tawk
+        // Initialize window properties for Tawk (but DON'T auto-load the widget)
         if (!window.Tawk_API) {
           window.Tawk_API = {
-            // Callback function triggered when Tawk.to loads
             onLoad: function() {
-              // Tawk has loaded successfully
+              // Tawk has loaded
             },
-            // Called when widget is hidden
             onStatusChange: function(status: string) {
               if (process.env.NODE_ENV === 'development') {
                 console.log('Tawk status changed:', status)
@@ -54,7 +43,7 @@ export default function TawkChat() {
 
         window.Tawk_LoadStart = new Date()
 
-        // Create and append the Tawk script
+        // Create and append the Tawk script (but with hideOnLoad to hide it initially)
         const script = document.createElement("script")
         script.async = true
         script.src = `https://embed.tawk.to/${tawkPropertyId}/default`
@@ -65,8 +54,12 @@ export default function TawkChat() {
         // Track script load state
         script.onload = () => {
           scriptLoadedRef.current = true
+          // Hide the chat widget by default
+          if (window.Tawk_API?.hideWidget) {
+            window.Tawk_API.hideWidget()
+          }
           if (process.env.NODE_ENV === 'development') {
-            console.log('Tawk.to chat widget loaded successfully')
+            console.log('Tawk.to chat widget loaded (hidden by default)')
           }
         }
 
@@ -99,7 +92,7 @@ export default function TawkChat() {
     const timer = setTimeout(initTawk, 500)
 
     return () => clearTimeout(timer)
-  }, [shouldLoadTawk])
+  }, [])
 
   return null
 }

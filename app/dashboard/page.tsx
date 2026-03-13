@@ -43,7 +43,7 @@ export default async function DashboardPage() {
           <PortfolioChart data={portfolioData} balance={user.balance} />
         </div>
         <div className="lg:col-span-2">
-          <RecentTransactions userId={user.id} />
+          <RecentTransactions />
         </div>
       </div>
 

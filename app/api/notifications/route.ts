@@ -8,7 +8,14 @@ export async function GET() {
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user
     const notifications = await getUserNotifications(user.id)
-    return NextResponse.json(notifications)
+    
+    // Convert SQLite boolean values (0/1) to JavaScript booleans
+    const formattedNotifications = notifications.map((n: any) => ({
+      ...n,
+      isRead: Boolean(n.isRead) // Convert 0/1 to false/true
+    }))
+    
+    return NextResponse.json(formattedNotifications)
   } catch (error) {
     console.error("Error fetching notifications:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -27,7 +34,7 @@ export async function PATCH(request: Request) {
 
     // Verify the notification belongs to the user
     const notifications = await getUserNotifications(user.id)
-    const notification = notifications.find((n: Notification) => n.id === notificationId)
+    const notification = notifications.find((n: any) => n.id === notificationId)
 
     if (!notification) {
       return NextResponse.json({ error: "Notification not found" }, { status: 404 })

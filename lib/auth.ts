@@ -78,7 +78,7 @@ export async function requireAuth(redirectTo = "/login") {
     console.error("Error processing matured investments:", err)
   }
 
-  return user
+  return { ...user, role: (payload.role || user.role) as "user" | "admin" }
 }
 
 // used in API routes
@@ -104,7 +104,7 @@ export async function requireAuthAPI() {
     console.error("Error processing matured investments:", err)
   }
 
-  return user
+  return { ...user, role: (payload.role || user.role) as "user" | "admin" }
 }
 
 

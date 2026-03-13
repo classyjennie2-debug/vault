@@ -23,7 +23,9 @@ export async function GET(req: NextRequest) {
     const transactions = await all("SELECT * FROM transactions ORDER BY date DESC")
     
     logAuditEvent(user.id, 'view_transactions', 'admin', 'success', {
-      changes: { transactionsCount: transactions.length }
+      changes: {
+        transactionCount: { before: 0, after: transactions.length }
+      }
     })
 
     return NextResponse.json(transactions)
@@ -151,8 +153,7 @@ export async function POST(req: NextRequest) {
         {
           resourceId: transactionId,
           changes: {
-            before: { status: transaction.status },
-            after: { status: newStatus }
+            status: { before: transaction.status, after: newStatus }
           }
         }
       )

@@ -16,9 +16,10 @@ interface InvestmentFormProps {
 
 export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
   // Safe plan values with proper null checking
-  const minAmount = safeNumber(plan.minAmount, 0)
+  const minAmount = safeNumber(plan.minAmount, 100)
   const maxAmount = safeNumber(plan.maxAmount, Infinity)
-  const initialAmount = minAmount > 0 ? minAmount : 100
+  // Ensure initial amount is always at least minAmount and at least 100
+  const initialAmount = Math.max(minAmount, 100)
   
   const [amount, setAmount] = useState<string>(initialAmount.toString())
   const [isLoading, setIsLoading] = useState(false)
@@ -50,7 +51,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
       const res = await fetch("/api/investments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: plan.id, amount: roundedAmount }),
+        body: JSON.stringify({ planId: plan.id, amount: roundedAmount, depositMethod: 'bank_transfer' }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -133,7 +134,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
             onChange={(e) => setAmount(e.target.value)}
             min={minAmount}
             max={maxAmount}
-            step="100"
+            step="1"
             className="pl-7"
           />
         </div>

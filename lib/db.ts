@@ -2,16 +2,20 @@ import Database from "better-sqlite3"
 import path from "path"
 import bcrypt from "bcrypt"
 import type { ActiveInvestment, InvestmentPlan } from "./types"
-// @ts-expect-error - pg types are optional, using fallback types
-import { Pool } from "pg"
 
 // support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)
-let pgPool: Pool | null = null
+let pgPool: any = null
 const DATABASE_URL = process.env.DATABASE_URL
 let pgInitialized = false
 
 if (DATABASE_URL) {
-  pgPool = new Pool({ connectionString: DATABASE_URL })
+  // Dynamically import Pool to avoid errors when postgres is not installed
+  try {
+    const { Pool } = require('pg')
+    pgPool = new Pool({ connectionString: DATABASE_URL })
+  } catch (err) {
+    console.warn('PostgreSQL not available, falling back to SQLite')
+  }
 }
 
 const DB_PATH = path.join(process.cwd(), "vault.db")

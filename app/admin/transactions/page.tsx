@@ -43,32 +43,34 @@ export default function AdminTransactionsPage() {
   const [filter, setFilter] = useState<StatusFilter>("all")
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  const fetchData = async () => {
+    try {
+      const [txRes, usersRes] = await Promise.all([
+        fetch("/api/admin/transactions"),
+        fetch("/api/admin/users")
+      ])
+      
+      if (txRes.ok) {
+        const txData = await txRes.json()
+        setTxList(txData)
+      }
+      
+      if (usersRes.ok) {
+        const usersData = await usersRes.json()
+        setUsers(usersData)
+      }
+    } catch (error) {
+      console.error("Failed to fetch data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [txRes, usersRes] = await Promise.all([
-          fetch("/api/admin/transactions"),
-          fetch("/api/admin/users")
-        ])
-        
-        if (txRes.ok) {
-          const txData = await txRes.json()
-          setTxList(txData)
-        }
-        
-        if (usersRes.ok) {
-          const usersData = await usersRes.json()
-          setUsers(usersData)
-        }
-      } catch (error) {
-        console.error("Failed to fetch data:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchData()
-  }, [])
+  }, [refreshTrigger])
 
   const filtered =
     filter === "all" ? txList : txList.filter((t) => t.status === filter)
@@ -103,11 +105,10 @@ export default function AdminTransactionsPage() {
       }
       
       if (res.ok) {
-        setTxList((prev) =>
-          prev.map((t) => (t.id === txId ? { ...t, status: "approved" as const } : t))
-        )
         console.log("✅ Transaction approved successfully:", data)
         alert("Transaction approved successfully!")
+        // Refetch all data to get updated balances
+        setRefreshTrigger(prev => prev + 1)
       } else {
         console.error("❌ Approval failed:", res.status, data)
         // Extract error message from nested error object
@@ -158,11 +159,10 @@ export default function AdminTransactionsPage() {
       }
       
       if (res.ok) {
-        setTxList((prev) =>
-          prev.map((t) => (t.id === txId ? { ...t, status: "rejected" as const } : t))
-        )
         console.log("✅ Transaction rejected successfully:", data)
         alert("Transaction rejected successfully!")
+        // Refetch all data to update the list
+        setRefreshTrigger(prev => prev + 1)
       } else {
         console.error("❌ Rejection failed:", res.status, data)
         // Extract error message from nested error object

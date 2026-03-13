@@ -14,11 +14,19 @@
  * NODE_ENV=production
  */
 
-// @ts-expect-error - MongoDB types and usage (this file is for reference only)
-import { MongoClient, Db, ObjectId } from "mongodb"
+let MongoClient: any = null
+let ObjectId: any = null
 
-let cachedClient: MongoClient | null = null
-let cachedDb: Db | null = null
+try {
+  const mongodb = require('mongodb')
+  MongoClient = mongodb.MongoClient
+  ObjectId = mongodb.ObjectId
+} catch (err) {
+  // MongoDB not installed, this is optional
+}
+
+let cachedClient: any = null
+let cachedDb: any = null
 
 /**
  * Connect to MongoDB
