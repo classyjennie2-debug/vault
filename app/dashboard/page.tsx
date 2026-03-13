@@ -7,7 +7,7 @@ import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
 import LiveChatButton from "@/components/live-chat-button"
 import { requireAuth } from "@/lib/auth"
-import { getUserStats, generatePortfolioData, getUserActiveInvestments } from "@/lib/db"
+import { getUserStats, generatePortfolioData, getUserActiveInvestmentsWithProfit } from "@/lib/db"
 import { calculateMonthlyMetrics, calculateReturnRate } from "@/lib/monthly-metrics"
 
 export default async function DashboardPage() {
@@ -15,7 +15,7 @@ export default async function DashboardPage() {
   const user = await requireAuth()
   const stats = await getUserStats(user.id)
   const portfolioData = await generatePortfolioData(user.id)
-  const activeInvestments = await getUserActiveInvestments(user.id)
+  const activeInvestments = await getUserActiveInvestmentsWithProfit(user.id)
   const monthlyMetrics = await calculateMonthlyMetrics(user.id)
   const totalReturnRate = calculateReturnRate(stats.totalProfit, stats.totalInvested)
 
