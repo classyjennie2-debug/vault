@@ -92,7 +92,11 @@ export async function POST(req: NextRequest) {
       investmentLogger.warn('Insufficient funds for investment', 
         { userId: user.id, balance: userBalance, required: safeAmount }
       )
-      const appError = mapErrorToResponse(new InsufficientFundsError(userBalance, safeAmount))
+      const shortfall = safeAmount - userBalance
+      const insufficientError = new InsufficientFundsError(userBalance, safeAmount)
+      // Override message for better UX
+      insufficientError.message = `Insufficient balance. You need $${shortfall.toLocaleString(undefined, { maximumFractionDigits: 2 })} more to invest this amount.`
+      const appError = mapErrorToResponse(insufficientError)
       return createErrorResponse(appError)
     }
 

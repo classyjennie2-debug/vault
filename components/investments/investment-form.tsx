@@ -54,7 +54,30 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || "Failed to invest")
+        // Parse error message intelligently
+        let errorMsg = "Failed to process your investment"
+        
+        if (data.error) {
+          if (typeof data.error === "string") {
+            errorMsg = data.error
+          } else if (data.error.message) {
+            errorMsg = data.error.message
+          }
+        }
+        
+        // Format specific error messages for better UX
+        if (errorMsg.includes("Insufficient balance")) {
+          setError("❌ Your account balance is insufficient for this investment. Please deposit more funds first.")
+        } else if (errorMsg.includes("Invalid amount") || errorMsg.includes("minimum")) {
+          setError(`❌ Investment amount must be between $${minAmount.toLocaleString()} and $${maxAmount === Infinity ? "unlimited" : maxAmount.toLocaleString()}`)
+        } else if (errorMsg.includes("not found")) {
+          setError("❌ This investment plan is no longer available. Please select another plan.")
+        } else if (errorMsg.includes("rate limit")) {
+          setError("❌ Too many requests. Please wait a moment and try again.")
+        } else {
+          setError(`❌ ${errorMsg}`)
+        }
+        return
       }
       setSubmitted(true)
       setTimeout(() => {
@@ -63,7 +86,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : "An unexpected error occurred"
       console.error("investment submit error", err)
-      setError(errorMsg)
+      setError(`❌ ${errorMsg}`)
     } finally {
       setIsLoading(false)
     }
