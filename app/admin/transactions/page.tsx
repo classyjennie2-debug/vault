@@ -42,6 +42,7 @@ export default function AdminTransactionsPage() {
   const [users, setUsers] = useState<User[]>([])
   const [filter, setFilter] = useState<StatusFilter>("all")
   const [loading, setLoading] = useState(true)
+  const [processingId, setProcessingId] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,28 +78,58 @@ export default function AdminTransactionsPage() {
   const rejectedCount = txList.filter((t) => t.status === "rejected").length
 
   const handleApprove = async (txId: string) => {
-    const res = await fetch("/api/admin/transactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ transactionId: txId, status: "approved" }),
-    })
-    if (res.ok) {
-      setTxList((prev) =>
-        prev.map((t) => (t.id === txId ? { ...t, status: "approved" as const } : t))
-      )
+    setProcessingId(txId)
+    try {
+      const res = await fetch("/api/admin/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transactionId: txId, approved: true }),
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setTxList((prev) =>
+          prev.map((t) => (t.id === txId ? { ...t, status: "approved" as const } : t))
+        )
+        console.log("Transaction approved successfully:", data)
+      } else {
+        const error = await res.json()
+        console.error("Approval failed:", error)
+        alert("Failed to approve transaction")
+      }
+    } catch (error) {
+      console.error("Error approving transaction:", error)
+      alert("Error approving transaction")
+    } finally {
+      setProcessingId(null)
     }
   }
 
   const handleReject = async (txId: string) => {
-    const res = await fetch("/api/admin/transactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ transactionId: txId, status: "rejected" }),
-    })
-    if (res.ok) {
-      setTxList((prev) =>
-        prev.map((t) => (t.id === txId ? { ...t, status: "rejected" as const } : t))
-      )
+    setProcessingId(txId)
+    try {
+      const res = await fetch("/api/admin/transactions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transactionId: txId, approved: false }),
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        setTxList((prev) =>
+          prev.map((t) => (t.id === txId ? { ...t, status: "rejected" as const } : t))
+        )
+        console.log("Transaction rejected successfully:", data)
+      } else {
+        const error = await res.json()
+        console.error("Rejection failed:", error)
+        alert("Failed to reject transaction")
+      }
+    } catch (error) {
+      console.error("Error rejecting transaction:", error)
+      alert("Error rejecting transaction")
+    } finally {
+      setProcessingId(null)
     }
   }
 
@@ -111,9 +142,27 @@ export default function AdminTransactionsPage() {
           Transaction Management
         </h1>
         <p className="text-sm text-muted-foreground">
-          Review, approve, or reject user transactions.
+          Review, approve, or reject user transactions. Deposits will automatically add funds to user accounts.
         </p>
       </div>
+
+      {/* Recommendations Card */}
+      <Card className="border-accent/20 bg-accent/5">
+        <CardHeader>
+          <CardTitle className="text-base text-foreground flex items-center gap-2">
+            <span className="text-lg">💡</span> Admin Tips
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li>• <strong>Deposit approvals</strong> automatically add funds to user balance</li>
+            <li>• <strong>Withdrawal requests</strong> must be manually processed</li>
+            <li>• <strong>User notifications</strong> are sent when transactions are approved/rejected</li>
+            <li>• Always verify transaction details and user identity before approving</li>
+            <li>• Use the filters above to focus on pending transactions that need action</li>
+          </ul>
+        </CardContent>
+      </Card>
 
       {/* Status summary */}
       <div className="grid gap-4 sm:grid-cols-3">
@@ -215,10 +264,18 @@ export default function AdminTransactionsPage() {
                           {tx.description}
                         </p>
                         <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                          <span>{user?.name ?? "Unknown"}</span>
-                          <span>{"/"}</span>
+                          <span className="font-medium text-foreground">
+                            {user?.name ?? "Unknown User"}
+                          </span>
+                          {user?.email && (
+                            <>
+                              <span>/</span>
+                              <span>{user.email}</span>
+                            </>
+                          )}
+                          <span>/</span>
                           <span>{tx.date}</span>
-                          <span>{"/"}</span>
+                          <span>/</span>
                           <span className="capitalize">{tx.type}</span>
                         </div>
                       </div>
@@ -251,20 +308,22 @@ export default function AdminTransactionsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 border-accent/30 text-accent hover:bg-accent hover:text-accent-foreground"
+                            className="h-8 border-accent/30 text-accent hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
                             onClick={() => handleApprove(tx.id)}
+                            disabled={processingId === tx.id}
                           >
                             <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                            Approve
+                            {processingId === tx.id ? "..." : "Approve"}
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                            className="h-8 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
                             onClick={() => handleReject(tx.id)}
+                            disabled={processingId === tx.id}
                           >
                             <XCircle className="mr-1 h-3.5 w-3.5" />
-                            Reject
+                            {processingId === tx.id ? "..." : "Reject"}
                           </Button>
                         </div>
                       )}
