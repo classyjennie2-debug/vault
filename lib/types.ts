@@ -50,6 +50,7 @@ export type ActiveInvestment = {
   endDate: string
   status: "active" | "completed" | "withdrawn"
   progressPercentage: number
+  accumulatedProfit?: number  // Added when fetched with profit calculations
 }
 
 export type Notification = {

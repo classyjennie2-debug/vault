@@ -39,7 +39,7 @@ export const investmentSchema = z.object({
     .positive('Amount must be greater than 0')
     .max(1000000, 'Amount cannot exceed $1,000,000')
     .finite('Amount must be a valid number'),
-  planId: z.string().uuid('Invalid plan ID'),
+  planId: z.string().min(1, 'Plan ID is required'),
   depositMethod: z.enum(['bank_transfer', 'crypto', 'card']),
 })
 
