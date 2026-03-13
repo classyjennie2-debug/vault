@@ -188,15 +188,17 @@ export default function TransactionsPage() {
             {loading ? (
               <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-lg border border-border p-4">
-                    <div className="h-10 w-10 rounded-lg bg-secondary animate-pulse" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 w-3/4 bg-secondary animate-pulse rounded" />
-                      <div className="h-3 w-1/2 bg-secondary animate-pulse rounded" />
+                  <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg border border-border p-3 sm:p-4 animate-pulse">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="h-10 w-10 rounded-lg bg-secondary flex-shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-3/4 bg-secondary rounded" />
+                        <div className="h-3 w-1/2 bg-secondary rounded" />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <div className="h-4 w-16 bg-secondary animate-pulse rounded" />
-                      <div className="h-5 w-12 bg-secondary animate-pulse rounded" />
+                    <div className="flex sm:flex-col items-center justify-between sm:justify-start gap-2">
+                      <div className="h-4 w-16 bg-secondary rounded" />
+                      <div className="h-5 w-12 bg-secondary rounded" />
                     </div>
                   </div>
                 ))}
@@ -214,24 +216,26 @@ export default function TransactionsPage() {
                 return (
                   <div
                     key={tx.id}
-                    className="flex items-center gap-3 rounded-lg border border-border p-4 transition-colors hover:bg-secondary/50"
+                    className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-3 rounded-lg border border-border p-3 sm:p-4 transition-colors hover:bg-secondary/50"
                   >
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-secondary">
-                      <Icon className={`h-4 w-4 ${color}`} />
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                      <p className="truncate text-sm font-medium text-card-foreground">
-                        {tx.description}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{tx.date}</span>
-                        <span>{"/"}</span>
-                        <span className="capitalize">{tx.type}</span>
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-secondary">
+                        <Icon className={`h-4 w-4 ${color}`} />
+                      </div>
+                      <div className="flex-1 overflow-hidden">
+                        <p className="truncate text-xs sm:text-sm font-medium text-card-foreground">
+                          {tx.description}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                          <span>{tx.date}</span>
+                          <span>{"/"}</span>
+                          <span className="capitalize">{tx.type}</span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2">
                       <p
-                        className={`text-sm font-semibold ${isPositive ? "text-accent" : "text-card-foreground"}`}
+                        className={`text-xs sm:text-sm font-semibold ${isPositive ? "text-accent" : "text-card-foreground"}`}
                       >
                         {isPositive ? "+" : "-"}$
                         {tx.amount.toLocaleString()}
