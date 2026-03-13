@@ -1,0 +1,99 @@
+import { NextRequest, NextResponse } from "next/server"
+import { requireAuthAPI } from "@/lib/auth"
+import { all, run } from "@/lib/db"
+import type { WalletAddress } from "@/lib/types"
+
+export async function GET(req: NextRequest) {
+  try {
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
+
+    // Check if user is admin
+    if (user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+    }
+
+    // Get all wallet addresses from database
+    const wallets = await all<WalletAddress>(
+      "SELECT * FROM wallet_addresses ORDER BY createdAt DESC"
+    )
+
+    return NextResponse.json(wallets)
+  } catch (error) {
+    console.error("Error fetching wallets:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
+
+    // Check if user is admin
+    if (user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+    }
+
+    const body = await req.json()
+    const { action, wallet } = body
+
+    if (!action) {
+      return NextResponse.json({ error: "Action required" }, { status: 400 })
+    }
+
+    if (action === "add") {
+      // Add a new wallet address
+      if (!wallet || !wallet.coin || !wallet.network || !wallet.address) {
+        return NextResponse.json({ error: "Invalid wallet data" }, { status: 400 })
+      }
+
+      const id = `w${Date.now()}`
+      const now = new Date().toISOString().split("T")[0]
+
+      await run(
+        "INSERT INTO wallet_addresses (id, coin, network, address, assignedTo, assignedAt, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [id, wallet.coin, wallet.network, wallet.address, null, null, now]
+      )
+
+      return NextResponse.json({
+        id,
+        ...wallet,
+        assignedTo: null,
+        assignedAt: null,
+        createdAt: now,
+      })
+    } else if (action === "delete") {
+      // Delete a wallet address
+      if (!wallet || !wallet.id) {
+        return NextResponse.json({ error: "Wallet ID required" }, { status: 400 })
+      }
+
+      // Cannot delete assigned wallets
+      const walletData = await all<WalletAddress>(
+        "SELECT * FROM wallet_addresses WHERE id = ?",
+        [wallet.id]
+      )
+
+      if (walletData.length === 0) {
+        return NextResponse.json({ error: "Wallet not found" }, { status: 404 })
+      }
+
+      if (walletData[0].assignedTo) {
+        return NextResponse.json(
+          { error: "Cannot delete assigned wallet address" },
+          { status: 400 }
+        )
+      }
+
+      await run("DELETE FROM wallet_addresses WHERE id = ?", [wallet.id])
+
+      return NextResponse.json({ message: "Wallet deleted successfully" })
+    } else {
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 })
+    }
+  } catch (error) {
+    console.error("Error managing wallets:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}

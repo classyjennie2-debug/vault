@@ -6,7 +6,6 @@ import {
   coinNetworks,
   coinDetails,
   allUsers,
-  initialWalletAddresses,
 } from "@/lib/mock-data"
 import { CoinIcon } from "@/components/crypto/coin-icon"
 import {
@@ -45,22 +44,17 @@ import {
   Trash2,
   User,
   Search,
+  AlertCircle,
 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 const allCoins: CoinType[] = ["USDT", "BTC", "ETH", "BNB", "TRX", "SOL"]
 
 export default function AdminWalletsPage() {
-  const [walletPool, setWalletPool] = useState<WalletAddress[]>(() => {
-    if (typeof window !== "undefined") {
-      const version = window.localStorage.getItem("vault_wallet_version")
-      if (version === "2") {
-        const stored = window.localStorage.getItem("vault_wallet_pool")
-        if (stored) return JSON.parse(stored)
-      }
-      window.localStorage.setItem("vault_wallet_version", "2")
-    }
-    return initialWalletAddresses
-  })
+  const [walletPool, setWalletPool] = useState<WalletAddress[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [newCoin, setNewCoin] = useState<CoinType>("USDT")
@@ -69,34 +63,103 @@ export default function AdminWalletsPage() {
   const [filterCoin, setFilterCoin] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isAdding, setIsAdding] = useState(false)
 
+  // Fetch wallets from API on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("vault_wallet_pool", JSON.stringify(walletPool))
+    const fetchWallets = async () => {
+      try {
+        const res = await fetch("/api/admin/wallets")
+        if (res.ok) {
+          const data = await res.json()
+          setWalletPool(data || [])
+        } else {
+          setError("Failed to fetch wallets from database")
+        }
+      } catch (err) {
+        console.error("Error fetching wallets:", err)
+        setError("Failed to fetch wallets")
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [walletPool])
 
-  const handleAddWallet = () => {
-    if (!newAddress.trim()) return
+    fetchWallets()
+  }, [])
 
-    const wallet: WalletAddress = {
-      id: `w${Date.now()}`,
-      coin: newCoin,
-      network: newNetwork,
-      address: newAddress.trim(),
-      assignedTo: null,
-      assignedAt: null,
-      createdAt: new Date().toISOString().split("T")[0],
+  const handleAddWallet = async () => {
+    if (!newAddress.trim()) {
+      setError("Please enter a wallet address")
+      return
     }
 
-    setWalletPool((prev) => [...prev, wallet])
-    setNewAddress("")
-    setDialogOpen(false)
+    setIsAdding(true)
+    setError("")
+    setSuccess("")
+
+    try {
+      const res = await fetch("/api/admin/wallets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "add",
+          wallet: {
+            coin: newCoin,
+            network: newNetwork,
+            address: newAddress.trim(),
+          },
+        }),
+      })
+
+      if (res.ok) {
+        const newWallet = await res.json()
+        setWalletPool((prev) => [newWallet, ...prev])
+        setNewAddress("")
+        setDialogOpen(false)
+        setSuccess("Wallet address added successfully")
+        setTimeout(() => setSuccess(""), 3000)
+      } else {
+        const data = await res.json()
+        setError(data.error || "Failed to add wallet")
+      }
+    } catch (err) {
+      console.error("Error adding wallet:", err)
+      setError("Failed to add wallet")
+    } finally {
+      setIsAdding(false)
+    }
   }
 
-  const handleDeleteWallet = (id: string) => {
-    setWalletPool((prev) => prev.filter((w) => w.id !== id))
-    setDeleteConfirmId(null)
+  const handleDeleteWallet = async (id: string) => {
+    setIsDeleting(true)
+    setError("")
+
+    try {
+      const res = await fetch("/api/admin/wallets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete",
+          wallet: { id },
+        }),
+      })
+
+      if (res.ok) {
+        setWalletPool((prev) => prev.filter((w) => w.id !== id))
+        setDeleteConfirmId(null)
+        setSuccess("Wallet deleted successfully")
+        setTimeout(() => setSuccess(""), 3000)
+      } else {
+        const data = await res.json()
+        setError(data.error || "Failed to delete wallet")
+      }
+    } catch (err) {
+      console.error("Error deleting wallet:", err)
+      setError("Failed to delete wallet")
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const filteredWallets = walletPool.filter((w) => {
@@ -126,6 +189,27 @@ export default function AdminWalletsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Status Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {success && (
+        <Alert className="border-accent/50 bg-accent/10">
+          <AlertDescription className="text-accent-foreground">{success}</AlertDescription>
+        </Alert>
+      )}
+
+      {loading ? (
+        <Card>
+          <CardContent className="flex justify-center py-12">
+            <p className="text-muted-foreground">Loading wallets...</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -213,15 +297,16 @@ export default function AdminWalletsPage() {
               <Button
                 variant="outline"
                 onClick={() => setDialogOpen(false)}
+                disabled={isAdding}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleAddWallet}
-                disabled={!newAddress.trim()}
+                disabled={!newAddress.trim() || isAdding}
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
               >
-                Add Address
+                {isAdding ? "Adding..." : "Add Address"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -337,18 +422,22 @@ export default function AdminWalletsPage() {
             <Button
               variant="outline"
               onClick={() => setDeleteConfirmId(null)}
+              disabled={isDeleting}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={() => deleteConfirmId && handleDeleteWallet(deleteConfirmId)}
+              disabled={isDeleting}
             >
-              Delete
+              {isDeleting ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </>
+      )}
     </div>
   )
 }
