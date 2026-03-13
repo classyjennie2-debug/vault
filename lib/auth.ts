@@ -121,13 +121,9 @@ export async function sendVerificationCode(email: string) {
     expiresAt,
   })
 
-  // Always log code to console for development/testing
-  console.log(`📧 Verification code for ${email}: ${code}`)
-
   // Check if email configuration is available
   if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn("⚠️  Email configuration not found. Code was generated but not sent via email.")
-    console.warn(`    Development Mode: Check browser console or server logs for verification code`)
+    // Email not configured - silently skip (allow signup with in-dev verification)
     return
   }
 
@@ -154,11 +150,10 @@ export async function sendVerificationCode(email: string) {
 
   try {
     await transporter.sendMail(mailOptions)
-    console.log(`✅ Verification email sent to ${email}`)
+    // Email sent silently - no console output
   } catch (error) {
-    console.error("❌ Error sending verification email:", error)
     // Don't throw - allow signup to proceed even if email fails
-    console.warn("    Fallback: Code visible in development console above")
+    // Error is non-critical for signup completion
   }
 }
 
