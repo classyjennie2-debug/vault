@@ -86,20 +86,36 @@ export default function AdminTransactionsPage() {
         body: JSON.stringify({ transactionId: txId, approved: true }),
       })
       
-      const data = await res.json()
+      console.log("Response status:", res.status)
+      const contentType = res.headers.get("content-type")
+      console.log("Response content-type:", contentType)
+      
+      let data
+      try {
+        data = await res.json()
+      } catch (parseError) {
+        console.error("Failed to parse response as JSON:", parseError)
+        const text = await res.text()
+        console.error("Raw response:", text)
+        alert(`Error: Invalid server response (${res.status})`)
+        setProcessingId(null)
+        return
+      }
       
       if (res.ok) {
         setTxList((prev) =>
           prev.map((t) => (t.id === txId ? { ...t, status: "approved" as const } : t))
         )
-        console.log("Transaction approved successfully:", data)
+        console.log("✅ Transaction approved successfully:", data)
+        alert("Transaction approved successfully!")
       } else {
-        console.error("Approval failed:", data)
-        alert(`Failed to approve: ${data.error || data.message || 'Unknown error'}`)
+        console.error("❌ Approval failed:", res.status, data)
+        const errorMsg = data?.error?.message || data?.error || data?.message || JSON.stringify(data)
+        alert(`Failed to approve: ${errorMsg}`)
       }
     } catch (error) {
-      console.error("Error approving transaction:", error)
-      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error("Network error approving transaction:", error)
+      alert(`Error: ${error instanceof Error ? error.message : 'Network error'}`)
     } finally {
       setProcessingId(null)
     }
@@ -114,20 +130,36 @@ export default function AdminTransactionsPage() {
         body: JSON.stringify({ transactionId: txId, approved: false }),
       })
       
-      const data = await res.json()
+      console.log("Response status:", res.status)
+      const contentType = res.headers.get("content-type")
+      console.log("Response content-type:", contentType)
+      
+      let data
+      try {
+        data = await res.json()
+      } catch (parseError) {
+        console.error("Failed to parse response as JSON:", parseError)
+        const text = await res.text()
+        console.error("Raw response:", text)
+        alert(`Error: Invalid server response (${res.status})`)
+        setProcessingId(null)
+        return
+      }
       
       if (res.ok) {
         setTxList((prev) =>
           prev.map((t) => (t.id === txId ? { ...t, status: "rejected" as const } : t))
         )
-        console.log("Transaction rejected successfully:", data)
+        console.log("✅ Transaction rejected successfully:", data)
+        alert("Transaction rejected successfully!")
       } else {
-        console.error("Rejection failed:", data)
-        alert(`Failed to reject: ${data.error || data.message || 'Unknown error'}`)
+        console.error("❌ Rejection failed:", res.status, data)
+        const errorMsg = data?.error || data?.message || data?.description || JSON.stringify(data)
+        alert(`Failed to reject: ${errorMsg}`)
       }
     } catch (error) {
-      console.error("Error rejecting transaction:", error)
-      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error("Network error rejecting transaction:", error)
+      alert(`Error: ${error instanceof Error ? error.message : 'Network error'}`)
     } finally {
       setProcessingId(null)
     }
