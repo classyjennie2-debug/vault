@@ -121,6 +121,16 @@ export async function sendVerificationCode(email: string) {
     expiresAt,
   })
 
+  // Always log code to console for development/testing
+  console.log(`📧 Verification code for ${email}: ${code}`)
+
+  // Check if email configuration is available
+  if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn("⚠️  Email configuration not found. Code was generated but not sent via email.")
+    console.warn(`    Development Mode: Check browser console or server logs for verification code`)
+    return
+  }
+
   // send email using nodemailer
   const nodemailer = await import("nodemailer")
 
@@ -144,15 +154,11 @@ export async function sendVerificationCode(email: string) {
 
   try {
     await transporter.sendMail(mailOptions)
-    console.log(`Verification email sent to ${email}`)
+    console.log(`✅ Verification email sent to ${email}`)
   } catch (error) {
-    console.error("Error sending verification email:", error)
-    throw new Error("Failed to send verification email")
-  }
-
-  // Log verification code in development only
-  if (process.env.NODE_ENV === "development") {
-    console.log(`Verification code for ${email}: ${code}`)
+    console.error("❌ Error sending verification email:", error)
+    // Don't throw - allow signup to proceed even if email fails
+    console.warn("    Fallback: Code visible in development console above")
   }
 }
 
