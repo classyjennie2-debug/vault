@@ -46,10 +46,3 @@ export default function TawkToWidget() {
 
   return null;
 }
-
-// Global type declaration for Tawk API
-declare global {
-  interface Window {
-    Tawk_API?: any;
-  }
-}
