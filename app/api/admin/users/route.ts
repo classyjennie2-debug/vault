@@ -19,7 +19,8 @@ export async function GET() {
       users.map(async (u: any) => {
         // Get total invested
         const investmentResult = await all(
-          "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",[u.id]
+          "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",
+          [u.id]
         )
         const totalInvested = investmentResult?.[0]?.totalInvested || 0
 
@@ -37,9 +38,9 @@ export async function GET() {
         )
         const totalDeposits = depositsResult?.[0]?.totalDeposits || 0
 
-        // Get accumulated profit
+        // Get accumulated profit (calculated from expectedProfit * progressPercentage)
         const profitResult = await all(
-          "SELECT SUM(accumulatedProfit) as totalProfit FROM active_investments WHERE userId = ?",
+          "SELECT SUM((expectedProfit * progressPercentage) / 100) as totalProfit FROM active_investments WHERE userId = ?",
           [u.id]
         )
         const totalProfit = profitResult?.[0]?.totalProfit || 0
