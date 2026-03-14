@@ -314,32 +314,50 @@ interface DatabaseRow {
 }
 
 export async function run(sql: string, params: unknown[] = []): Promise<number> {
+  console.log(`[RUN] Executing SQL: ${sql} with params:`, params)
+  
   if (pgPool) {
     await initializePostgres()
     const result = await pgPool.query(adaptSql(sql), params)
+    console.log(`[RUN] PostgreSQL result rowCount:`, result.rowCount)
     return result.rowCount || 0
   } else {
-    const result = getDb().prepare(sql).run(...params)
+    const db = getDb()
+    const result = db.prepare(sql).run(...params)
+    console.log(`[RUN] SQLite result changes:`, result.changes)
     return result.changes || 0
   }
 }
 
 export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T | undefined> {
+  console.log(`[GET] Executing SQL: ${sql} with params:`, params)
+  
   if (pgPool) {
     await initializePostgres()
     const res = await pgPool.query(adaptSql(sql), params)
-    return res.rows[0] as T
+    const result = res.rows[0] as T
+    console.log(`[GET] PostgreSQL result:`, result)
+    return result
   }
-  return getDb().prepare(sql).get(...params) as T
+  
+  const result = getDb().prepare(sql).get(...params) as T
+  console.log(`[GET] SQLite result:`, result)
+  return result
 }
 
 export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T[]> {
+  console.log(`[ALL] Executing SQL: ${sql} with params:`, params)
+  
   if (pgPool) {
     await initializePostgres()
     const res = await pgPool.query(adaptSql(sql), params)
+    console.log(`[ALL] PostgreSQL result rows:`, res.rows.length)
     return res.rows as T[]
   }
-  return getDb().prepare(sql).all(...params) as T[]
+  
+  const result = getDb().prepare(sql).all(...params) as T[]
+  console.log(`[ALL] SQLite result rows:`, result.length)
+  return result
 }
 
 function seedDatabaseSync(db: Database.Database) {
@@ -575,10 +593,37 @@ export async function getUserNotifications(userId: string) {
 }
 
 export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
-  console.log(`[DB] Updating notification ${notificationId} to isRead = 1`)
+  console.log(`[DB] Starting update for notification ${notificationId}`)
+  
+  // First, verify it exists
+  const beforeNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
+  console.log(`[DB] Before update - notification exists:`, beforeNotif)
+  
+  if (!beforeNotif) {
+    console.error(`[DB] Notification ${notificationId} not found!`)
+    return false
+  }
+
+  console.log(`[DB] Executing: UPDATE notifications SET isRead = 1 WHERE id = ?`)
   const changes = await run("UPDATE notifications SET isRead = 1 WHERE id = ?", [notificationId])
-  console.log(`[DB] Update completed for notification ${notificationId}. Rows affected: ${changes}`)
-  return changes > 0
+  console.log(`[DB] Update completed. Rows affected: ${changes}`)
+
+  // Verify the update immediately
+  const afterNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
+  console.log(`[DB] After update - notification:`, afterNotif)
+  
+  if (!afterNotif) {
+    console.error(`[DB] Notification disappeared after update!`)
+    return false
+  }
+
+  if (afterNotif.isRead === 0 || afterNotif.isRead === false) {
+    console.error(`[DB] Update verification failed - isRead is still: ${afterNotif.isRead} (type: ${typeof afterNotif.isRead})`)
+    return false
+  }
+
+  console.log(`[DB] Update verified successfully - isRead is now: ${afterNotif.isRead}`)
+  return true
 }
 
 export async function getRecentActivities(userId: string) {

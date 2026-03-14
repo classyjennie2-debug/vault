@@ -63,8 +63,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    console.log("[NOTIFICATIONS] POST /api/notifications/[id]/read called")
-    console.log("[NOTIFICATIONS] Raw params:", params)
+    console.log("[API] POST /api/notifications/[id]/read called")
     
     // Handle both Promise and object params (Next.js version compatibility)
     let notificationId: string
@@ -75,70 +74,43 @@ export async function POST(
       notificationId = params.id
     }
     
-    console.log(`[NOTIFICATIONS] Resolved notificationId: ${notificationId}`)
+    console.log(`[API] Notification ID: ${notificationId}`)
 
     if (!notificationId) {
-      console.log("[NOTIFICATIONS] No notification ID provided")
+      console.log("[API] No notification ID provided - returning 400")
       return NextResponse.json({ error: "Notification ID required" }, { status: 400 })
     }
 
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user
-
-    console.log(`[NOTIFICATIONS] Marking notification ${notificationId} as read for user ${user.id}`)
+    console.log(`[API] User ${user.id} attempting to mark notification as read`)
 
     // Verify the notification belongs to the user
     const notifications = await getUserNotifications(user.id)
     const notification = notifications.find((n: any) => n.id === notificationId)
 
     if (!notification) {
-      console.log(`[NOTIFICATIONS] Notification ${notificationId} not found for user ${user.id}`)
+      console.log(`[API] Notification ${notificationId} not found for user ${user.id}`)
       return NextResponse.json({ error: "Notification not found" }, { status: 404 })
     }
 
-    console.log(`[NOTIFICATIONS] Before update - isRead: ${notification.isRead}`)
+    console.log(`[API] Found notification - current isRead: ${notification.isRead}`)
 
     // Mark the notification as read in database
     const updateSuccess = await markNotificationAsRead(notificationId)
     
     if (!updateSuccess) {
-      console.error(`[NOTIFICATIONS] Update failed - no rows affected for notification ${notificationId}`)
-      return NextResponse.json(
-        { error: "Failed to update notification - no rows affected" },
-        { status: 500 }
-      )
-    }
-    
-    console.log(`[NOTIFICATIONS] Update successful, verifying...`)
-    
-    // Verify the update was successful by fetching the notification again
-    const updatedNotification = await get(
-      "SELECT * FROM notifications WHERE id = ?",
-      [notificationId]
-    )
-    
-    console.log(`[NOTIFICATIONS] After update - isRead: ${updatedNotification?.isRead}, full notification:`, updatedNotification)
-
-    if (!updatedNotification) {
-      console.error(`[NOTIFICATIONS] Notification ${notificationId} not found after update`)
-      return NextResponse.json(
-        { error: "Notification not found after update" },
-        { status: 500 }
-      )
-    }
-
-    if (!updatedNotification.isRead) {
-      console.error(`[NOTIFICATIONS] Verification failed - isRead is still ${updatedNotification.isRead}`)
+      console.error(`[API] markNotificationAsRead returned false for notification ${notificationId}`)
       return NextResponse.json(
         { error: "Failed to update notification - verification failed" },
         { status: 500 }
       )
     }
 
-    console.log(`[NOTIFICATIONS] Successfully marked notification ${notificationId} as read`)
-    return NextResponse.json({ success: true, notification: updatedNotification })
+    console.log(`[API] Successfully marked notification ${notificationId} as read`)
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("[NOTIFICATIONS] Error updating notification:", error)
+    console.error("[API] Error updating notification:", error)
     return NextResponse.json(
       { error: "Failed to update notification: " + String(error) },
       { status: 500 }
