@@ -508,7 +508,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               <div className="bg-gradient-to-r from-primary/15 to-accent/15 hover:from-primary/25 hover:to-accent/25 rounded-lg p-3 border border-primary/20 transition-all duration-300">
                                 <p className="text-xs text-muted-foreground mb-1">Current Value</p>
                                 <p className="text-lg font-bold text-card-foreground">
-                                  ${((inv.amount || 0) + (inv.accumulatedProfit ?? inv.expectedProfit || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                  ${((inv.amount || 0) + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                 </p>
                                 {inv.accumulatedProfit && inv.accumulatedProfit !== inv.expectedProfit && (
                                   <p className="text-xs text-muted-foreground mt-1">At maturity: ${((inv.amount || 0) + (inv.expectedProfit || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
