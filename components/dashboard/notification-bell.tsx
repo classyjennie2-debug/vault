@@ -18,7 +18,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const markedAsReadIds = useRef<Set<string>>(new Set())
+  const markedAsReadIds = useRef<Map<string, number>>(new Map()) // id -> timestamp
 
   const fetchNotifications = async () => {
     try {
@@ -26,20 +26,25 @@ export function NotificationBell() {
       const response = await fetch("/api/notifications")
       if (response.ok) {
         const data = await response.json()
+        const now = Date.now()
         
         // Merge server data with local optimistic updates
-        // Keep any notifications marked as read locally, even if server hasn't synced yet
         setNotifications((prevNotifications) => {
           const serverData = data.map((notif: any) => ({
             ...notif,
             isRead: Boolean(notif.isRead)
           }))
           
-          // For any notifications that were marked as read locally,
-          // keep them as read even if server data shows unread
+          // For any notifications marked as read within the last 10 seconds,
+          // keep them as read even if server still shows unread (API might still be processing)
           return serverData.map((serverNotif: any) => {
-            if (markedAsReadIds.current.has(serverNotif.id) && !serverNotif.isRead) {
+            const markedTime = markedAsReadIds.current.get(serverNotif.id)
+            if (markedTime && now - markedTime < 10000 && !serverNotif.isRead) {
               return { ...serverNotif, isRead: true }
+            }
+            // Remove from tracking if server confirms read (10+ seconds have passed)
+            if (markedTime && now - markedTime >= 10000 && serverNotif.isRead) {
+              markedAsReadIds.current.delete(serverNotif.id)
             }
             return serverNotif
           })
@@ -73,8 +78,8 @@ export function NotificationBell() {
   const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
     
-    // Add to locally marked set to prevent state reverting during polling
-    markedAsReadIds.current.add(id)
+    // Track when this notification was marked as read
+    markedAsReadIds.current.set(id, Date.now())
     
     // Optimistically update local state immediately
     setNotifications((prev) =>
@@ -92,14 +97,14 @@ export function NotificationBell() {
       
       if (!response.ok) {
         console.error("Failed to mark notification as read")
-        // On failure, remove from marked set and refetch
+        // On failure, remove from tracking and refetch
         markedAsReadIds.current.delete(id)
         await fetchNotifications()
       }
-      // On success, keep it in markedAsReadIds to persist the read state
+      // On success, leave it in the map so polling won't revert it for 10 seconds
     } catch (error) {
       console.error("Error marking notification as read:", error)
-      // On error, remove from marked set and refetch
+      // On error, remove from tracking and refetch
       markedAsReadIds.current.delete(id)
       await fetchNotifications()
     }

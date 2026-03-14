@@ -132,10 +132,10 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
   }
 
   const totalInvested = safeInvestments.reduce((sum, inv) => sum + (inv?.amount || 0), 0)
-  // Use accumulated profit if available, otherwise use expected profit
-  const totalReturns = safeInvestments.reduce((sum, inv) => {
-    const accumulated = (inv as any)?.accumulatedProfit
-    return sum + (accumulated != null ? accumulated : (inv?.expectedProfit || 0))
+  // Use ONLY accumulated profit (not expected)
+  const totalAccumulatedProfit = safeInvestments.reduce((sum, inv) => {
+    const accumulated = (inv as any)?.accumulatedProfit || 0
+    return sum + accumulated
   }, 0)
 
   return (
@@ -168,9 +168,9 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             <CardContent className="p-4 sm:p-6 text-center relative">
               <TrendingUp className="h-6 sm:h-8 w-6 sm:w-8 text-success mx-auto mb-2" />
               <p className="text-lg sm:text-2xl font-bold text-success">
-                +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                +${totalAccumulatedProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </p>
-              <p className="text-sm text-muted-foreground">Expected Returns</p>
+              <p className="text-sm text-muted-foreground">Accumulated Profit</p>
             </CardContent>
           </Card>
 
@@ -390,7 +390,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                             </CardHeader>
 
                             <CardContent className="space-y-4 flex-1 flex flex-col">
-                              {/* Amount & Profit */}
+                              {/* Amount & Accumulated Profit */}
                               <div className="grid grid-cols-2 gap-3">
                                 <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10">
                                   <p className="text-xs text-muted-foreground mb-1">Amount</p>
@@ -399,9 +399,9 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                                   </p>
                                 </div>
                                 <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10">
-                                  <p className="text-xs text-muted-foreground mb-1">Profit</p>
+                                  <p className="text-xs text-muted-foreground mb-1">Accumulated</p>
                                   <p className="text-base font-bold text-green-600 dark:text-green-400">
-                                    +${((inv.accumulatedProfit ?? inv.expectedProfit) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                    +${((inv as any).accumulatedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                   </p>
                                 </div>
                               </div>
@@ -524,12 +524,12 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                       <Card className="bg-success/5 border-success/20 hover:shadow-md transition-all duration-300">
                         <CardContent className="p-6">
-                          <p className="text-sm text-muted-foreground mb-3">Expected Returns</p>
+                          <p className="text-sm text-muted-foreground mb-3">Accumulated Profit</p>
                           <p className="text-2xl font-bold text-success">
-                            +${safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                            +${totalAccumulatedProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                           </p>
                           <p className="text-xs text-success/70 mt-2">
-                            {totalInvested > 0 ? ((safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0) / Math.max(totalInvested, 1)) * 100).toFixed(1) : '0'}% average return
+                            {totalInvested > 0 ? ((totalAccumulatedProfit / Math.max(totalInvested, 1)) * 100).toFixed(1) : '0'}% return on investment
                           </p>
                         </CardContent>
                       </Card>
