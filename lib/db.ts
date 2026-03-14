@@ -8,18 +8,31 @@ let pgPool: any = null
 const DATABASE_URL = process.env.DATABASE_URL
 let pgInitialized = false
 
+console.log('[DB INIT] DATABASE_URL present:', !!DATABASE_URL)
+console.log('[DB INIT] DATABASE_URL value (first 50 chars):', DATABASE_URL?.substring(0, 50))
+
 if (DATABASE_URL) {
   // Dynamically import Pool to avoid errors when postgres is not installed
   try {
     const { Pool } = require('pg')
     pgPool = new Pool({ connectionString: DATABASE_URL, max: 1 })
-    console.log('PostgreSQL pool initialized')
+    console.log('[DB INIT] PostgreSQL pool initialized successfully')
+    
+    // Test the connection immediately
+    pgPool.query('SELECT 1', (err: any) => {
+      if (err) {
+        console.error('[DB INIT] PostgreSQL connection test failed:', err.message)
+        pgPool = null
+      } else {
+        console.log('[DB INIT] PostgreSQL connection test successful')
+      }
+    })
   } catch (err: any) {
-    console.warn('PostgreSQL not available, falling back to SQLite:', err.message)
+    console.warn('[DB INIT] PostgreSQL not available, falling back to SQLite:', err.message)
     pgPool = null
   }
 } else {
-  console.log('DATABASE_URL not set, using SQLite')
+  console.log('[DB INIT] DATABASE_URL not set, using SQLite')
 }
 
 const DB_PATH = path.join(process.cwd(), "vault.db")
@@ -318,35 +331,55 @@ interface DatabaseRow {
 }
 
 export async function run(sql: string, params: unknown[] = []): Promise<number> {
-  console.log(`[RUN] Executing SQL: ${sql} with params:`, params)
+  console.log(`[RUN] Executing SQL: ${sql} with params:`, params, 'Backend:', pgPool ? 'PostgreSQL' : 'SQLite')
   
   if (pgPool) {
     await initializePostgres()
-    const result = await pgPool.query(adaptSql(sql), params)
-    console.log(`[RUN] PostgreSQL result rowCount:`, result.rowCount)
-    return result.rowCount || 0
+    try {
+      const result = await pgPool.query(adaptSql(sql), params)
+      console.log(`[RUN] PostgreSQL success - rowCount:`, result.rowCount)
+      return result.rowCount || 0
+    } catch (err: any) {
+      console.error(`[RUN] PostgreSQL error:`, err.message)
+      throw err
+    }
   } else {
-    const db = getDb()
-    const result = db.prepare(sql).run(...params)
-    console.log(`[RUN] SQLite result changes:`, result.changes)
-    return result.changes || 0
+    try {
+      const db = getDb()
+      const result = db.prepare(sql).run(...params)
+      console.log(`[RUN] SQLite success - changes:`, result.changes)
+      return result.changes || 0
+    } catch (err: any) {
+      console.error(`[RUN] SQLite error:`, err.message)
+      throw err
+    }
   }
 }
 
 export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T | undefined> {
-  console.log(`[GET] Executing SQL: ${sql} with params:`, params)
+  console.log(`[GET] Executing SQL: ${sql} with params:`, params, 'Backend:', pgPool ? 'PostgreSQL' : 'SQLite')
   
   if (pgPool) {
     await initializePostgres()
-    const res = await pgPool.query(adaptSql(sql), params)
-    const result = res.rows[0] as T
-    console.log(`[GET] PostgreSQL result:`, result)
-    return result
+    try {
+      const res = await pgPool.query(adaptSql(sql), params)
+      const result = res.rows[0] as T
+      console.log(`[GET] PostgreSQL success - result:`, result)
+      return result
+    } catch (err: any) {
+      console.error(`[GET] PostgreSQL error:`, err.message)
+      throw err
+    }
   }
   
-  const result = getDb().prepare(sql).get(...params) as T
-  console.log(`[GET] SQLite result:`, result)
-  return result
+  try {
+    const result = getDb().prepare(sql).get(...params) as T
+    console.log(`[GET] SQLite success - result:`, result)
+    return result
+  } catch (err: any) {
+    console.error(`[GET] SQLite error:`, err.message)
+    throw err
+  }
 }
 
 export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T[]> {
@@ -597,36 +630,39 @@ export async function getUserNotifications(userId: string) {
 }
 
 export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
-  console.log(`[DB] Starting update for notification ${notificationId}`)
+  console.log(`[markNotificationAsRead] Starting for notification ${notificationId}, using ${pgPool ? 'PostgreSQL' : 'SQLite'}`)
   
   // First, verify it exists
   const beforeNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
-  console.log(`[DB] Before update - notification exists:`, beforeNotif)
+  console.log(`[markNotificationAsRead] Before update - notification exists:`, beforeNotif)
   
   if (!beforeNotif) {
-    console.error(`[DB] Notification ${notificationId} not found!`)
+    console.error(`[markNotificationAsRead] Notification ${notificationId} not found!`)
     return false
   }
 
-  console.log(`[DB] Executing: UPDATE notifications SET isRead = 1 WHERE id = ?`)
+  console.log(`[markNotificationAsRead] Executing: UPDATE notifications SET isRead = 1 WHERE id = ?`)
   const changes = await run("UPDATE notifications SET isRead = 1 WHERE id = ?", [notificationId])
-  console.log(`[DB] Update completed. Rows affected: ${changes}`)
+  console.log(`[markNotificationAsRead] Update completed. Rows affected: ${changes}`)
 
   // Verify the update immediately
   const afterNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
-  console.log(`[DB] After update - notification:`, afterNotif)
+  console.log(`[markNotificationAsRead] After update - notification:`, afterNotif)
   
   if (!afterNotif) {
-    console.error(`[DB] Notification disappeared after update!`)
+    console.error(`[markNotificationAsRead] Notification disappeared after update!`)
     return false
   }
 
-  if (afterNotif.isRead === 0 || afterNotif.isRead === false) {
-    console.error(`[DB] Update verification failed - isRead is still: ${afterNotif.isRead} (type: ${typeof afterNotif.isRead})`)
+  const isReadValue = afterNotif.isRead
+  console.log(`[markNotificationAsRead] Verification - isRead value: ${isReadValue} (type: ${typeof isReadValue})`)
+  
+  if (isReadValue === 0 || isReadValue === false) {
+    console.error(`[markNotificationAsRead] Update verification FAILED - isRead is still: ${isReadValue}`)
     return false
   }
 
-  console.log(`[DB] Update verified successfully - isRead is now: ${afterNotif.isRead}`)
+  console.log(`[markNotificationAsRead] ✅ Update verified successfully - notification is marked as read`)
   return true
 }
 
