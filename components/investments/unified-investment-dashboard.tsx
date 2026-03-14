@@ -114,6 +114,9 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
     // Annualized ROI accounts for time: shows what the return would be if extended to a full year
     const amount = investment.amount || 1
     const profit = investment.expectedProfit || 0
+    
+    if (amount <= 0 || profit <= 0) return 0
+    
     const simpleROI = (profit / amount) * 100
     
     // Calculate investment duration in years
@@ -122,9 +125,10 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
     const durationMs = endDate - startDate
     const durationYears = durationMs / (365.25 * 24 * 60 * 60 * 1000)
     
-    if (durationYears <= 0) return 0
-    // Annualized = simple ROI * (365.25 days / actual duration days)
-    return simpleROI / durationYears
+    if (durationYears <= 0 || isNaN(durationYears)) return simpleROI
+    // Annualized = simple ROI / (actual duration in years)
+    const annualized = simpleROI / durationYears
+    return isNaN(annualized) ? simpleROI : annualized
   }
 
   const totalInvested = safeInvestments.reduce((sum, inv) => sum + (inv?.amount || 0), 0)
@@ -385,19 +389,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-warning/5 border-warning/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
-                      <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
-                        <p className="text-xs text-muted-foreground mb-1">Avg Progress</p>
-                        <p className="text-xl font-bold text-warning">
-                          {Math.round(
-                            safeInvestments.length > 0
-                              ? safeInvestments.reduce((sum, inv) => sum + calculateProgress(inv.startDate, inv.endDate, inv.status, inv.progressPercentage), 0) / safeInvestments.length
-                              : 0
-                          )}%
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">completion rate</p>
-                      </CardContent>
-                    </Card>
+
                   </div>
                 )}
 
@@ -488,12 +480,18 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               <div className="bg-muted/50 rounded-lg p-3 border border-border mt-auto">
                                 <p className="text-xs text-muted-foreground mb-2">Return on Investment</p>
                                 <div className="space-y-1.5">
-                                  <p className="text-lg font-bold text-accent">
-                                    {calculateROI(inv).toFixed(2)}%
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    Annualized: {calculateAnnualizedROI(inv).toFixed(2)}%
-                                  </p>
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-1">Simple ROI</p>
+                                    <p className="text-lg font-bold text-accent">
+                                      {isNaN(calculateROI(inv)) ? '0' : calculateROI(inv).toFixed(2)}%
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-1">Annualized</p>
+                                    <p className="text-lg font-bold text-green-600">
+                                      {isNaN(calculateAnnualizedROI(inv)) ? '0' : calculateAnnualizedROI(inv).toFixed(2)}%
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
                             </CardContent>

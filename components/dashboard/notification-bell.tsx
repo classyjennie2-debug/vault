@@ -59,10 +59,12 @@ export function NotificationBell() {
   const unreadNotifications = notifications.filter((n) => !n.isRead)
   const readNotifications = notifications.filter((n) => n.isRead)
 
-  const handleMarkAsRead = async (id: string) => {
+  const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    
     // Optimistically update local state immediately
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     )
     
     // Then sync to server
@@ -121,8 +123,8 @@ export function NotificationBell() {
     <div
       className="p-4 border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
       style={{ animationDelay: `${idx * 50}ms` }}
-      onClick={() => {
-        handleMarkAsRead(notification.id)
+      onClick={(e) => {
+        handleMarkAsRead(notification.id, e)
       }}
     >
       <div className="flex items-start gap-3">
