@@ -49,7 +49,11 @@ export default async function DashboardPage() {
 
       <div className="grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <PortfolioChart data={portfolioData} balance={user.balance} />
+          <PortfolioChart 
+            data={portfolioData} 
+            balance={user.balance}
+            monthlyChange={stats.totalInvested > 0 ? Math.round((monthlyMetrics.monthlyGain / stats.totalInvested) * 100 * 100) / 100 : 0}
+          />
         </div>
         <div className="lg:col-span-2">
           <RecentTransactions />
