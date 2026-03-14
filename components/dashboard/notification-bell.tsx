@@ -18,8 +18,6 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const markedAsReadIds = useRef<Map<string, number>>(new Map()) // id -> timestamp of when marked as read
-  const lastReadRequestTime = useRef<number>(0) // Track last time we called the read endpoint
 
   const fetchNotifications = async () => {
     try {
@@ -27,30 +25,12 @@ export function NotificationBell() {
       const response = await fetch("/api/notifications")
       if (response.ok) {
         const data = await response.json()
-        const now = Date.now()
         
-        // Merge server data with local optimistic updates
-        setNotifications((prevNotifications) => {
-          const serverData = data.map((notif: any) => ({
-            ...notif,
-            isRead: Boolean(notif.isRead)
-          }))
-          
-          // For any notifications marked as read within the last 20 seconds,
-          // keep them as read even if server still shows unread
-          return serverData.map((serverNotif: any) => {
-            const markedTime = markedAsReadIds.current.get(serverNotif.id)
-            if (markedTime && now - markedTime < 20000 && !serverNotif.isRead) {
-              // Keep it marked as read during grace period
-              return { ...serverNotif, isRead: true }
-            }
-            // Once server confirms it's read, remove from tracking
-            if (markedTime && serverNotif.isRead) {
-              markedAsReadIds.current.delete(serverNotif.id)
-            }
-            return serverNotif
-          })
-        })
+        // Set the notifications with isRead properly formatted from server
+        setNotifications(data.map((notif: any) => ({
+          ...notif,
+          isRead: Boolean(notif.isRead)
+        })))
       } else {
         console.error("Failed to fetch notifications")
       }
@@ -65,10 +45,10 @@ export function NotificationBell() {
   useEffect(() => {
     fetchNotifications()
     
-    // Set up polling every 30 seconds
+    // Set up polling every 10 seconds to keep state fresh
     const interval = setInterval(() => {
       fetchNotifications()
-    }, 30000)
+    }, 10000)
     
     return () => clearInterval(interval)
   }, [])
@@ -79,10 +59,6 @@ export function NotificationBell() {
 
   const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
-    
-    // Track when this notification was marked as read
-    markedAsReadIds.current.set(id, Date.now())
-    lastReadRequestTime.current = Date.now()
     
     // Optimistically update local state immediately
     setNotifications((prev) =>
@@ -100,15 +76,13 @@ export function NotificationBell() {
       
       if (!response.ok) {
         console.error("Failed to mark notification as read")
-        // On failure, remove from tracking and refetch
-        markedAsReadIds.current.delete(id)
+        // On failure, refetch to get actual state from server
         await fetchNotifications()
       }
-      // On success, the grace period will keep it as read during the mark
+      // On success, the update has been persisted to database
     } catch (error) {
       console.error("Error marking notification as read:", error)
-      // On error, remove from tracking and refetch
-      markedAsReadIds.current.delete(id)
+      // On error, refetch to get actual state from server
       await fetchNotifications()
     }
   }

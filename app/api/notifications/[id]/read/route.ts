@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { getUserNotifications, markNotificationAsRead } from "@/lib/db"
+import { getUserNotifications, markNotificationAsRead, get } from "@/lib/db"
 
 export async function PUT(
   request: NextRequest,
@@ -24,10 +24,24 @@ export async function PUT(
       return NextResponse.json({ error: "Notification not found" }, { status: 404 })
     }
 
-    // Mark the notification as read
+    // Mark the notification as read in database
     await markNotificationAsRead(notificationId)
+    
+    // Verify the update was successful by fetching the notification again
+    const updatedNotification = await get(
+      "SELECT * FROM notifications WHERE id = ?",
+      [notificationId]
+    )
+    
+    if (!updatedNotification || !updatedNotification.isRead) {
+      console.error(`Failed to mark notification ${notificationId} as read`)
+      return NextResponse.json(
+        { error: "Failed to update notification" },
+        { status: 500 }
+      )
+    }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, notification: updatedNotification })
   } catch (error) {
     console.error("Error updating notification:", error)
     return NextResponse.json(
@@ -59,10 +73,24 @@ export async function POST(
       return NextResponse.json({ error: "Notification not found" }, { status: 404 })
     }
 
-    // Mark the notification as read
+    // Mark the notification as read in database
     await markNotificationAsRead(notificationId)
+    
+    // Verify the update was successful by fetching the notification again
+    const updatedNotification = await get(
+      "SELECT * FROM notifications WHERE id = ?",
+      [notificationId]
+    )
+    
+    if (!updatedNotification || !updatedNotification.isRead) {
+      console.error(`Failed to mark notification ${notificationId} as read`)
+      return NextResponse.json(
+        { error: "Failed to update notification" },
+        { status: 500 }
+      )
+    }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, notification: updatedNotification })
   } catch (error) {
     console.error("Error updating notification:", error)
     return NextResponse.json(
