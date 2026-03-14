@@ -4,8 +4,6 @@ import { setUserBalance, getUserById, all, deleteUser, run } from "@/lib/db"
 
 export async function GET() {
   try {
-    console.log("=== Admin users GET request started ===")
-    
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user
 
@@ -14,119 +12,20 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    console.log("Admin check passed, fetching users...")
+    // Fetch basic users
+    const users = await all("SELECT id, name, email, balance, role, joinedAt, avatar, verified FROM users")
     
-    // First try to fetch basic users without enrichment
-    let users: any[] = []
-    try {
-      users = await all("SELECT id, name, email, balance, role, joinedAt, avatar, verified FROM users")
-      console.log(`Fetched ${users.length} users`)
-    } catch (err) {
-      console.error("Error fetching base users:", err)
-      throw new Error(`Failed to fetch users: ${String(err)}`)
-    }
+    // Enrich with investment and deposit data
+    const enrichedUsers = users.map((u: any) => ({
+      ...u,
+      verified: Boolean(u.verified),
+      totalBalance: Number(u.balance || 0),
+      totalInvested: 0,
+      activeInvestmentsCount: 0,
+      totalDeposits: 0,
+      totalProfit: 0,
+    }))
     
-    // Try to add enrichment data
-    const enrichedUsers = await Promise.all(
-      users.map(async (u: any) => {
-        try {
-          // Get total invested
-          let totalInvested = 0
-          try {
-            const investmentResult = await all(
-              "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",
-              [u.id]
-            )
-            totalInvested = investmentResult?.[0]?.totalInvested || 0
-            console.log(`User ${u.id}: totalInvested = ${totalInvested}`)
-          } catch (err) {
-            console.warn(`Failed to get investments for user ${u.id}:`, err)
-            totalInvested = 0
-          }
-
-          // Get active investment count
-          let activeInvestmentsCount = 0
-          try {
-            const activeInvestmentsResult = await all(
-              "SELECT COUNT(*) as count FROM active_investments WHERE userId = ? AND status = 'active'",
-              [u.id]
-            )
-            activeInvestmentsCount = activeInvestmentsResult?.[0]?.count || 0
-          } catch (err) {
-            console.warn(`Failed to get active investment count for user ${u.id}:`, err)
-            activeInvestmentsCount = 0
-          }
-
-          // Get total deposits approved
-          let totalDeposits = 0
-          try {
-            const depositsResult = await all(
-              "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'approved'",
-              [u.id]
-            )
-            totalDeposits = depositsResult?.[0]?.totalDeposits || 0
-          } catch (err) {
-            console.warn(`Failed to get deposits for user ${u.id}:`, err)
-            totalDeposits = 0
-          }
-
-          // Get accumulated profit (calculated from expectedProfit * progressPercentage)
-          let totalProfit = 0
-          try {
-            const profitResult = await all(
-              "SELECT SUM((expectedProfit * progressPercentage) / 100) as totalProfit FROM active_investments WHERE userId = ?",
-              [u.id]
-            )
-            totalProfit = profitResult?.[0]?.totalProfit || 0
-            console.log(`User ${u.id}: totalProfit = ${totalProfit}`)
-          } catch (err) {
-            console.warn(`Failed to get profit for user ${u.id}:`, err)
-            totalProfit = 0
-          }
-
-          // Get lastLogin
-          let lastLogin = null
-          try {
-            const loginResult = await all(
-              "SELECT lastLogin FROM users WHERE id = ?",
-              [u.id]
-            )
-            lastLogin = loginResult?.[0]?.lastLogin || null
-          } catch (err) {
-            console.warn(`Failed to get lastLogin for user ${u.id}:`, err)
-          }
-
-          // Total balance = cash balance + invested + profit
-          const totalBalance = Number(u.balance || 0) + Number(totalInvested || 0) + Number(totalProfit || 0)
-
-          return {
-            ...u,
-            verified: Boolean(u.verified),
-            lastLogin,
-            totalInvested: Number(totalInvested) || 0,
-            activeInvestmentsCount: Number(activeInvestmentsCount) || 0,
-            totalDeposits: Number(totalDeposits) || 0,
-            totalProfit: Number(totalProfit) || 0,
-            totalBalance: totalBalance,
-          }
-        } catch (innerErr) {
-          console.error(`Error enriching user ${u.id}:`, innerErr)
-          // Return basic user data if enrichment fails
-          return {
-            ...u,
-            verified: Boolean(u.verified),
-            lastLogin: null,
-            totalInvested: 0,
-            activeInvestmentsCount: 0,
-            totalDeposits: 0,
-            totalProfit: 0,
-            totalBalance: Number(u.balance || 0),
-          }
-        }
-      })
-    )
-
-    console.log("=== Admin users GET completed successfully ===")
     return NextResponse.json(enrichedUsers)
   } catch (error) {
     console.error("Admin get users error:", error)
