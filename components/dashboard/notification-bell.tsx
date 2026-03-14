@@ -19,32 +19,41 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
+  const localReadStateRef = useRef<Set<string>>(new Set())
 
   const fetchNotifications = async () => {
     try {
-      setIsLoading(true)
       const response = await fetch("/api/notifications")
       if (response.ok) {
         const data = await response.json()
         
-        // Set the notifications with isRead properly formatted from server
+        // Merge server data with local read state
+        // If we've marked something as read locally, keep it marked as read
+        // even if the server shows it as unread (gives server time to catch up)
         setNotifications(data.map((notif: any) => ({
           ...notif,
-          isRead: Boolean(notif.isRead)
+          isRead: localReadStateRef.current.has(notif.id) ? true : Boolean(notif.isRead)
         })))
       } else {
         console.error("Failed to fetch notifications")
       }
     } catch (error) {
       console.error("Error fetching notifications:", error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
-  // Fetch on initial mount and when sheet opens
+  // Fetch on initial mount
   useEffect(() => {
     fetchNotifications()
+  }, [])
+
+  // Poll for new notifications every 8 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNotifications()
+    }, 8000)
+    
+    return () => clearInterval(interval)
   }, [])
 
   // Refetch whenever sheet opens
@@ -61,6 +70,9 @@ export function NotificationBell() {
   const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
     
+    // Track that we've marked this as read locally
+    localReadStateRef.current.add(id)
+    
     // Optimistically update local state immediately
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
@@ -69,7 +81,7 @@ export function NotificationBell() {
     // Clear any previous error
     setErrorMessage("")
     
-    // Sync to server with retry logic
+    // Sync to server immediately
     try {
       const response = await fetch("/api/notifications/" + id + "/read", {
         method: "POST",
@@ -84,19 +96,25 @@ export function NotificationBell() {
         console.error("API Error:", errorMsg)
         setErrorMessage(errorMsg)
         
-        // On failure, refetch to get actual state from server after a delay
+        // On failure, remove from local tracking so it can be refetched
+        localReadStateRef.current.delete(id)
+        
+        // Refetch to get actual state from server
         setTimeout(() => {
           fetchNotifications()
         }, 500)
       } else {
         // Success - notification is persisted
-        console.log("Notification marked as read successfully")
+        console.log("Notification marked as read and persisted successfully")
       }
     } catch (error) {
       console.error("Error marking notification as read:", error)
       setErrorMessage("Network error - notification update failed")
       
-      // On error, refetch to get actual state from server after a delay
+      // On error, remove from local tracking
+      localReadStateRef.current.delete(id)
+      
+      // Refetch to get actual state from server
       setTimeout(() => {
         fetchNotifications()
       }, 500)
