@@ -21,8 +21,19 @@ export async function POST(request: Request) {
       .join("")
       .toUpperCase()
 
+
     // Create user as unverified - always send verification code
     await createUser({ id, name, email, passwordHash, avatar, verified: false })
+
+    // Add welcome notification for the new user
+    // Import createNotification from db
+    const { createNotification } = await import("@/lib/db")
+    await createNotification({
+      userId: id,
+      title: "Welcome to Vault!",
+      message: `Hi ${name}, your account has been created. Start exploring investment opportunities and manage your portfolio with Vault.",
+      type: "success",
+    })
 
     // Send admin notification about new signup
     const adminEmailHtml = `

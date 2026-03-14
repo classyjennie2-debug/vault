@@ -33,35 +33,39 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("")
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [newBalance, setNewBalance] = useState("")
+  const [bonusUser, setBonusUser] = useState<string | null>(null)
+  const [bonusAmount, setBonusAmount] = useState("")
   const [notificationUser, setNotificationUser] = useState<string | null>(null)
   const [notificationTitle, setNotificationTitle] = useState("")
   const [notificationMessage, setNotificationMessage] = useState("")
   const [notificationType, setNotificationType] = useState<"info" | "success" | "warning" | "error">("info")
   const [isLoadingNotification, setIsLoadingNotification] = useState(false)
+  const [isLoadingBonus, setIsLoadingBonus] = useState(false)
   const [deleteConfirmUser, setDeleteConfirmUser] = useState<string | null>(null)
   const [isLoadingDelete, setIsLoadingDelete] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
 
-  // Fetch users from API on mount
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch("/api/admin/users")
-        if (res.ok) {
-          const data = await res.json()
-          setUsers(data || [])
-        } else {
-          setErrorMessage("Failed to fetch users")
-        }
-      } catch (err) {
-        console.error("Error fetching users:", err)
+  // Fetch users from API
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("/api/admin/users")
+      if (res.ok) {
+        const data = await res.json()
+        setUsers(data || [])
+      } else {
         setErrorMessage("Failed to fetch users")
-      } finally {
-        setLoading(false)
       }
+    } catch (err) {
+      console.error("Error fetching users:", err)
+      setErrorMessage("Failed to fetch users")
+    } finally {
+      setLoading(false)
     }
+  }
 
+  // Fetch users on mount
+  useEffect(() => {
     fetchUsers()
   }, [])
 
@@ -82,16 +86,52 @@ export default function AdminUsersPage() {
     })
 
     if (res.ok) {
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, balance: amount } : u))
-      )
       setEditingUser(null)
       setNewBalance("")
       setSuccessMessage("User balance updated successfully")
       setTimeout(() => setSuccessMessage(""), 3000)
+      // Refetch all user data to update totalInvested, totalDeposits, etc.
+      await fetchUsers()
     } else {
       setErrorMessage("Failed to update user balance")
       setTimeout(() => setErrorMessage(""), 3000)
+    }
+  }
+
+  const handleSendBonus = async (userId: string) => {
+    const amount = parseFloat(bonusAmount)
+    if (isNaN(amount) || amount <= 0) {
+      setErrorMessage("Please enter a valid bonus amount")
+      setTimeout(() => setErrorMessage(""), 3000)
+      return
+    }
+
+    setIsLoadingBonus(true)
+    try {
+      const res = await fetch("/api/admin/bonus", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, amount }),
+      })
+
+      if (res.ok) {
+        setSuccessMessage("Bonus sent successfully!")
+        setBonusUser(null)
+        setBonusAmount("")
+        setTimeout(() => setSuccessMessage(""), 3000)
+        // Refetch to update balances
+        await fetchUsers()
+      } else {
+        const data = await res.json()
+        setErrorMessage(data.error || "Failed to send bonus")
+        setTimeout(() => setErrorMessage(""), 3000)
+      }
+    } catch (error) {
+      console.error("Error sending bonus:", error)
+      setErrorMessage("Failed to send bonus")
+      setTimeout(() => setErrorMessage(""), 3000)
+    } finally {
+      setIsLoadingBonus(false)
     }
   }
 
@@ -370,6 +410,53 @@ export default function AdminUsersPage() {
                   </div>
 
                   {/* Actions row */}
+                                    {/* Send Bonus Button */}
+                                    <Dialog open={bonusUser === user.id} onOpenChange={(open) => {
+                                      if (!open) {
+                                        setBonusUser(null)
+                                        setBonusAmount("")
+                                      }
+                                    }}>
+                                      <DialogTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => setBonusUser(user.id)}
+                                        >
+                                          <DollarSign className="mr-1.5 h-3.5 w-3.5" />
+                                          Send Bonus
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent>
+                                        <DialogHeader>
+                                          <DialogTitle>Send Bonus to {user.name}</DialogTitle>
+                                          <DialogDescription>
+                                            Credit a bonus amount directly to this user's balance. This will appear in their transaction history and as a notification.
+                                          </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4">
+                                          <div className="space-y-2">
+                                            <Label htmlFor="bonus-amount">Amount</Label>
+                                            <Input
+                                              id="bonus-amount"
+                                              type="number"
+                                              placeholder="Bonus amount"
+                                              value={bonusAmount}
+                                              onChange={(e) => setBonusAmount(e.target.value)}
+                                              min={1}
+                                              step={0.01}
+                                            />
+                                          </div>
+                                          <Button
+                                            onClick={() => handleSendBonus(user.id)}
+                                            disabled={isLoadingBonus}
+                                            className="w-full"
+                                          >
+                                            {isLoadingBonus ? "Sending..." : "Send Bonus"}
+                                          </Button>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
                   <div className="flex flex-wrap gap-2 border-t border-border pt-4">
                     {/* Send Notification Button */}
                     <Dialog open={notificationUser === user.id} onOpenChange={(open) => {
