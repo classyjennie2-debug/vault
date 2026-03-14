@@ -18,6 +18,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   const fetchNotifications = async () => {
     try {
@@ -65,7 +66,10 @@ export function NotificationBell() {
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     )
     
-    // Sync to server
+    // Clear any previous error
+    setErrorMessage("")
+    
+    // Sync to server with retry logic
     try {
       const response = await fetch("/api/notifications/" + id + "/read", {
         method: "POST",
@@ -75,15 +79,27 @@ export function NotificationBell() {
       })
       
       if (!response.ok) {
-        console.error("Failed to mark notification as read")
-        // On failure, refetch to get actual state from server
-        await fetchNotifications()
+        const errorData = await response.json().catch(() => ({}))
+        const errorMsg = errorData.error || "Failed to mark notification as read"
+        console.error("API Error:", errorMsg)
+        setErrorMessage(errorMsg)
+        
+        // On failure, refetch to get actual state from server after a delay
+        setTimeout(() => {
+          fetchNotifications()
+        }, 500)
+      } else {
+        // Success - notification is persisted
+        console.log("Notification marked as read successfully")
       }
-      // On success, the update has been persisted to database
     } catch (error) {
       console.error("Error marking notification as read:", error)
-      // On error, refetch to get actual state from server
-      await fetchNotifications()
+      setErrorMessage("Network error - notification update failed")
+      
+      // On error, refetch to get actual state from server after a delay
+      setTimeout(() => {
+        fetchNotifications()
+      }, 500)
     }
   }
 
@@ -190,6 +206,12 @@ export function NotificationBell() {
             <span className="sr-only">Close notifications</span>
           </Button>
         </SheetHeader>
+
+        {errorMessage && (
+          <div className="px-6 py-3 bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-sm rounded-none">
+            {errorMessage}
+          </div>
+        )}
 
         <Tabs defaultValue="unread" className="flex-1 flex flex-col">
           <TabsList className="grid w-full grid-cols-2 sticky top-16 z-10 mx-6 mt-4 bg-slate-100 dark:bg-slate-800">

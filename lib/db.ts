@@ -313,12 +313,14 @@ interface DatabaseRow {
   [key: string]: unknown
 }
 
-export async function run(sql: string, params: unknown[] = []): Promise<void> {
+export async function run(sql: string, params: unknown[] = []): Promise<number> {
   if (pgPool) {
     await initializePostgres()
-    await pgPool.query(adaptSql(sql), params)
+    const result = await pgPool.query(adaptSql(sql), params)
+    return result.rowCount || 0
   } else {
-    getDb().prepare(sql).run(...params)
+    const result = getDb().prepare(sql).run(...params)
+    return result.changes || 0
   }
 }
 
@@ -572,8 +574,11 @@ export async function getUserNotifications(userId: string) {
   return all("SELECT * FROM notifications WHERE userId = ? ORDER BY timestamp DESC", [userId])
 }
 
-export async function markNotificationAsRead(notificationId: string): Promise<void> {
-  await run("UPDATE notifications SET isRead = 1 WHERE id = ?", [notificationId])
+export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
+  console.log(`[DB] Updating notification ${notificationId} to isRead = 1`)
+  const changes = await run("UPDATE notifications SET isRead = 1 WHERE id = ?", [notificationId])
+  console.log(`[DB] Update completed for notification ${notificationId}. Rows affected: ${changes}`)
+  return changes > 0
 }
 
 export async function getRecentActivities(userId: string) {
