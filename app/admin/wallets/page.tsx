@@ -45,6 +45,7 @@ import {
   User,
   Search,
   AlertCircle,
+  X,
 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -63,7 +64,9 @@ export default function AdminWalletsPage() {
   const [filterCoin, setFilterCoin] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
+  const [dropConfirmId, setDropConfirmId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isDropping, setIsDropping] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
 
   // Fetch wallets from API on mount
@@ -159,6 +162,43 @@ export default function AdminWalletsPage() {
       setError("Failed to delete wallet")
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleDropWallet = async (id: string) => {
+    setIsDropping(true)
+    setError("")
+
+    try {
+      const res = await fetch("/api/admin/wallets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "drop",
+          wallet: { id },
+        }),
+      })
+
+      if (res.ok) {
+        setWalletPool((prev) =>
+          prev.map((w) =>
+            w.id === id
+              ? { ...w, assignedTo: null, assignedAt: null }
+              : w
+          )
+        )
+        setDropConfirmId(null)
+        setSuccess("Wallet unassigned successfully")
+        setTimeout(() => setSuccess(""), 3000)
+      } else {
+        const data = await res.json()
+        setError(data.error || "Failed to unassign wallet")
+      }
+    } catch (err) {
+      console.error("Error unassigning wallet:", err)
+      setError("Failed to unassign wallet")
+    } finally {
+      setIsDropping(false)
     }
   }
 
@@ -387,6 +427,7 @@ export default function AdminWalletsPage() {
             wallets={filteredWallets}
             getUserName={getUserName}
             onDelete={(id) => setDeleteConfirmId(id)}
+            onDrop={(id) => setDropConfirmId(id)}
           />
         </TabsContent>
         <TabsContent value="available" className="mt-4">
@@ -394,6 +435,7 @@ export default function AdminWalletsPage() {
             wallets={filteredWallets.filter((w) => !w.assignedTo)}
             getUserName={getUserName}
             onDelete={(id) => setDeleteConfirmId(id)}
+            onDrop={(id) => setDropConfirmId(id)}
           />
         </TabsContent>
         <TabsContent value="assigned" className="mt-4">
@@ -401,6 +443,7 @@ export default function AdminWalletsPage() {
             wallets={filteredWallets.filter((w) => w.assignedTo)}
             getUserName={getUserName}
             onDelete={(id) => setDeleteConfirmId(id)}
+            onDrop={(id) => setDropConfirmId(id)}
           />
         </TabsContent>
       </Tabs>
@@ -436,6 +479,38 @@ export default function AdminWalletsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Drop/Unassign Confirmation Dialog */}
+      <Dialog
+        open={!!dropConfirmId}
+        onOpenChange={() => setDropConfirmId(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unassign Wallet Address</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to unassign this wallet from the user? The
+              wallet will return to the available pool.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDropConfirmId(null)}
+              disabled={isDropping}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => dropConfirmId && handleDropWallet(dropConfirmId)}
+              disabled={isDropping}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              {isDropping ? "Unassigning..." : "Unassign"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
         </>
       )}
     </div>
@@ -446,10 +521,12 @@ function WalletTable({
   wallets,
   getUserName,
   onDelete,
+  onDrop,
 }: {
   wallets: WalletAddress[]
   getUserName: (id: string | null) => string | null
   onDelete: (id: string) => void
+  onDrop: (id: string) => void
 }) {
   if (wallets.length === 0) {
     return (
@@ -546,15 +623,29 @@ function WalletTable({
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDelete(wallet.id)}
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Delete wallet</span>
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                      {wallet.assignedTo && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onDrop(wallet.id)}
+                          className="h-8 w-8 text-muted-foreground hover:text-accent"
+                          title="Unassign from user"
+                        >
+                          <X className="h-4 w-4" />
+                          <span className="sr-only">Unassign wallet</span>
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDelete(wallet.id)}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete wallet</span>
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -611,15 +702,29 @@ function WalletTable({
                     Unassigned
                   </span>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDelete(wallet.id)}
-                  className="h-7 text-xs text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="mr-1 h-3 w-3" />
-                  Delete
-                </Button>
+                <div className="flex gap-2">
+                  {wallet.assignedTo && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDrop(wallet.id)}
+                      className="h-7 text-xs text-muted-foreground hover:text-accent"
+                      title="Unassign from user"
+                    >
+                      <X className="mr-1 h-3 w-3" />
+                      Unassign
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDelete(wallet.id)}
+                    className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="mr-1 h-3 w-3" />
+                    Delete
+                  </Button>
+                </div>
               </div>
             </div>
           ))}

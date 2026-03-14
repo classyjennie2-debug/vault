@@ -17,7 +17,16 @@ export default async function DashboardPage() {
   const portfolioData = await generatePortfolioData(user.id)
   const activeInvestments = await getUserActiveInvestmentsWithProfit(user.id)
   const monthlyMetrics = await calculateMonthlyMetrics(user.id)
-  const totalReturnRate = calculateReturnRate(stats.totalProfit, stats.totalInvested)
+  
+  // Calculate live profit from active investments
+  let liveProfit = 0
+  if (activeInvestments && activeInvestments.length > 0) {
+    liveProfit = activeInvestments.reduce((sum, inv) => sum + (inv.accumulatedProfit || 0), 0)
+  }
+  
+  // Use live profit if available, otherwise fallback to stats
+  const displayProfit = liveProfit > 0 ? liveProfit : stats.totalProfit
+  const totalReturnRate = calculateReturnRate(displayProfit, stats.totalInvested)
 
   return (
     <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
@@ -26,9 +35,9 @@ export default async function DashboardPage() {
       <QuickActions />
 
       <DashboardCards
-        totalBalance={stats.availableBalance + stats.totalInvested + stats.totalProfit}
+        totalBalance={stats.availableBalance + stats.totalInvested + displayProfit}
         totalInvested={stats.totalInvested}
-        totalProfit={stats.totalProfit}
+        totalProfit={displayProfit}
         availableBalance={stats.availableBalance}
         activeInvestments={stats.activeInvestments}
         pendingDeposits={stats.pendingDeposits}

@@ -89,6 +89,35 @@ export async function POST(req: NextRequest) {
       await run("DELETE FROM wallet_addresses WHERE id = ?", [wallet.id])
 
       return NextResponse.json({ message: "Wallet deleted successfully" })
+    } else if (action === "drop") {
+      // Unassign a wallet from the assigned user
+      if (!wallet || !wallet.id) {
+        return NextResponse.json({ error: "Wallet ID required" }, { status: 400 })
+      }
+
+      const walletData = await all<WalletAddress>(
+        "SELECT * FROM wallet_addresses WHERE id = ?",
+        [wallet.id]
+      )
+
+      if (walletData.length === 0) {
+        return NextResponse.json({ error: "Wallet not found" }, { status: 404 })
+      }
+
+      if (!walletData[0].assignedTo) {
+        return NextResponse.json(
+          { error: "Wallet is not assigned to any user" },
+          { status: 400 }
+        )
+      }
+
+      // Unassign the wallet
+      await run(
+        "UPDATE wallet_addresses SET assignedTo = NULL, assignedAt = NULL WHERE id = ?",
+        [wallet.id]
+      )
+
+      return NextResponse.json({ message: "Wallet unassigned successfully" })
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }
