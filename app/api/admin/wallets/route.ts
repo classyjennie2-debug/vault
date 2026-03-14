@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
       const now = new Date().toISOString().split("T")[0]
 
       await run(
-        "INSERT INTO wallet_addresses (id, coin, network, address, assignedTo, assignedAt, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [id, wallet.coin, wallet.network, wallet.address, null, null, now]
+        "INSERT INTO wallet_addresses (id, coin, network, address, assignedTo, assignedAt, createdAt, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [id, wallet.coin, wallet.network, wallet.address, null, null, now, "active"]
       )
 
       return NextResponse.json({
@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
         assignedTo: null,
         assignedAt: null,
         createdAt: now,
+        status: "active",
       })
     } else if (action === "delete") {
       // Delete a wallet address
@@ -118,6 +119,36 @@ export async function POST(req: NextRequest) {
       )
 
       return NextResponse.json({ message: "Wallet unassigned successfully" })
+    } else if (action === "changeStatus") {
+      // Change wallet status
+      if (!wallet || !wallet.id || !wallet.status) {
+        return NextResponse.json({ error: "Wallet ID and status required" }, { status: 400 })
+      }
+
+      const validStatuses = ["active", "inactive", "suspended"]
+      if (!validStatuses.includes(wallet.status)) {
+        return NextResponse.json(
+          { error: `Invalid status. Valid statuses: ${validStatuses.join(", ")}` },
+          { status: 400 }
+        )
+      }
+
+      const walletData = await all<WalletAddress>(
+        "SELECT * FROM wallet_addresses WHERE id = ?",
+        [wallet.id]
+      )
+
+      if (walletData.length === 0) {
+        return NextResponse.json({ error: "Wallet not found" }, { status: 404 })
+      }
+
+      // Update status
+      await run(
+        "UPDATE wallet_addresses SET status = ? WHERE id = ?",
+        [wallet.status, wallet.id]
+      )
+
+      return NextResponse.json({ message: "Wallet status updated successfully" })
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }

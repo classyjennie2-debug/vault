@@ -95,6 +95,7 @@ async function initializePostgres() {
           assignedTo TEXT,
           assignedAt TEXT,
           createdAt TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'active',
           FOREIGN KEY (assignedTo) REFERENCES users(id)
         )`,
         `CREATE TABLE IF NOT EXISTS notifications (
@@ -119,6 +120,19 @@ async function initializePostgres() {
 
       for (const sql of tableDefs) {
         await pgPool.query(sql)
+      }
+
+      // Run migrations
+      try {
+        // Add status column to wallet_addresses if it doesn't exist
+        await pgPool.query(`
+          ALTER TABLE wallet_addresses 
+          ADD COLUMN status TEXT NOT NULL DEFAULT 'active'
+        `)
+      } catch (err: any) {
+        if (!err.message.includes('already exists') && !err.message.includes('duplicate')) {
+          console.warn('Migration warning:', err.message)
+        }
       }
 
       // Check if already seeded
@@ -217,6 +231,7 @@ function getDb(): Database.Database {
       assignedTo TEXT,
       assignedAt TEXT,
       createdAt TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'active',
       FOREIGN KEY (assignedTo) REFERENCES users(id)
     );
 
@@ -246,6 +261,16 @@ function getDb(): Database.Database {
   if (!seeded) {
     seedDatabaseSync(_db)
     _db.prepare("INSERT INTO _meta (key, value) VALUES ('seeded', 'true')").run()
+  }
+
+  // Run migrations
+  try {
+    const walletTable = _db.prepare("PRAGMA table_info(wallet_addresses)").all() as any[]
+    if (!walletTable.some(col => col.name === 'status')) {
+      _db.prepare("ALTER TABLE wallet_addresses ADD COLUMN status TEXT NOT NULL DEFAULT 'active'").run()
+    }
+  } catch (err) {
+    console.warn('Migration warning:', err)
   }
 
   return _db

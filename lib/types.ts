@@ -87,6 +87,7 @@ export type WalletAddress = {
   assignedTo: string | null
   assignedAt: string | null
   createdAt: string
+  status: "active" | "inactive" | "suspended"
 }
 
 // ── Static Config (not stored in DB) ─────────────────────────────────

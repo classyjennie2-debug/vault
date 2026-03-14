@@ -82,6 +82,10 @@ export default function AdminTransactionsPage() {
   const handleApprove = async (txId: string) => {
     setProcessingId(txId)
     try {
+      // Find the transaction and user being approved
+      const tx = txList.find(t => t.id === txId)
+      const user = tx ? users.find((u: User) => u.id === tx.userId) : null
+      
       const res = await fetch("/api/admin/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,7 +110,18 @@ export default function AdminTransactionsPage() {
       
       if (res.ok) {
         console.log("✅ Transaction approved successfully:", data)
-        alert("Transaction approved successfully!")
+        const userName = user?.name || "User"
+        let message = ""
+        
+        if (tx?.type === "deposit" && data.transaction?.userBalance !== undefined) {
+          message = `✅ Deposit Approved!\n\nUser: ${userName}\nAmount: $${tx.amount.toLocaleString()}\nNew Balance: $${data.transaction.userBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+        } else if (tx?.type === "deposit") {
+          message = `✅ Deposit of $${tx.amount.toLocaleString()} from ${userName} approved! Balance updated.`
+        } else {
+          message = `✅ ${tx?.type || 'Transaction'} of $${tx?.amount.toLocaleString()} approved!`
+        }
+        
+        alert(message)
         // Refetch all data to get updated balances
         setRefreshTrigger(prev => prev + 1)
       } else {
@@ -314,20 +329,26 @@ export default function AdminTransactionsPage() {
                         <Icon className={`h-4 w-4 ${color}`} />
                       </div>
                       <div className="flex-1 overflow-hidden">
-                        <p className="truncate text-sm font-medium text-card-foreground">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="truncate text-sm font-semibold text-card-foreground">
+                            {user?.name || "Unknown User"}
+                          </p>
+                          {tx.type === "deposit" && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-accent/10 text-accent border-accent/30">
+                              DEPOSIT
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="truncate text-sm text-muted-foreground mb-1">
                           {tx.description}
                         </p>
                         <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                          <span className="font-medium text-foreground">
-                            {user?.name ?? "Unknown User"}
-                          </span>
                           {user?.email && (
                             <>
-                              <span>/</span>
                               <span>{user.email}</span>
+                              <span>/</span>
                             </>
                           )}
-                          <span>/</span>
                           <span>{tx.date}</span>
                           <span>/</span>
                           <span className="capitalize">{tx.type}</span>
@@ -365,6 +386,7 @@ export default function AdminTransactionsPage() {
                             className="h-8 border-accent/30 text-accent hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
                             onClick={() => handleApprove(tx.id)}
                             disabled={processingId === tx.id}
+                            title={tx.type === "deposit" ? `Approve $${tx.amount.toLocaleString()} for ${user?.name || "user"}` : "Approve transaction"}
                           >
                             <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
                             {processingId === tx.id ? "..." : "Approve"}

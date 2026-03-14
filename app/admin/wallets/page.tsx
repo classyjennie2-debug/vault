@@ -62,12 +62,16 @@ export default function AdminWalletsPage() {
   const [newNetwork, setNewNetwork] = useState<NetworkType>("TRC20")
   const [newAddress, setNewAddress] = useState("")
   const [filterCoin, setFilterCoin] = useState<string>("all")
+  const [filterStatus, setFilterStatus] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
   const [dropConfirmId, setDropConfirmId] = useState<string | null>(null)
+  const [statusChangeId, setStatusChangeId] = useState<string | null>(null)
+  const [newStatus, setNewStatus] = useState<"active" | "inactive" | "suspended">("active")
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDropping, setIsDropping] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
+  const [isChangingStatus, setIsChangingStatus] = useState(false)
 
   // Fetch wallets from API on mount
   useEffect(() => {
@@ -202,8 +206,48 @@ export default function AdminWalletsPage() {
     }
   }
 
+  const handleChangeStatus = async () => {
+    if (!statusChangeId) return
+
+    setIsChangingStatus(true)
+    setError("")
+
+    try {
+      const res = await fetch("/api/admin/wallets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "changeStatus",
+          wallet: { id: statusChangeId, status: newStatus },
+        }),
+      })
+
+      if (res.ok) {
+        setWalletPool((prev) =>
+          prev.map((w) =>
+            w.id === statusChangeId
+              ? { ...w, status: newStatus }
+              : w
+          )
+        )
+        setStatusChangeId(null)
+        setSuccess("Wallet status updated successfully")
+        setTimeout(() => setSuccess(""), 3000)
+      } else {
+        const data = await res.json()
+        setError(data.error || "Failed to change wallet status")
+      }
+    } catch (err) {
+      console.error("Error changing wallet status:", err)
+      setError("Failed to change wallet status")
+    } finally {
+      setIsChangingStatus(false)
+    }
+  }
+
   const filteredWallets = walletPool.filter((w) => {
     if (filterCoin !== "all" && w.coin !== filterCoin) return false
+    if (filterStatus !== "all" && w.status !== filterStatus) return false
     if (
       searchQuery &&
       !w.address.toLowerCase().includes(searchQuery.toLowerCase())
@@ -214,6 +258,9 @@ export default function AdminWalletsPage() {
 
   const availableWallets = walletPool.filter((w) => !w.assignedTo)
   const assignedWallets = walletPool.filter((w) => w.assignedTo)
+  const activeWallets = walletPool.filter((w) => w.status === "active")
+  const inactiveWallets = walletPool.filter((w) => w.status === "inactive")
+  const suspendedWallets = walletPool.filter((w) => w.status === "suspended")
 
   const statsByMCoin = allCoins.map((coin) => {
     const all = walletPool.filter((w) => w.coin === coin)
@@ -419,6 +466,17 @@ export default function AdminWalletsPage() {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -428,6 +486,10 @@ export default function AdminWalletsPage() {
             getUserName={getUserName}
             onDelete={(id) => setDeleteConfirmId(id)}
             onDrop={(id) => setDropConfirmId(id)}
+            onStatusChange={(id, status) => {
+              setStatusChangeId(id)
+              setNewStatus(status)
+            }}
           />
         </TabsContent>
         <TabsContent value="available" className="mt-4">
@@ -436,6 +498,10 @@ export default function AdminWalletsPage() {
             getUserName={getUserName}
             onDelete={(id) => setDeleteConfirmId(id)}
             onDrop={(id) => setDropConfirmId(id)}
+            onStatusChange={(id, status) => {
+              setStatusChangeId(id)
+              setNewStatus(status)
+            }}
           />
         </TabsContent>
         <TabsContent value="assigned" className="mt-4">
@@ -444,6 +510,10 @@ export default function AdminWalletsPage() {
             getUserName={getUserName}
             onDelete={(id) => setDeleteConfirmId(id)}
             onDrop={(id) => setDropConfirmId(id)}
+            onStatusChange={(id, status) => {
+              setStatusChangeId(id)
+              setNewStatus(status)
+            }}
           />
         </TabsContent>
       </Tabs>
@@ -511,6 +581,55 @@ export default function AdminWalletsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Change Status Dialog */}
+      <Dialog
+        open={!!statusChangeId}
+        onOpenChange={() => setStatusChangeId(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Wallet Status</DialogTitle>
+            <DialogDescription>
+              Select a new status for this wallet address.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <div className="flex flex-col gap-2">
+              <Label>Wallet Status</Label>
+              <Select
+                value={newStatus}
+                onValueChange={(v) => setNewStatus(v as "active" | "inactive" | "suspended")}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setStatusChangeId(null)}
+              disabled={isChangingStatus}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleChangeStatus}
+              disabled={isChangingStatus}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              {isChangingStatus ? "Updating..." : "Update Status"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
         </>
       )}
     </div>
@@ -522,11 +641,13 @@ function WalletTable({
   getUserName,
   onDelete,
   onDrop,
+  onStatusChange,
 }: {
   wallets: WalletAddress[]
   getUserName: (id: string | null) => string | null
   onDelete: (id: string) => void
   onDrop: (id: string) => void
+  onStatusChange: (id: string, status: "active" | "inactive" | "suspended") => void
 }) {
   if (wallets.length === 0) {
     return (
@@ -594,21 +715,29 @@ function WalletTable({
                     </code>
                   </td>
                   <td className="px-4 py-3">
-                    {wallet.assignedTo ? (
+                    <div className="flex items-center gap-2">
                       <Badge
-                        variant="secondary"
-                        className="bg-warning/10 text-warning-foreground text-xs"
+                        variant="outline"
+                        className={`text-xs ${
+                          wallet.status === "active"
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : wallet.status === "inactive"
+                              ? "bg-gray-100 text-gray-700 border-gray-300"
+                              : "bg-red-50 text-red-700 border-red-200"
+                        }`}
                       >
-                        Assigned
+                        {wallet.status.charAt(0).toUpperCase() + wallet.status.slice(1)}
                       </Badge>
-                    ) : (
-                      <Badge
-                        variant="secondary"
-                        className="bg-accent/10 text-accent text-xs"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onStatusChange(wallet.id, wallet.status)}
+                        className="p-0 h-auto text-xs text-muted-foreground hover:text-accent"
+                        title="Change status"
                       >
-                        Available
-                      </Badge>
-                    )}
+                        ⚙️
+                      </Button>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     {wallet.assignedTo ? (
@@ -670,21 +799,18 @@ function WalletTable({
                     {wallet.network}
                   </Badge>
                 </div>
-                {wallet.assignedTo ? (
-                  <Badge
-                    variant="secondary"
-                    className="bg-warning/10 text-warning-foreground text-[10px]"
-                  >
-                    Assigned
-                  </Badge>
-                ) : (
-                  <Badge
-                    variant="secondary"
-                    className="bg-accent/10 text-accent text-[10px]"
-                  >
-                    Available
-                  </Badge>
-                )}
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] ${
+                    wallet.status === "active"
+                      ? "bg-green-50 text-green-700 border-green-200"
+                      : wallet.status === "inactive"
+                        ? "bg-gray-100 text-gray-700 border-gray-300"
+                        : "bg-red-50 text-red-700 border-red-200"
+                  }`}
+                >
+                  {wallet.status.charAt(0).toUpperCase() + wallet.status.slice(1)}
+                </Badge>
               </div>
               <code className="break-all text-xs text-muted-foreground">
                 {wallet.address}
@@ -703,6 +829,15 @@ function WalletTable({
                   </span>
                 )}
                 <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onStatusChange(wallet.id, wallet.status)}
+                    className="h-7 text-xs text-muted-foreground hover:text-accent"
+                    title="Change status"
+                  >
+                    ⚙️ Status
+                  </Button>
                   {wallet.assignedTo && (
                     <Button
                       variant="ghost"

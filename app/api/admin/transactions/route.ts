@@ -99,36 +99,59 @@ export async function POST(req: NextRequest) {
 
     // Execute approval operations
     try {
-      // Update transaction status
-      await run("UPDATE transactions SET status = ? WHERE id = ?", [newStatus, transactionId])
+      console.log(`\n🔄 Processing transaction approval:`, {
+        transactionId,
+        status: transaction.status,
+        type: transaction.type,
+        amount: transaction.amount,
+        userId: transaction.userId,
+        approved
+      })
 
-      // If approving a deposit, add amount to user balance
-      if (approved && transaction.type === "deposit") {
-        try {
-          const userData = await getUserById(transaction.userId)
-          if (!userData) {
-            throw new Error(`User ${transaction.userId} not found for deposit`)
-          }
-
-          const newBalance = userData.balance + transaction.amount
-          await run("UPDATE users SET balance = ? WHERE id = ?", [newBalance, transaction.userId])
-
-          transactionLogger.info('Deposit approved and balance updated', 
-            { transactionId, depositAmount: transaction.amount, newBalance, userId: transaction.userId },
-            user.id
-          )
-        } catch (balanceError) {
-          console.error('Error updating balance for deposit:', balanceError)
-          transactionLogger.error('Balance update failed', balanceError as Error, { transactionId, userId: transaction.userId }, user.id)
-          // Still mark transaction as approved even if balance update fails
-        }
+      // Fetch user data for all transaction types (needed for notification and response)
+      let userData = await getUserById(transaction.userId)
+      if (!userData) {
+        throw new Error(`User ${transaction.userId} not found`)
       }
+
+      // If approving a deposit, add amount to user balance FIRST (before marking as approved)
+      if (approved && transaction.type === "deposit") {
+        console.log(`💰 Processing deposit approval for user ${transaction.userId}, amount: $${transaction.amount}`)
+
+        console.log(`👤 User found - current balance: $${userData.balance}`)
+        const newBalance = userData.balance + transaction.amount
+        console.log(`🧮 Calculating new balance: $${userData.balance} + $${transaction.amount} = $${newBalance}`)
+        
+        // Update the user balance in the database
+        await run("UPDATE users SET balance = ? WHERE id = ?", [newBalance, transaction.userId])
+        console.log(`✅ Balance updated successfully in database. New balance: $${newBalance}`)
+
+        // Update userData with new balance for response
+        userData.balance = newBalance
+
+        transactionLogger.info('Deposit approved and balance updated', 
+          { transactionId, depositAmount: transaction.amount, newBalance, userId: transaction.userId },
+          user.id
+        )
+      } else if (approved && transaction.type !== "deposit") {
+        console.log(`ℹ️  Transaction type is "${transaction.type}", not deposit - skipping balance update`)
+      }
+
+      // Update transaction status AFTER balance is updated (for deposits)
+      await run("UPDATE transactions SET status = ? WHERE id = ?", [newStatus, transactionId])
+      console.log(`✅ Transaction status updated to: ${newStatus}`)
 
       // Create notification for the user
       const title = approved ? "Transaction Approved" : "Transaction Rejected"
-      const message = approved
+      let message = approved
         ? `Your ${transaction.type} of $${transaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} has been approved.`
         : `Your ${transaction.type} of $${transaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} has been rejected${notes ? ': ' + notes : '.'}`
+      
+      // Add balance update info for approved deposits
+      if (approved && transaction.type === "deposit" && userData) {
+        message += ` Your new balance is $${userData.balance.toLocaleString(undefined, { maximumFractionDigits: 2 })}.`
+      }
+      
       const notificationType = approved ? "success" : "error"
 
       try {
@@ -172,6 +195,9 @@ export async function POST(req: NextRequest) {
           type: transaction.type,
           amount: transaction.amount,
           userId: transaction.userId,
+          userName: userData?.name || "User",
+          userEmail: userData?.email || "",
+          userBalance: userData?.balance || 0,
           timeProcessed: new Date().toISOString()
         }
       })
