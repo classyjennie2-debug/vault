@@ -123,7 +123,8 @@ export async function sendVerificationCode(email: string) {
 
   // Check if email configuration is available
   if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    // Email not configured - silently skip (allow signup with in-dev verification)
+    console.warn("⚠️ Email configuration incomplete - code stored in database but email not sent")
+    console.log(`Code for testing: ${code}`)
     return
   }
 
@@ -149,11 +150,21 @@ export async function sendVerificationCode(email: string) {
   }
 
   try {
-    await transporter.sendMail(mailOptions)
-    // Email sent silently - no console output
+    const result = await transporter.sendMail(mailOptions)
+    console.log(`✅ Verification email sent successfully to ${email}`)
+    if (process.env.NODE_ENV === "development") {
+      console.log(`   Code: ${code}`)
+    }
   } catch (error) {
+    console.error("❌ Error sending verification email:")
+    if (error instanceof Error) {
+      console.error(`   Message: ${error.message}`)
+      console.error(`   Code: ${error.name}`)
+    } else {
+      console.error(`   ${JSON.stringify(error)}`)
+    }
     // Don't throw - allow signup to proceed even if email fails
-    // Error is non-critical for signup completion
+    console.log(`Fallback code for testing: ${code}`)
   }
 }
 
