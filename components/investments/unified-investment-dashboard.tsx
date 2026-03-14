@@ -371,10 +371,10 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                       <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Expected Returns</p>
                         <p className="text-xl font-bold text-success">
-                          +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          +${safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
                         <p className="text-xs text-success/70 mt-2">
-                          {totalInvested > 0 && totalReturns >= 0 ? ((totalReturns / Math.max(totalInvested, 1)) * 100).toFixed(1) : '0'}% avg return
+                          {totalInvested > 0 ? ((safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0) / Math.max(totalInvested, 1)) * 100).toFixed(1) : '0'}% avg return
                         </p>
                       </CardContent>
                     </Card>
@@ -383,13 +383,114 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                       <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Total Value</p>
                         <p className="text-xl font-bold text-accent">
-                          ${(totalInvested + totalReturns).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          ${(totalInvested + safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">portfolio balance</p>
                       </CardContent>
                     </Card>
 
 
+                  </div>
+                )}
+
+                {/* Investment Cards - Differentiated View */}
+                {safeInvestments.length > 0 && (
+                  <div className="space-y-4 pt-4">
+                    <div className="flex items-center gap-2 px-2">
+                      <div className="h-1 w-1 rounded-full bg-primary" />
+                      <h3 className="text-lg font-semibold text-card-foreground">Investment Positions</h3>
+                    </div>
+                    <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                      {safeInvestments.map((inv, idx) => {
+                        const progress = calculateProgress(inv.startDate, inv.endDate, inv.status, inv.progressPercentage)
+                        const progressSafe = Math.max(0, Math.min(100, isNaN(progress) ? 0 : progress))
+                        
+                        // Assign unique colors based on index
+                        const colorSchemes = [
+                          { bg: "from-blue-500/20 to-cyan-500/20", border: "border-blue-500/30", text: "text-blue-700 dark:text-blue-300", progress: "from-blue-500 to-cyan-500", icon: "bg-blue-500/20" },
+                          { bg: "from-purple-500/20 to-pink-500/20", border: "border-purple-500/30", text: "text-purple-700 dark:text-purple-300", progress: "from-purple-500 to-pink-500", icon: "bg-purple-500/20" },
+                          { bg: "from-emerald-500/20 to-teal-500/20", border: "border-emerald-500/30", text: "text-emerald-700 dark:text-emerald-300", progress: "from-emerald-500 to-teal-500", icon: "bg-emerald-500/20" },
+                          { bg: "from-amber-500/20 to-orange-500/20", border: "border-amber-500/30", text: "text-amber-700 dark:text-amber-300", progress: "from-amber-500 to-orange-500", icon: "bg-amber-500/20" },
+                          { bg: "from-rose-500/20 to-red-500/20", border: "border-rose-500/30", text: "text-rose-700 dark:text-rose-300", progress: "from-rose-500 to-red-500", icon: "bg-rose-500/20" },
+                          { bg: "from-indigo-500/20 to-blue-500/20", border: "border-indigo-500/30", text: "text-indigo-700 dark:text-indigo-300", progress: "from-indigo-500 to-blue-500", icon: "bg-indigo-500/20" },
+                        ]
+                        const colors = colorSchemes[idx % colorSchemes.length]
+
+                        return (
+                          <Card
+                            key={inv.id}
+                            className={`bg-gradient-to-br ${colors.bg} border-2 ${colors.border} hover:shadow-lg transition-all duration-300 overflow-hidden h-full flex flex-col`}
+                          >
+                            <CardHeader className="pb-3 flex flex-row items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <CardTitle className={`text-base ${colors.text}`}>{inv.planName}</CardTitle>
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                  {formatDate(inv.startDate)} – {formatDate(inv.endDate)}
+                                </p>
+                              </div>
+                              <div className={`flex-shrink-0 h-10 w-10 rounded-lg ${colors.icon} flex items-center justify-center`}>
+                                <DollarSign className={`h-5 w-5 ${colors.text}`} />
+                              </div>
+                            </CardHeader>
+
+                            <CardContent className="space-y-4 flex-1 flex flex-col">
+                              {/* Amount & Profit */}
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10">
+                                  <p className="text-xs text-muted-foreground mb-1">Amount</p>
+                                  <p className={`text-base font-bold ${colors.text}`}>
+                                    ${(inv.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                  </p>
+                                </div>
+                                <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10">
+                                  <p className="text-xs text-muted-foreground mb-1">Profit</p>
+                                  <p className="text-base font-bold text-green-600 dark:text-green-400">
+                                    +${((inv.accumulatedProfit ?? inv.expectedProfit) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Progress Bar */}
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-xs font-semibold text-muted-foreground">Progress</p>
+                                  <p className={`text-sm font-bold ${colors.text}`}>{progressSafe}%</p>
+                                </div>
+                                <div className="relative h-2.5 bg-slate-200/30 dark:bg-slate-700/30 rounded-full overflow-hidden border border-slate-300/20 dark:border-slate-600/20">
+                                  <div
+                                    className={`h-full bg-gradient-to-r ${colors.progress} rounded-full transition-all duration-700 ease-out shadow-lg shadow-current/20`}
+                                    style={{ width: `${progressSafe}%` }}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* ROI */}
+                              <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10 mt-auto">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-1">Simple ROI</p>
+                                    <p className={`text-base font-bold ${colors.text}`}>
+                                      {isNaN(calculateROI(inv)) ? '0' : calculateROI(inv).toFixed(2)}%
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-1">Annualized</p>
+                                    <p className="text-base font-bold text-green-600 dark:text-green-400">
+                                      {isNaN(calculateAnnualizedROI(inv)) ? '0' : calculateAnnualizedROI(inv).toFixed(2)}%
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Status Badge */}
+                              <Badge className={`w-fit capitalize ${colors.text} bg-transparent border border-current/30 hover:bg-current/10 transition-all`}>
+                                {inv.status}
+                              </Badge>
+                            </CardContent>
+                          </Card>
+                        )
+                      })}
+                    </div>
                   </div>
                 )}
 

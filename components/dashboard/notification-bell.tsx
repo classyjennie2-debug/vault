@@ -18,7 +18,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const pendingUpdates = useRef<Set<string>>(new Set())
+  const markedAsReadIds = useRef<Set<string>>(new Set())
 
   const fetchNotifications = async () => {
     try {
@@ -27,17 +27,22 @@ export function NotificationBell() {
       if (response.ok) {
         const data = await response.json()
         
-        // Merge with local state to preserve optimistic updates for pending items
+        // Merge server data with local optimistic updates
+        // Keep any notifications marked as read locally, even if server hasn't synced yet
         setNotifications((prevNotifications) => {
-          const merged = data.map((serverNotif: any) => {
-            const localNotif = prevNotifications.find((n) => n.id === serverNotif.id)
-            // If this notification was recently updated, trust local state over server
-            if (pendingUpdates.current.has(serverNotif.id)) {
-              return localNotif || serverNotif
+          const serverData = data.map((notif: any) => ({
+            ...notif,
+            isRead: Boolean(notif.isRead)
+          }))
+          
+          // For any notifications that were marked as read locally,
+          // keep them as read even if server data shows unread
+          return serverData.map((serverNotif: any) => {
+            if (markedAsReadIds.current.has(serverNotif.id) && !serverNotif.isRead) {
+              return { ...serverNotif, isRead: true }
             }
             return serverNotif
           })
-          return merged
         })
       } else {
         console.error("Failed to fetch notifications")
@@ -49,11 +54,11 @@ export function NotificationBell() {
     }
   }
 
-  // Only fetch on initial mount
+  // Fetch on initial mount and set up polling
   useEffect(() => {
     fetchNotifications()
     
-    // Set up polling to check for new notifications every 30 seconds
+    // Set up polling every 30 seconds to check for new notifications
     const interval = setInterval(() => {
       fetchNotifications()
     }, 30000)
@@ -68,15 +73,15 @@ export function NotificationBell() {
   const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
     
-    // Track this as a pending update
-    pendingUpdates.current.add(id)
+    // Add to locally marked set to prevent state reverting during polling
+    markedAsReadIds.current.add(id)
     
     // Optimistically update local state immediately
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     )
     
-    // Then sync to server
+    // Sync to server
     try {
       const response = await fetch("/api/notifications/" + id + "/read", {
         method: "POST",
@@ -87,19 +92,15 @@ export function NotificationBell() {
       
       if (!response.ok) {
         console.error("Failed to mark notification as read")
-        // If the update failed, refetch to get the correct state
-        pendingUpdates.current.delete(id)
+        // On failure, remove from marked set and refetch
+        markedAsReadIds.current.delete(id)
         await fetchNotifications()
-      } else {
-        // On success, remove from pending after a short delay to avoid polling conflicts
-        setTimeout(() => {
-          pendingUpdates.current.delete(id)
-        }, 2000)
       }
+      // On success, keep it in markedAsReadIds to persist the read state
     } catch (error) {
       console.error("Error marking notification as read:", error)
-      // If there's an error, refetch to get the correct state
-      pendingUpdates.current.delete(id)
+      // On error, remove from marked set and refetch
+      markedAsReadIds.current.delete(id)
       await fetchNotifications()
     }
   }
