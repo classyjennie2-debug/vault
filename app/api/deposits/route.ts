@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
+import { sendAdminNotification } from "@/lib/auth"
 import { createTransaction, run } from "@/lib/db"
+import { getUserById } from "@/lib/db"
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,6 +50,27 @@ export async function POST(req: NextRequest) {
         "/dashboard/transactions"
       ]
     )
+
+    // Send admin notification about new deposit
+    const userData = await getUserById(user.id)
+    const adminEmailHtml = `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #2563eb;">New Deposit Received</h2>
+          <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+          <p><strong>User Name:</strong> ${userData?.name}</p>
+          <p><strong>User Email:</strong> ${userData?.email}</p>
+          <p><strong>Amount:</strong> $${amount.toLocaleString()}</p>
+          <p><strong>Cryptocurrency:</strong> ${coin}</p>
+          <p><strong>Network:</strong> ${network}</p>
+          ${coinAmount ? `<p><strong>Coin Amount:</strong> ${coinAmount} ${coin}</p>` : ""}
+          <p><strong>Status:</strong> Pending Approval</p>
+          <hr />
+          <p style="font-size: 12px; color: #666;">This is an automated notification from Vault Investment Platform</p>
+        </body>
+      </html>
+    `
+    await sendAdminNotification(`New Deposit - ${coin} ${amount} from ${userData?.name}`, adminEmailHtml, "transaction")
 
     return NextResponse.json({ success: true })
   } catch (error) {

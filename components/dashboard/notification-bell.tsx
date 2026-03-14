@@ -19,6 +19,7 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const markedAsReadIds = useRef<Map<string, number>>(new Map()) // id -> timestamp
+  const pollingDisabledUntil = useRef<number>(0) // Timestamp when polling can resume
 
   const fetchNotifications = async () => {
     try {
@@ -35,15 +36,17 @@ export function NotificationBell() {
             isRead: Boolean(notif.isRead)
           }))
           
-          // For any notifications marked as read within the last 10 seconds,
+          // For any notifications marked as read recently,
           // keep them as read even if server still shows unread (API might still be processing)
+          // Grace period is 30 seconds
           return serverData.map((serverNotif: any) => {
             const markedTime = markedAsReadIds.current.get(serverNotif.id)
-            if (markedTime && now - markedTime < 10000 && !serverNotif.isRead) {
+            if (markedTime && now - markedTime < 30000 && !serverNotif.isRead) {
+              // Keep marked as read during grace period
               return { ...serverNotif, isRead: true }
             }
-            // Remove from tracking if server confirms read (10+ seconds have passed)
-            if (markedTime && now - markedTime >= 10000 && serverNotif.isRead) {
+            // Remove from tracking if server confirms read (30+ seconds have passed)
+            if (markedTime && now - markedTime >= 30000 && serverNotif.isRead) {
               markedAsReadIds.current.delete(serverNotif.id)
             }
             return serverNotif
@@ -63,10 +66,13 @@ export function NotificationBell() {
   useEffect(() => {
     fetchNotifications()
     
-    // Set up polling every 30 seconds to check for new notifications
+    // Set up polling every 30 seconds, but skip if polling is disabled
     const interval = setInterval(() => {
-      fetchNotifications()
-    }, 30000)
+      const now = Date.now()
+      if (now >= pollingDisabledUntil.current) {
+        fetchNotifications()
+      }
+    }, 5000) // Check more frequently (every 5 seconds) but may skip if disabled
     
     return () => clearInterval(interval)
   }, [])
@@ -80,6 +86,9 @@ export function NotificationBell() {
     
     // Track when this notification was marked as read
     markedAsReadIds.current.set(id, Date.now())
+    
+    // Disable polling for 15 seconds while the API update is being processed
+    pollingDisabledUntil.current = Date.now() + 15000
     
     // Optimistically update local state immediately
     setNotifications((prev) =>
@@ -97,15 +106,17 @@ export function NotificationBell() {
       
       if (!response.ok) {
         console.error("Failed to mark notification as read")
-        // On failure, remove from tracking and refetch
+        // On failure, remove from tracking, re-enable polling, and refetch
         markedAsReadIds.current.delete(id)
+        pollingDisabledUntil.current = 0
         await fetchNotifications()
       }
-      // On success, leave it in the map so polling won't revert it for 10 seconds
+      // On success, leave polling disabled until grace period expires
     } catch (error) {
       console.error("Error marking notification as read:", error)
-      // On error, remove from tracking and refetch
+      // On error, remove from tracking, re-enable polling, and refetch
       markedAsReadIds.current.delete(id)
+      pollingDisabledUntil.current = 0
       await fetchNotifications()
     }
   }

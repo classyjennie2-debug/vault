@@ -270,11 +270,21 @@ export default function AdminUsersPage() {
                         <p className="mt-0.5 text-[10px] text-muted-foreground">
                           Joined {user.joinedAt}
                         </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          <span className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium ${(user as any).verified ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"}`}>
+                            {(user as any).verified ? "✓ Verified" : "○ Unverified"}
+                          </span>
+                          {(user as any).activeInvestmentsCount > 0 && (
+                            <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-[10px] font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                              {(user as any).activeInvestmentsCount} Active
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Balance and edit */}
-                    <div className="flex items-center gap-3">
+                    {/* Balance, Investments, and Stats */}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
                       {editingUser === user.id ? (
                         <div className="flex items-center gap-2">
                           <div className="flex flex-col gap-1.5">
@@ -327,6 +337,22 @@ export default function AdminUsersPage() {
                               ${user.balance.toLocaleString()}
                             </p>
                           </div>
+                          <div className="hidden text-right sm:block">
+                            <p className="text-xs text-muted-foreground">
+                              Total Invested
+                            </p>
+                            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                              ${((user as any).totalInvested || 0).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="hidden text-right sm:block">
+                            <p className="text-xs text-muted-foreground">
+                              Total Deposits
+                            </p>
+                            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                              ${((user as any).totalDeposits || 0).toLocaleString()}
+                            </p>
+                          </div>
                           <Button
                             variant="outline"
                             size="sm"
@@ -336,7 +362,7 @@ export default function AdminUsersPage() {
                             }}
                           >
                             <Edit3 className="mr-1.5 h-3.5 w-3.5" />
-                            Edit
+                            Edit Balance
                           </Button>
                         </>
                       )}

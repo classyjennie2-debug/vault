@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { v4 as uuidv4 } from "uuid"
 import { getUserByEmail, createUser } from "@/lib/db"
-import { hashPassword, sendVerificationCode } from "@/lib/auth"
+import { hashPassword, sendVerificationCode, sendAdminNotification } from "@/lib/auth"
 
 export async function POST(request: Request) {
   try {
@@ -23,6 +23,22 @@ export async function POST(request: Request) {
 
     // Create user as unverified - always send verification code
     await createUser({ id, name, email, passwordHash, avatar, verified: false })
+
+    // Send admin notification about new signup
+    const adminEmailHtml = `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2 style="color: #2563eb;">New User Signup</h2>
+          <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Status:</strong> Pending Email Verification</p>
+          <hr />
+          <p style="font-size: 12px; color: #666;">This is an automated notification from Vault Investment Platform</p>
+        </body>
+      </html>
+    `
+    await sendAdminNotification(`New User Signup - ${name}`, adminEmailHtml, "signup")
 
     // send verification code to email
     try {

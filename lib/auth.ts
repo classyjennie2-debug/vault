@@ -189,3 +189,44 @@ export async function verifySignupCode(email: string, code: string) {
     return false
   }
 }
+
+// Send admin notification emails
+export async function sendAdminNotification(subject: string, htmlContent: string, type: "signup" | "transaction" = "signup") {
+  const adminEmail = "jenniferstantn2@gmail.com"
+
+  // Check if email configuration is available
+  if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn(`⚠️ Email configuration incomplete - Admin notification for ${type} not sent`)
+    return
+  }
+
+  const nodemailer = await import("nodemailer")
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT || "587"),
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  })
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: adminEmail,
+    subject: subject,
+    html: htmlContent,
+  }
+
+  try {
+    console.log(`📬 Sending admin notification email to ${adminEmail}...`)
+    await transporter.sendMail(mailOptions)
+    console.log(`✅ Admin notification email sent successfully`)
+  } catch (error) {
+    console.error("❌ Error sending admin notification email:")
+    if (error instanceof Error) {
+      console.error(`   Message: ${error.message}`)
+    }
+  }
+}

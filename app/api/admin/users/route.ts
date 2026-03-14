@@ -12,8 +12,42 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    const users = await all("SELECT id, name, email, balance, role, joinedAt, avatar FROM users")
-    return NextResponse.json(users)
+    const users = await all("SELECT id, name, email, balance, role, joinedAt, avatar, verified FROM users")
+    
+    // Enrich user data with investment and transaction information
+    const enrichedUsers = await Promise.all(
+      users.map(async (u: any) => {
+        // Get total invested
+        const investmentResult = await all(
+          "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",[u.id]
+        )
+        const totalInvested = investmentResult?.[0]?.totalInvested || 0
+
+        // Get active investment count
+        const activeInvestmentsResult = await all(
+          "SELECT COUNT(*) as count FROM active_investments WHERE userId = ? AND status = 'active'",
+          [u.id]
+        )
+        const activeInvestmentsCount = activeInvestmentsResult?.[0]?.count || 0
+
+        // Get total deposits approved
+        const depositsResult = await all(
+          "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'approved'",
+          [u.id]
+        )
+        const totalDeposits = depositsResult?.[0]?.totalDeposits || 0
+
+        return {
+          ...u,
+          verified: Boolean(u.verified),
+          totalInvested: Number(totalInvested) || 0,
+          activeInvestmentsCount: Number(activeInvestmentsCount) || 0,
+          totalDeposits: Number(totalDeposits) || 0,
+        }
+      })
+    )
+
+    return NextResponse.json(enrichedUsers)
   } catch (error) {
     console.error("Admin get users error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
