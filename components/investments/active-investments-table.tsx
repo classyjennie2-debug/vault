@@ -316,11 +316,9 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
         <style jsx>{`
           @keyframes slideInProgress {
             from {
-              width: 0;
               opacity: 0;
             }
             to {
-              width: 100%;
               opacity: 1;
             }
           }
