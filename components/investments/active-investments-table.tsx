@@ -39,7 +39,13 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
     }
   }
 
-  const calculateProgress = (startDate: string, endDate: string, status: string): number => {
+  const calculateProgress = (startDate: string, endDate: string, status: string, providedProgress?: number): number => {
+    // If progress is provided from the server calculation, use it
+    if (providedProgress !== undefined && providedProgress >= 0) {
+      return providedProgress
+    }
+    
+    // Fallback to client-side calculation
     if (status === "completed") return 100
     if (status === "withdrawn") return 100
     
@@ -168,18 +174,28 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
                       </TableCell>
                       <TableCell className="max-w-[150px]">
                         <div className="space-y-2">
-                          <div className="relative h-3 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full overflow-hidden shadow-inner">
+                          <div className="relative h-3.5 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full overflow-hidden shadow-inner border border-slate-300/30 dark:border-slate-600/30">
                             <div
-                              className={`h-full bg-gradient-to-r ${getProgressGradient(investment.status)} rounded-full transition-all duration-1000 ease-out shadow-lg group-hover:shadow-xl`}
+                              className={`h-full bg-gradient-to-r ${getProgressGradient(investment.status)} rounded-full transition-all duration-1000 ease-out shadow-lg group-hover:shadow-2xl group-hover:shadow-current/40`}
                               style={{
-                                width: `${Math.max(0, Math.min(100, (investment as any).progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status)))}%`,
+                                width: `${Math.max(0, Math.min(100, investment.progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status, investment.progressPercentage)))}%`,
                                 animation: `slideInProgress 0.8s ease-out ${idx * 0.1}s both`,
                                 animationDelay: `${idx * 50}ms`,
                               }}
                             />
+                            {/* Shimmer effect for active progress */}
+                            {investment.status === "active" && Math.max(0, Math.min(100, investment.progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status, investment.progressPercentage))) < 100 && (
+                              <div
+                                className="absolute top-0 h-full w-8 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full opacity-60 animate-pulse"
+                                style={{
+                                  left: `${Math.max(0, Math.min(100, investment.progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status, investment.progressPercentage)))}%`,
+                                  animation: "slideShimmer 2s infinite",
+                                }}
+                              />
+                            )}
                           </div>
-                          <span className="text-xs text-muted-foreground font-bold">
-                            {Math.max(0, Math.min(100, (investment as any).progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status))).toFixed(0)}%
+                          <span className="text-xs text-muted-foreground font-bold group-hover:text-card-foreground transition-colors">
+                            {Math.max(0, Math.min(100, investment.progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status, investment.progressPercentage))).toFixed(0)}%
                           </span>
                         </div>
                       </TableCell>
@@ -266,19 +282,29 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-xs text-muted-foreground font-medium">Progress</p>
-                      <p className="text-sm font-bold text-muted-foreground">
-                        {Math.max(0, Math.min(100, (investment as any).progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status))).toFixed(0)}%
+                      <p className="text-sm font-bold text-card-foreground">
+                        {Math.max(0, Math.min(100, investment.progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status, investment.progressPercentage))).toFixed(0)}%
                       </p>
                     </div>
-                    <div className="relative h-3 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full overflow-hidden shadow-inner">
+                    <div className="relative h-3.5 bg-gradient-to-r from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 rounded-full overflow-hidden shadow-inner border border-slate-300/30 dark:border-slate-600/30">
                       <div
-                        className={`h-full bg-gradient-to-r ${getProgressGradient(investment.status)} rounded-full transition-all duration-1000 ease-out shadow-lg`}
+                        className={`h-full bg-gradient-to-r ${getProgressGradient(investment.status)} rounded-full transition-all duration-1000 ease-out shadow-lg hover:shadow-2xl hover:shadow-current/40`}
                         style={{
-                          width: `${Math.max(0, Math.min(100, (investment as any).progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status)))}%`,
+                          width: `${Math.max(0, Math.min(100, investment.progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status, investment.progressPercentage)))}%`,
                           animation: `slideInProgress 0.8s ease-out ${idx * 0.1}s both`,
                           animationDelay: `${idx * 50}ms`,
                         }}
                       />
+                      {/* Shimmer effect for active progress */}
+                      {investment.status === "active" && Math.max(0, Math.min(100, investment.progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status, investment.progressPercentage))) < 100 && (
+                        <div
+                          className="absolute top-0 h-full w-8 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full opacity-60 animate-pulse"
+                          style={{
+                            left: `${Math.max(0, Math.min(100, investment.progressPercentage ?? calculateProgress(investment.startDate, investment.endDate, investment.status, investment.progressPercentage)))}%`,
+                            animation: "slideShimmer 2s infinite",
+                          }}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -296,6 +322,19 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
             to {
               width: 100%;
               opacity: 1;
+            }
+          }
+          @keyframes slideShimmer {
+            0% {
+              transform: translateX(-100%);
+              opacity: 0;
+            }
+            50% {
+              opacity: 0.6;
+            }
+            100% {
+              transform: translateX(140px);
+              opacity: 0;
             }
           }
         `}</style>

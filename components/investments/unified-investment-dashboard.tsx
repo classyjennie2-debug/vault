@@ -18,6 +18,7 @@ import {
 import { InvestmentForm } from "@/components/investments/investment-form"
 import { InvestmentCalculator } from "@/components/investments/investment-calculator"
 import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
+import { PortfolioPerformanceChart } from "@/components/investments/portfolio-performance-chart"
 import {
   Shield,
   TrendingUp,
@@ -44,7 +45,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
   const [activeTab, setActiveTab] = useState("plans")
   const router = useRouter()
 
-  const calculateProgress = (startDate: string, endDate: string, status: string): number => {
+  const calculateProgress = (startDate: string, endDate: string, status: string, providedProgress?: number): number => {
+    // If progress is provided from the server calculation, use it
+    if (providedProgress !== undefined && providedProgress >= 0) {
+      return providedProgress
+    }
+    
+    // Fallback to client-side calculation
     if (status === "completed") return 100
     if (status === "withdrawn") return 100
     
@@ -428,7 +435,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                         <p className="text-xl font-bold text-orange-600 group-hover:scale-105 transition-transform duration-300 origin-left">
                           {Math.round(
                             safeInvestments.length > 0
-                              ? safeInvestments.reduce((sum, inv) => sum + calculateProgress(inv.startDate, inv.endDate, inv.status), 0) / safeInvestments.length
+                              ? safeInvestments.reduce((sum, inv) => sum + calculateProgress(inv.startDate, inv.endDate, inv.status, inv.progressPercentage), 0) / safeInvestments.length
                               : 0
                           )}%
                         </p>
@@ -447,7 +454,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                     </div>
                     <div className="grid gap-4 sm:gap-5 grid-cols-1 lg:grid-cols-2">
                       {safeInvestments.map((inv) => {
-                        const progress = calculateProgress(inv.startDate, inv.endDate, inv.status)
+                        const progress = calculateProgress(inv.startDate, inv.endDate, inv.status, inv.progressPercentage)
                         const progressColor =
                           progress >= 75
                             ? "from-green-500 to-emerald-500"
@@ -487,19 +494,25 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                                   </p>
                                 </div>
                                 <div className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-colors duration-300 border border-white/5 group-hover:border-white/10">
-                                  <p className="text-xs text-muted-foreground mb-1">Expected Profit</p>
+                                  <p className="text-xs text-muted-foreground mb-1">{inv.accumulatedProfit ? "Accumulated" : "Expected"} Profit</p>
                                   <p className="text-base sm:text-lg font-bold text-green-600">
-                                    +${(inv.expectedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                    +${((inv.accumulatedProfit ?? inv.expectedProfit) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                   </p>
+                                  {inv.accumulatedProfit && inv.accumulatedProfit !== inv.expectedProfit && (
+                                    <p className="text-xs text-muted-foreground mt-1">Expected: +${(inv.expectedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                                  )}
                                 </div>
                               </div>
 
                               {/* Total Value */}
                               <div className="bg-gradient-to-r from-primary/15 to-accent/15 hover:from-primary/25 hover:to-accent/25 rounded-lg p-3 border border-primary/20 transition-all duration-300">
-                                <p className="text-xs text-muted-foreground mb-1">Total Value at Maturity</p>
+                                <p className="text-xs text-muted-foreground mb-1">Current Value</p>
                                 <p className="text-lg font-bold text-card-foreground">
-                                  ${((inv.amount || 0) + (inv.expectedProfit || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                  ${((inv.amount || 0) + (inv.accumulatedProfit ?? inv.expectedProfit || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                 </p>
+                                {inv.accumulatedProfit && inv.accumulatedProfit !== inv.expectedProfit && (
+                                  <p className="text-xs text-muted-foreground mt-1">At maturity: ${((inv.amount || 0) + (inv.expectedProfit || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                                )}
                               </div>
 
                               {/* Progress Bar */}
@@ -641,26 +654,19 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                   </Card>
                 </div>
 
-                {/* Portfolio Performance Chart Placeholder */}
+                {/* Portfolio Performance Chart */}
                 <Card className="bg-gradient-to-br from-card/80 to-card/40 border-border/50 hover:shadow-lg transition-all duration-300">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <TrendingUp className="h-5 w-5 text-accent" />
                       Portfolio Performance
                     </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Real-time portfolio value and profit accumulation over time
+                    </p>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-64 flex items-center justify-center bg-gradient-to-br from-accent/5 to-primary/5 rounded-lg border-2 border-dashed border-accent/20 hover:border-accent/40 transition-colors duration-300">
-                      <div className="text-center px-4">
-                        <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-accent/10 mb-4">
-                          <BarChart3 className="h-7 w-7 text-accent/60" />
-                        </div>
-                        <p className="text-muted-foreground font-medium">Portfolio performance chart coming soon</p>
-                        <p className="text-sm text-muted-foreground/70 mt-2">
-                          Track your investment growth over time with detailed analytics
-                        </p>
-                      </div>
-                    </div>
+                    <PortfolioPerformanceChart investments={safeInvestments} />
                   </CardContent>
                 </Card>
 
