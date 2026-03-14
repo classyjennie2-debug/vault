@@ -164,7 +164,7 @@ export default function AdminUsersPage() {
     }
   }
 
-  const totalAUM = users.reduce((sum, u) => sum + u.balance, 0)
+  const totalAUM = users.reduce((sum, u) => sum + ((u as any).totalBalance || u.balance), 0)
 
   return (
     <div className="flex flex-col gap-6">

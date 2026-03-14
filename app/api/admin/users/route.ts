@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { setUserBalance, getUserById, all, deleteUser } from "@/lib/db"
+import { setUserBalance, getUserById, all, deleteUser, run } from "@/lib/db"
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    const users = await all("SELECT id, name, email, balance, role, joinedAt, avatar, verified FROM users")
+    const users = await all("SELECT id, name, email, balance, role, joinedAt, avatar, verified, lastLogin FROM users")
     
     // Enrich user data with investment and transaction information
     const enrichedUsers = await Promise.all(
@@ -37,12 +37,24 @@ export async function GET() {
         )
         const totalDeposits = depositsResult?.[0]?.totalDeposits || 0
 
+        // Get accumulated profit
+        const profitResult = await all(
+          "SELECT SUM(accumulatedProfit) as totalProfit FROM active_investments WHERE userId = ?",
+          [u.id]
+        )
+        const totalProfit = profitResult?.[0]?.totalProfit || 0
+
+        // Total balance = cash balance + invested + profit
+        const totalBalance = Number(u.balance || 0) + Number(totalInvested || 0) + Number(totalProfit || 0)
+
         return {
           ...u,
           verified: Boolean(u.verified),
           totalInvested: Number(totalInvested) || 0,
           activeInvestmentsCount: Number(activeInvestmentsCount) || 0,
           totalDeposits: Number(totalDeposits) || 0,
+          totalProfit: Number(totalProfit) || 0,
+          totalBalance: totalBalance,
         }
       })
     )
@@ -64,10 +76,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    const { userId, balance } = await request.json()
+    const { userId, balance, name, email, role } = await request.json()
 
-    if (!userId || balance === undefined || balance < 0) {
-      return NextResponse.json({ error: "Invalid data" }, { status: 400 })
+    if (!userId) {
+      return NextResponse.json({ error: "User ID required" }, { status: 400 })
     }
 
     const targetUser = await getUserById(userId)
@@ -75,9 +87,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    await setUserBalance(userId, balance)
+    // Update provided fields
+    let updateQuery = "UPDATE users SET "
+    const updates: any[] = []
+    const params: any[] = []
 
-    return NextResponse.json({ message: "User balance updated successfully" })
+    if (balance !== undefined && balance >= 0) {
+      updates.push("balance = ?")
+      params.push(balance)
+    }
+    if (name) {
+      updates.push("name = ?")
+      params.push(name)
+    }
+    if (email) {
+      updates.push("email = ?")
+      params.push(email)
+    }
+    if (role && (role === "user" || role === "admin")) {
+      updates.push("role = ?")
+      params.push(role)
+    }
+
+    if (updates.length === 0) {
+      return NextResponse.json({ error: "No valid fields to update" }, { status: 400 })
+    }
+
+    updateQuery += updates.join(", ") + " WHERE id = ?"
+    params.push(userId)
+
+    await run(updateQuery, params)
+
+    return NextResponse.json({ message: "User updated successfully" })
   } catch (error) {
     console.error("Admin update user error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

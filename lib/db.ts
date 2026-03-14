@@ -50,7 +50,8 @@ async function initializePostgres() {
           role TEXT NOT NULL DEFAULT 'user',
           balance REAL NOT NULL DEFAULT 0,
           joinedAt TEXT NOT NULL,
-          avatar TEXT NOT NULL
+          avatar TEXT NOT NULL,
+          lastLogin TEXT
         )`,
         `CREATE TABLE IF NOT EXISTS transactions (
           id TEXT PRIMARY KEY,
@@ -115,6 +116,15 @@ async function initializePostgres() {
           code TEXT NOT NULL,
           expiresAt TEXT NOT NULL,
           used INTEGER NOT NULL DEFAULT 0
+        )`,
+        `CREATE TABLE IF NOT EXISTS activity_log (
+          id TEXT PRIMARY KEY,
+          userId TEXT NOT NULL,
+          type TEXT NOT NULL,
+          description TEXT NOT NULL,
+          metadata TEXT,
+          timestamp TEXT NOT NULL,
+          FOREIGN KEY (userId) REFERENCES users(id)
         )`
       ]
 
@@ -182,7 +192,8 @@ function getDb(): Database.Database {
       role TEXT NOT NULL DEFAULT 'user',
       balance REAL NOT NULL DEFAULT 0,
       joinedAt TEXT NOT NULL,
-      avatar TEXT NOT NULL
+      avatar TEXT NOT NULL,
+      lastLogin TEXT
     );
 
     CREATE TABLE IF NOT EXISTS transactions (
@@ -254,6 +265,16 @@ function getDb(): Database.Database {
       expiresAt TEXT NOT NULL,
       used INTEGER NOT NULL DEFAULT 0
     );
+
+    CREATE TABLE IF NOT EXISTS activity_log (
+      id TEXT PRIMARY KEY,
+      userId TEXT NOT NULL,
+      type TEXT NOT NULL,
+      description TEXT NOT NULL,
+      metadata TEXT,
+      timestamp TEXT NOT NULL,
+      FOREIGN KEY (userId) REFERENCES users(id)
+    );
   `)
 
   // Seed data on first run
@@ -268,6 +289,11 @@ function getDb(): Database.Database {
     const walletTable = _db.prepare("PRAGMA table_info(wallet_addresses)").all() as any[]
     if (!walletTable.some(col => col.name === 'status')) {
       _db.prepare("ALTER TABLE wallet_addresses ADD COLUMN status TEXT NOT NULL DEFAULT 'active'").run()
+    }
+    
+    const usersTable = _db.prepare("PRAGMA table_info(users)").all() as any[]
+    if (!usersTable.some(col => col.name === 'lastLogin')) {
+      _db.prepare("ALTER TABLE users ADD COLUMN lastLogin TEXT").run()
     }
   } catch (err) {
     console.warn('Migration warning:', err)
@@ -539,7 +565,7 @@ export async function getInvestmentPlanById(planId: string) {
 }
 
 export async function getUserTransactions(userId: string) {
-  return all("SELECT * FROM transactions WHERE userId = ?", [userId])
+  return all("SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC", [userId])
 }
 
 export async function getUserNotifications(userId: string) {
@@ -551,32 +577,68 @@ export async function markNotificationAsRead(notificationId: string): Promise<vo
 }
 
 export async function getRecentActivities(userId: string) {
+  // Get transactions - newest first
   const transactions = await all(
-    "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 5",
+    "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 10",
+    [userId]
+  )
+  
+  // Get activity log entries
+  const activityLogs = await all(
+    "SELECT * FROM activity_log WHERE userId = ? ORDER BY timestamp DESC LIMIT 10",
     [userId]
   )
   
   // Transform transactions to activities format
-  return transactions.map((tx: any) => ({
+  const txActivities = transactions.map((tx: any) => ({
     id: tx.id,
     userId: tx.userId,
     type: tx.type,
-    title: getTitleFromType(tx.type),
+    title: getTitleFromType(tx.type, tx.status),
     message: tx.description,
     timestamp: tx.date,
     icon: getIconFromType(tx.type),
   }))
+
+  // Transform activity logs
+  const logActivities = activityLogs.map((log: any) => ({
+    id: log.id,
+    userId: log.userId,
+    type: log.type,
+    title: getTitleFromActivityLog(log.type),
+    message: log.description,
+    timestamp: log.timestamp,
+    icon: getIconFromActivityLog(log.type),
+  }))
+
+  // Merge and sort by timestamp, newest first, limit to 10
+  const allActivities = [...txActivities, ...logActivities]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 10)
+
+  return allActivities
 }
 
-function getTitleFromType(type: string): string {
+function getTitleFromType(type: string, status?: string): string {
   const titles: { [key: string]: string } = {
     investment: "Investment Started",
     profit: "Profit Credited",
-    deposit: "Deposit Approved",
+    deposit: status === "pending" ? "Deposit Initiated" : "Deposit Approved",
     withdrawal: "Withdrawal Processed",
     return: "Return Credited",
   }
   return titles[type] || "Transaction"
+}
+
+function getTitleFromActivityLog(type: string): string {
+  const titles: { [key: string]: string } = {
+    login: "Login",
+    logout: "Logout",
+    profile_update: "Profile Updated",
+    deposit_submitted: "Deposit Submitted",
+    withdrawal_submitted: "Withdrawal Submitted",
+  }
+  return titles[type] || "Activity"
 }
 
 function getIconFromType(type: string): string {
@@ -589,6 +651,18 @@ function getIconFromType(type: string): string {
   }
   return icons[type] || "Zap"
 }
+
+function getIconFromActivityLog(type: string): string {
+  const icons: { [key: string]: string } = {
+    login: "LogIn",
+    logout: "LogOut",
+    profile_update: "Settings",
+    deposit_submitted: "ArrowDown",
+    withdrawal_submitted: "ArrowUp",
+  }
+  return icons[type] || "Activity"
+}
+
 export async function getUserStats(userId: string) {
   const totalInvestedRow: { sum: number } | undefined = await get(
     "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'",
@@ -652,7 +726,7 @@ export async function getUserActiveInvestments(userId: string): Promise<ActiveIn
     startDate: row.startDate || row.startdate,
     endDate: row.endDate || row.enddate,
     status: row.status,
-    progressPercentage: row.progressPercentage || row.progresspercentage,
+    progressPercentage: row.progressPercentage !== undefined ? row.progressPercentage : (row.progresspercentage !== undefined ? row.progresspercentage : 0),
   }))
 }
 
@@ -864,6 +938,36 @@ export async function createNotification(notification: {
     ]
   )
   return notificationId
+}
+
+export async function logActivity(userId: string, type: string, description: string, metadata?: any) {
+  const activityId = `act_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  await run(
+    "INSERT INTO activity_log (id, userId, type, description, metadata, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
+    [
+      activityId,
+      userId,
+      type,
+      description,
+      metadata ? JSON.stringify(metadata) : null,
+      new Date().toISOString(),
+    ]
+  )
+  return activityId
+}
+
+export async function updateLastLogin(userId: string) {
+  await run("UPDATE users SET lastLogin = ? WHERE id = ?", [
+    new Date().toISOString(),
+    userId,
+  ])
+}
+
+export async function getUserActivity(userId: string, limit: number = 20) {
+  return all(
+    "SELECT * FROM activity_log WHERE userId = ? ORDER BY timestamp DESC LIMIT ?",
+    [userId, limit]
+  )
 }
 
 export async function deleteUser(userId: string): Promise<void> {

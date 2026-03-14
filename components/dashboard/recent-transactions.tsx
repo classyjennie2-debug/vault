@@ -85,6 +85,13 @@ export function RecentTransactions() {
             const bgColor = typeBgColors[tx.type as keyof typeof typeBgColors] || "bg-primary/10 text-primary"
             const isPositive = tx.type === "deposit" || tx.type === "return"
             const statusColor = statusColors[tx.status as keyof typeof statusColors] || statusColors.approved
+            
+            // Display deposit status differently: initiated vs approved
+            let displayStatus = tx.status
+            if (tx.type === "deposit" && tx.status === "pending") {
+              displayStatus = "initiated"
+            }
+            
             return (
               <div
                 key={tx.id}
@@ -112,7 +119,7 @@ export function RecentTransactions() {
                   <Badge
                     className={`text-[8px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 font-semibold border ${statusColor}`}
                   >
-                    {tx.status}
+                    {displayStatus}
                   </Badge>
                 </div>
               </div>

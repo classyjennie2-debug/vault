@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getUserByEmail } from "@/lib/db"
+import { getUserByEmail, updateLastLogin, logActivity } from "@/lib/db"
 import { verifyPassword, issueToken, sendVerificationCode } from "@/lib/auth"
 import { cookies } from "next/headers"
 
@@ -37,6 +37,15 @@ export async function POST(request: Request) {
       requiresVerification: true,
       email: user.email
     }, { status: 403 })
+  }
+
+  // Record login activity
+  try {
+    await updateLastLogin(user.id)
+    await logActivity(user.id, "login", "User logged in")
+  } catch (err) {
+    console.error("Failed to log login activity:", err)
+    // Don't fail the login if logging fails
   }
 
   const token = issueToken({ id: user.id, email: user.email, role: user.role })
