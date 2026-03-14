@@ -78,10 +78,8 @@ export function NotificationBell() {
         console.error("Failed to mark notification as read")
         // If the update failed, refetch to get the correct state
         await fetchNotifications()
-      } else {
-        // After successful backend update, refetch to confirm
-        await fetchNotifications()
       }
+      // On success, just trust the optimistic update - don't refetch
     } catch (error) {
       console.error("Error marking notification as read:", error)
       // If there's an error, refetch to get the correct state

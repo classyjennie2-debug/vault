@@ -223,15 +223,26 @@ export async function POST(req: NextRequest) {
         }
       })
     } catch (error: any) {
+      const errorMessage = error?.message || String(error) || "Unknown error"
+      const errorStack = error?.stack || ""
+      
       transactionLogger.error('Transaction approval error', error, { transactionId }, user.id)
       console.error('❌ Approval execution failed:', {
-        error: error?.message || error,
+        message: errorMessage,
         transactionId,
-        stack: error?.stack,
+        stack: errorStack,
       })
+      
       logAuditEvent(user.id, 'approve_transaction', 'transaction', 'failure')
-      const appError = mapErrorToResponse(error)
-      return createErrorResponse(appError)
+      
+      // Return more detailed error response
+      return NextResponse.json({
+        success: false,
+        error: {
+          message: errorMessage || 'Failed to process transaction approval',
+          type: error?.constructor?.name || 'UnknownError'
+        }
+      }, { status: 500 })
     }
   } catch (error: unknown) {
     console.error("❌ Admin approval POST error:", {
