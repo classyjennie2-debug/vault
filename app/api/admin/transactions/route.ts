@@ -108,15 +108,19 @@ export async function POST(req: NextRequest) {
         approved
       })
 
-      // Fetch user data for all transaction types (needed for notification and response)
-      let userData = await getUserById(transaction.userId)
-      if (!userData) {
-        throw new Error(`User ${transaction.userId} not found`)
-      }
+      // Track response data
+      let responseUserBalance = 0
+      let responseUserName = "User"
+      let responseUserEmail = ""
 
       // If approving a deposit, add amount to user balance FIRST (before marking as approved)
       if (approved && transaction.type === "deposit") {
         console.log(`💰 Processing deposit approval for user ${transaction.userId}, amount: $${transaction.amount}`)
+        
+        const userData = await getUserById(transaction.userId)
+        if (!userData) {
+          throw new Error(`User ${transaction.userId} not found for deposit`)
+        }
 
         console.log(`👤 User found - current balance: $${userData.balance}`)
         const newBalance = userData.balance + transaction.amount
@@ -126,8 +130,10 @@ export async function POST(req: NextRequest) {
         await run("UPDATE users SET balance = ? WHERE id = ?", [newBalance, transaction.userId])
         console.log(`✅ Balance updated successfully in database. New balance: $${newBalance}`)
 
-        // Update userData with new balance for response
-        userData.balance = newBalance
+        // Store for response
+        responseUserBalance = newBalance
+        responseUserName = userData.name
+        responseUserEmail = userData.email
 
         transactionLogger.info('Deposit approved and balance updated', 
           { transactionId, depositAmount: transaction.amount, newBalance, userId: transaction.userId },
@@ -135,6 +141,21 @@ export async function POST(req: NextRequest) {
         )
       } else if (approved && transaction.type !== "deposit") {
         console.log(`ℹ️  Transaction type is "${transaction.type}", not deposit - skipping balance update`)
+        // For non-deposits, still fetch user info for response
+        const userData = await getUserById(transaction.userId)
+        if (userData) {
+          responseUserName = userData.name
+          responseUserEmail = userData.email
+          responseUserBalance = userData.balance
+        }
+      } else if (!approved) {
+        // For rejections, still fetch user info for response
+        const userData = await getUserById(transaction.userId)
+        if (userData) {
+          responseUserName = userData.name
+          responseUserEmail = userData.email
+          responseUserBalance = userData.balance
+        }
       }
 
       // Update transaction status AFTER balance is updated (for deposits)
@@ -148,8 +169,8 @@ export async function POST(req: NextRequest) {
         : `Your ${transaction.type} of $${transaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} has been rejected${notes ? ': ' + notes : '.'}`
       
       // Add balance update info for approved deposits
-      if (approved && transaction.type === "deposit" && userData) {
-        message += ` Your new balance is $${userData.balance.toLocaleString(undefined, { maximumFractionDigits: 2 })}.`
+      if (approved && transaction.type === "deposit" && responseUserBalance > 0) {
+        message += ` Your new balance is $${responseUserBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}.`
       }
       
       const notificationType = approved ? "success" : "error"
@@ -195,9 +216,9 @@ export async function POST(req: NextRequest) {
           type: transaction.type,
           amount: transaction.amount,
           userId: transaction.userId,
-          userName: userData?.name || "User",
-          userEmail: userData?.email || "",
-          userBalance: userData?.balance || 0,
+          userName: responseUserName,
+          userEmail: responseUserEmail,
+          userBalance: responseUserBalance,
           timeProcessed: new Date().toISOString()
         }
       })
