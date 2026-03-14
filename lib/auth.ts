@@ -121,10 +121,15 @@ export async function sendVerificationCode(email: string) {
     expiresAt,
   })
 
+  console.log(`📧 Generating verification code for ${email}: ${code}`)
+
   // Check if email configuration is available
   if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn("⚠️ Email configuration incomplete - code stored in database but email not sent")
-    console.log(`Code for testing: ${code}`)
+    console.warn("⚠️ Email configuration incomplete")
+    console.warn(`   EMAIL_HOST: ${process.env.EMAIL_HOST ? "✓" : "✗"}`)
+    console.warn(`   EMAIL_USER: ${process.env.EMAIL_USER ? "✓" : "✗"}`)
+    console.warn(`   EMAIL_PASS: ${process.env.EMAIL_PASS ? "✓" : "✗"}`)
+    console.log(`Fallback code for testing: ${code}`)
     return
   }
 
@@ -144,26 +149,30 @@ export async function sendVerificationCode(email: string) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: "Your Verification Code",
+    subject: "Your Vault Verification Code",
     text: `Your verification code is: ${code}. It expires in 10 minutes.`,
     html: `<p>Your verification code is: <strong>${code}</strong></p><p>It expires in 10 minutes.</p>`,
   }
 
   try {
+    console.log(`📬 Sending email to ${email} via ${process.env.EMAIL_HOST}...`)
     const result = await transporter.sendMail(mailOptions)
     console.log(`✅ Verification email sent successfully to ${email}`)
-    if (process.env.NODE_ENV === "development") {
-      console.log(`   Code: ${code}`)
-    }
+    console.log(`   Response: ${JSON.stringify(result)}`)
   } catch (error) {
     console.error("❌ Error sending verification email:")
+    console.error(`   To: ${email}`)
+    console.error(`   From: ${process.env.EMAIL_USER}`)
+    console.error(`   Host: ${process.env.EMAIL_HOST}`)
+    console.error(`   Port: ${process.env.EMAIL_PORT}`)
     if (error instanceof Error) {
       console.error(`   Message: ${error.message}`)
       console.error(`   Code: ${error.name}`)
+      if ('code' in error) console.error(`   Error Code: ${(error as any).code}`)
+      if ('command' in error) console.error(`   SMTP Command: ${(error as any).command}`)
     } else {
       console.error(`   ${JSON.stringify(error)}`)
     }
-    // Don't throw - allow signup to proceed even if email fails
     console.log(`Fallback code for testing: ${code}`)
   }
 }

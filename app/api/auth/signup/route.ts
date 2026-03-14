@@ -21,19 +21,16 @@ export async function POST(request: Request) {
       .join("")
       .toUpperCase()
 
-    // In development, auto-verify. In production, require email verification
-    const verified = process.env.NODE_ENV === "development"
-    await createUser({ id, name, email, passwordHash, avatar, verified })
+    // Create user as unverified - always send verification code
+    await createUser({ id, name, email, passwordHash, avatar, verified: false })
 
-    // send verification code to email (unless already verified in dev)
-    if (!verified) {
-      try {
-        await sendVerificationCode(email)
-      } catch (emailError) {
-        console.error("Failed to send verification email:", emailError)
-        // Still allow signup - user can request code resend later
-        // Return success so user can proceed to verification step
-      }
+    // send verification code to email
+    try {
+      await sendVerificationCode(email)
+    } catch (emailError) {
+      console.error("Failed to send verification email:", emailError)
+      // Still allow signup - user can request code resend later
+      // Return success so user can proceed to verification step
     }
 
     return NextResponse.json({ success: true })
