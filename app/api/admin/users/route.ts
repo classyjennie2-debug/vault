@@ -17,45 +17,79 @@ export async function GET() {
     // Enrich user data with investment and transaction information
     const enrichedUsers = await Promise.all(
       users.map(async (u: any) => {
-        // Get total invested
-        const investmentResult = await all(
-          "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",
-          [u.id]
-        )
-        const totalInvested = investmentResult?.[0]?.totalInvested || 0
+        try {
+          // Get total invested
+          let totalInvested = 0
+          try {
+            const investmentResult = await all(
+              "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",
+              [u.id]
+            )
+            totalInvested = investmentResult?.[0]?.totalInvested || 0
+          } catch (err) {
+            console.warn(`Failed to get investments for user ${u.id}:`, err)
+          }
 
-        // Get active investment count
-        const activeInvestmentsResult = await all(
-          "SELECT COUNT(*) as count FROM active_investments WHERE userId = ? AND status = 'active'",
-          [u.id]
-        )
-        const activeInvestmentsCount = activeInvestmentsResult?.[0]?.count || 0
+          // Get active investment count
+          let activeInvestmentsCount = 0
+          try {
+            const activeInvestmentsResult = await all(
+              "SELECT COUNT(*) as count FROM active_investments WHERE userId = ? AND status = 'active'",
+              [u.id]
+            )
+            activeInvestmentsCount = activeInvestmentsResult?.[0]?.count || 0
+          } catch (err) {
+            console.warn(`Failed to get active investment count for user ${u.id}:`, err)
+          }
 
-        // Get total deposits approved
-        const depositsResult = await all(
-          "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'approved'",
-          [u.id]
-        )
-        const totalDeposits = depositsResult?.[0]?.totalDeposits || 0
+          // Get total deposits approved
+          let totalDeposits = 0
+          try {
+            const depositsResult = await all(
+              "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'approved'",
+              [u.id]
+            )
+            totalDeposits = depositsResult?.[0]?.totalDeposits || 0
+          } catch (err) {
+            console.warn(`Failed to get deposits for user ${u.id}:`, err)
+          }
 
-        // Get accumulated profit (calculated from expectedProfit * progressPercentage)
-        const profitResult = await all(
-          "SELECT SUM((expectedProfit * progressPercentage) / 100) as totalProfit FROM active_investments WHERE userId = ?",
-          [u.id]
-        )
-        const totalProfit = profitResult?.[0]?.totalProfit || 0
+          // Get accumulated profit (calculated from expectedProfit * progressPercentage)
+          let totalProfit = 0
+          try {
+            const profitResult = await all(
+              "SELECT SUM((expectedProfit * progressPercentage) / 100) as totalProfit FROM active_investments WHERE userId = ?",
+              [u.id]
+            )
+            totalProfit = profitResult?.[0]?.totalProfit || 0
+          } catch (err) {
+            console.warn(`Failed to get profit for user ${u.id}:`, err)
+          }
 
-        // Total balance = cash balance + invested + profit
-        const totalBalance = Number(u.balance || 0) + Number(totalInvested || 0) + Number(totalProfit || 0)
+          // Total balance = cash balance + invested + profit
+          const totalBalance = Number(u.balance || 0) + Number(totalInvested || 0) + Number(totalProfit || 0)
 
-        return {
-          ...u,
-          verified: Boolean(u.verified),
-          totalInvested: Number(totalInvested) || 0,
-          activeInvestmentsCount: Number(activeInvestmentsCount) || 0,
-          totalDeposits: Number(totalDeposits) || 0,
-          totalProfit: Number(totalProfit) || 0,
-          totalBalance: totalBalance,
+          return {
+            ...u,
+            verified: Boolean(u.verified),
+            totalInvested: Number(totalInvested) || 0,
+            activeInvestmentsCount: Number(activeInvestmentsCount) || 0,
+            totalDeposits: Number(totalDeposits) || 0,
+            totalProfit: Number(totalProfit) || 0,
+            totalBalance: totalBalance,
+          }
+        } catch (innerErr) {
+          console.error(`Error enriching user ${u.id}:`, innerErr)
+          // Return basic user data if enrichment fails
+          return {
+            ...u,
+            verified: Boolean(u.verified),
+            totalInvested: 0,
+            activeInvestmentsCount: 0,
+            totalDeposits: 0,
+            totalProfit: 0,
+            totalBalance: Number(u.balance || 0),
+          }
         }
       })
     )
@@ -63,7 +97,7 @@ export async function GET() {
     return NextResponse.json(enrichedUsers)
   } catch (error) {
     console.error("Admin get users error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "Internal server error", details: String(error) }, { status: 500 })
   }
 }
 
