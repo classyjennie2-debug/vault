@@ -18,6 +18,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [lastFetchTime, setLastFetchTime] = useState(0)
 
   const fetchNotifications = async () => {
     try {
@@ -26,6 +27,7 @@ export function NotificationBell() {
       if (response.ok) {
         const data = await response.json()
         setNotifications(data)
+        setLastFetchTime(Date.now())
       } else {
         console.error("Failed to fetch notifications")
       }
@@ -36,7 +38,7 @@ export function NotificationBell() {
     }
   }
 
-  // Fetch notifications on mount
+  // Only fetch on initial mount
   useEffect(() => {
     fetchNotifications()
     
@@ -48,12 +50,8 @@ export function NotificationBell() {
     return () => clearInterval(interval)
   }, [])
 
-  // Refetch notifications when sheet opens
-  useEffect(() => {
-    if (isOpen) {
-      fetchNotifications()
-    }
-  }, [isOpen])
+  // Don't refetch when sheet opens/closes to preserve optimistic updates
+  // Users can manually refresh by closing and reopening after the 30s poll
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const unreadNotifications = notifications.filter((n) => !n.isRead)

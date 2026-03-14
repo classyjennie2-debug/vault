@@ -635,10 +635,25 @@ export async function getUserStats(userId: string) {
 }
 
 export async function getUserActiveInvestments(userId: string): Promise<ActiveInvestment[]> {
-  return (await all(
-    "SELECT * FROM active_investments WHERE userId = ? AND status = 'active'",
+  const results = await all(
+    `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage 
+     FROM active_investments WHERE userId = ? AND status = 'active'`,
     [userId]
-  )) as ActiveInvestment[]
+  ) as any[]
+  
+  // Normalize column names (handle both camelCase and lowercase from database)
+  return results.map(row => ({
+    id: row.id,
+    userId: row.userId || row.userid,
+    planId: row.planId || row.planid,
+    planName: row.planName || row.planname,
+    amount: row.amount,
+    expectedProfit: row.expectedProfit || row.expectedprofit,
+    startDate: row.startDate || row.startdate,
+    endDate: row.endDate || row.enddate,
+    status: row.status,
+    progressPercentage: row.progressPercentage || row.progresspercentage,
+  }))
 }
 
 /**
