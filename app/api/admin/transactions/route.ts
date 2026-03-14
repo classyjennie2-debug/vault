@@ -20,7 +20,18 @@ export async function GET(req: NextRequest) {
     }
 
     transactionLogger.info('Admin viewing all transactions', {}, user.id)
-    const transactions = await all("SELECT * FROM transactions ORDER BY date DESC")
+    const transactionsRaw = await all("SELECT id, userId, type, amount, status, description, date FROM transactions ORDER BY date DESC")
+    
+    // Normalize the column names (handle both camelCase and lowercase)
+    const transactions = transactionsRaw.map((tx: any) => ({
+      id: tx.id,
+      userId: tx.userId || tx.userid,
+      type: tx.type,
+      amount: tx.amount,
+      status: tx.status,
+      description: tx.description,
+      date: tx.date,
+    }))
     
     logAuditEvent(user.id, 'view_transactions', 'admin', 'success', {
       changes: {
@@ -84,17 +95,28 @@ export async function POST(req: NextRequest) {
     const newStatus = approved ? 'approved' : 'rejected'
 
     // Fetch the transaction
-    const txResults: Transaction[] = await all(
-      "SELECT * FROM transactions WHERE id = ?",
+    const txResults: any[] = await all(
+      "SELECT id, userId, type, amount, status, description, date FROM transactions WHERE id = ?",
       [transactionId]
     )
-    const transaction = txResults[0]
+    const txRaw = txResults[0]
 
-    if (!transaction) {
+    if (!txRaw) {
       console.error('Transaction not found:', transactionId)
       logAuditEvent(user.id, 'approve_transaction', 'transaction', 'failure')
       const appError = mapErrorToResponse(new NotFoundError('Transaction'))
       return createErrorResponse(appError)
+    }
+
+    // Normalize transaction fields (handle both camelCase and lowercase from database)
+    const transaction = {
+      id: txRaw.id,
+      userId: txRaw.userId || txRaw.userid,
+      type: txRaw.type,
+      amount: txRaw.amount,
+      status: txRaw.status,
+      description: txRaw.description,
+      date: txRaw.date,
     }
 
     // Execute approval operations
@@ -107,6 +129,11 @@ export async function POST(req: NextRequest) {
         userId: transaction.userId,
         approved
       })
+
+      // Validate userId exists
+      if (!transaction.userId) {
+        throw new Error(`Transaction ${transactionId} has no userId field`)
+      }
 
       // Track response data
       let responseUserBalance = 0
