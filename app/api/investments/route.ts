@@ -145,8 +145,12 @@ export async function POST(req: NextRequest) {
     const endDate = end.toISOString()
     const investmentId = uuidv4()
 
-    // Execute operations to create investment
+    // Execute operations to create investment with atomicity
     try {
+      // FIX: Wrap all operations in a transaction to ensure atomicity
+      // If any operation fails, all will be rolled back
+      await run('BEGIN')
+
       // Insert active investment
       await run(
         `INSERT INTO active_investments (id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage) 
@@ -182,6 +186,8 @@ export async function POST(req: NextRequest) {
           new Date().toISOString()
         ]
       )
+
+      await run('COMMIT')
       
       investmentLogger.info('Investment created successfully', 
         { investmentId, planId, amount: safeAmount, expectedProfit },
@@ -201,6 +207,12 @@ export async function POST(req: NextRequest) {
         }
       })
     } catch (error: any) {
+      // FIX: Rollback transaction if creation fails
+      try {
+        await run('ROLLBACK')
+      } catch (rollbackError) {
+        console.error('Rollback failed:', rollbackError)
+      }
       investmentLogger.error('Investment creation error', error, { planId, amount: safeAmount }, user.id)
       const appError = mapErrorToResponse(error)
       return createErrorResponse(appError)

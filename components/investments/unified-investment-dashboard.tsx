@@ -97,17 +97,6 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
     }
   }
 
-  const getBgGradient = (index: number) => {
-    const gradients = [
-      "from-blue-500/10 to-cyan-500/10 border-blue-500/20",
-      "from-purple-500/10 to-pink-500/10 border-purple-500/20",
-      "from-green-500/10 to-emerald-500/10 border-green-500/20",
-      "from-orange-500/10 to-yellow-500/10 border-orange-500/20",
-      "from-indigo-500/10 to-blue-500/10 border-indigo-500/20",
-    ]
-    return gradients[index % gradients.length]
-  }
-
   const formatDuration = (duration: number, unit: string) => {
     return `${duration} ${unit}`
   }
@@ -160,11 +149,10 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
         </p>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto mt-6 sm:mt-8">
-          <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:shadow-lg hover:border-blue-500/40 transition-all duration-300 group overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto mt-8">
+          <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300 overflow-hidden">
             <CardContent className="p-4 sm:p-6 text-center relative">
-              <DollarSign className="h-6 sm:h-8 w-6 sm:w-8 text-blue-600 mx-auto mb-2 group-hover:scale-110 transition-transform duration-300" />
+              <DollarSign className="h-6 sm:h-8 w-6 sm:w-8 text-primary mx-auto mb-2" />
               <p className="text-lg sm:text-2xl font-bold text-card-foreground">
                 ${totalInvested.toLocaleString()}
               </p>
@@ -172,21 +160,19 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20 hover:shadow-lg hover:border-green-500/40 transition-all duration-300 group overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <Card className="bg-success/5 border-success/20 hover:shadow-md transition-all duration-300 overflow-hidden">
             <CardContent className="p-4 sm:p-6 text-center relative">
-              <TrendingUp className="h-6 sm:h-8 w-6 sm:w-8 text-green-600 mx-auto mb-2 group-hover:scale-110 transition-transform duration-300" />
-              <p className="text-lg sm:text-2xl font-bold text-green-600">
+              <TrendingUp className="h-6 sm:h-8 w-6 sm:w-8 text-success mx-auto mb-2" />
+              <p className="text-lg sm:text-2xl font-bold text-success">
                 +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </p>
               <p className="text-sm text-muted-foreground">Expected Returns</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:shadow-lg hover:border-purple-500/40 transition-all duration-300 group overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <Card className="bg-accent/5 border-accent/20 hover:shadow-md transition-all duration-300 overflow-hidden">
             <CardContent className="p-4 sm:p-6 text-center relative">
-              <Target className="h-6 sm:h-8 w-6 sm:w-8 text-purple-600 mx-auto mb-2 group-hover:scale-110 transition-transform duration-300" />
+              <Target className="h-6 sm:h-8 w-6 sm:w-8 text-accent mx-auto mb-2" />
               <p className="text-lg sm:text-2xl font-bold text-card-foreground">
                 {safeInvestments.length}
               </p>
@@ -200,15 +186,15 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
       <TrustBadges />
 
       {/* Main Content Tabs - Mobile Responsive */}
-      <Card className="border-0 shadow-2xl bg-gradient-to-br from-card/50 to-card/30 backdrop-blur-xl overflow-hidden">
+      <Card className="border-0 shadow-lg bg-card overflow-hidden">
         <CardContent className="p-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col">
             {/* Tab Navigation */}
-            <div className="border-b border-border/50 px-3 sm:px-6 pt-3 sm:pt-6 bg-gradient-to-r from-transparent via-card/30 to-transparent">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="border-b border-border px-3 sm:px-6 pt-3 sm:pt-6 relative z-50 pointer-events-auto">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 relative z-50">
                 <TabsTrigger
                   value="plans"
-                  className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2"
+                  className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 cursor-pointer"
                 >
                   <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="hidden sm:inline">Investment Plans</span>
@@ -216,7 +202,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                 </TabsTrigger>
                 <TabsTrigger
                   value="active-investments"
-                  className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2"
+                  className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 cursor-pointer"
                 >
                   <Target className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                   <span className="hidden sm:inline">Active Investments</span>
@@ -224,50 +210,25 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                 </TabsTrigger>
                 <TabsTrigger
                   value="calculator"
-                  className="hidden sm:flex flex-row items-center justify-center gap-2"
+                  className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 cursor-pointer"
                 >
-                  <Calculator className="h-4 w-4" />
-                  Calculator
+                  <Calculator className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="hidden sm:inline">Calculator</span>
+                  <span className="sm:hidden">Calc</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="portfolio"
-                  className="hidden sm:flex flex-row items-center justify-center gap-2"
+                  className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 cursor-pointer"
                 >
-                  <TrendingUp className="h-4 w-4" />
-                  Portfolio
+                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="hidden sm:inline">Portfolio</span>
+                  <span className="sm:hidden">Port</span>
                 </TabsTrigger>
               </TabsList>
-              {/* Mobile-only additional tab buttons */}
-              <div className="flex gap-2 sm:hidden mt-4">
-                <button
-                  onClick={() => setActiveTab("calculator")}
-                  className={cn(
-                    "flex-1 py-2.5 px-3 rounded-md text-xs font-medium transition-all duration-300 flex items-center justify-center gap-1.5",
-                    activeTab === "calculator"
-                      ? "bg-background text-foreground shadow-md"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  )}
-                >
-                  <Calculator className="h-3.5 w-3.5" />
-                  <span>Calculator</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab("portfolio")}
-                  className={cn(
-                    "flex-1 py-2.5 px-3 rounded-md text-xs font-medium transition-all duration-300 flex items-center justify-center gap-1.5",
-                    activeTab === "portfolio"
-                      ? "bg-background text-foreground shadow-md"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  )}
-                >
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  <span>Portfolio</span>
-                </button>
-              </div>
             </div>
 
             {/* Investment Plans Tab */}
-            <TabsContent value="plans" className="p-3 sm:p-6">
+            <TabsContent value="plans" className="p-3 sm:p-6 relative z-0">
               <div className="space-y-6 sm:space-y-8">
                 <div className="text-center px-2 space-y-3">
                   <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
@@ -297,8 +258,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                         <Card 
                           onClick={() => setSelectedPlan(plan.id)}
-                          className={`h-full flex flex-col bg-gradient-to-br ${getBgGradient(index)} hover:shadow-2xl transition-all duration-300 hover:scale-[1.03] border backdrop-blur-sm relative overflow-hidden cursor-pointer group ${isPopular(index) ? "ring-2 ring-purple-500/40 shadow-purple-500/20 shadow-lg" : "hover:ring-1 hover:ring-primary/50"}`}>
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          className={`h-full flex flex-col bg-card border-2 border-border transition-all duration-300 relative overflow-hidden cursor-pointer ${isPopular(index) ? "ring-2 ring-primary/40 shadow-lg" : "hover:border-border/80 hover:shadow-md"}`}>
 
                           <CardHeader className="pb-3 sm:pb-4">
                             <div className="flex items-start justify-between gap-2 sm:gap-3">
@@ -308,7 +268,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                                   {plan.risk} Risk
                                 </Badge>
                               </div>
-                              <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground/50 flex-shrink-0 group-hover:scale-110 group-hover:text-primary transition-all duration-300" />
+                              <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground/50 flex-shrink-0" />
                             </div>
                           </CardHeader>
 
@@ -318,13 +278,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                             </p>
 
                             <div className="grid grid-cols-2 gap-3 text-center">
-                              <div className="bg-white/5 rounded-lg p-3 group-hover:bg-white/10 transition-colors duration-300 backdrop-blur-sm border border-white/5">
+                              <div className="bg-muted/50 rounded-lg p-3 border border-border">
                                 <p className="text-xs text-muted-foreground">Min</p>
                                 <p className="text-base sm:text-lg font-bold text-card-foreground">
                                   ${(plan.minAmount || 0).toLocaleString()}
                                 </p>
                               </div>
-                              <div className="bg-white/5 rounded-lg p-3 group-hover:bg-white/10 transition-colors duration-300 backdrop-blur-sm border border-white/5">
+                              <div className="bg-muted/50 rounded-lg p-3 border border-border">
                                 <p className="text-xs text-muted-foreground">Max</p>
                                 <p className="text-base sm:text-lg font-bold text-card-foreground">
                                   ${(plan.maxAmount || 0).toLocaleString()}
@@ -347,8 +307,8 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               <Button
                                 className={`w-full font-semibold transition-all duration-300 ${
                                   isPopular(index)
-                                    ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-lg hover:shadow-purple-600/50 hover:scale-105"
-                                    : "hover:scale-105"
+                                    ? "bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg"
+                                    : ""
                                 }`}
                                 size="sm"
                               >
@@ -379,7 +339,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             </TabsContent>
 
             {/* Active Investments Tab */}
-            <TabsContent value="active-investments" className="p-3 sm:p-6">
+            <TabsContent value="active-investments" className="p-3 sm:p-6 relative z-0">
               <div className="space-y-6 sm:space-y-8">
                 <div className="text-center px-2 space-y-3">
                   <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
@@ -393,46 +353,42 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                 {/* Active Investments Summary */}
                 {safeInvestments.length > 0 && (
                   <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:border-blue-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
                       <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
-                        <p className="text-xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-300 origin-left">
+                        <p className="text-xl font-bold text-primary">
                           ${totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">{safeInvestments.length} active {safeInvestments.length === 1 ? 'position' : 'positions'}</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20 hover:border-green-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
-                      <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <Card className="bg-success/5 border-success/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
                       <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Expected Returns</p>
-                        <p className="text-xl font-bold text-green-600 group-hover:scale-105 transition-transform duration-300 origin-left">
+                        <p className="text-xl font-bold text-success">
                           +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
-                        <p className="text-xs text-green-600/70 mt-2">
+                        <p className="text-xs text-success/70 mt-2">
                           {totalInvested > 0 && totalReturns >= 0 ? ((totalReturns / Math.max(totalInvested, 1)) * 100).toFixed(1) : '0'}% avg return
                         </p>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <Card className="bg-accent/5 border-accent/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
                       <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Total Value</p>
-                        <p className="text-xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-300 origin-left">
+                        <p className="text-xl font-bold text-accent">
                           ${(totalInvested + totalReturns).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">portfolio balance</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-gradient-to-br from-orange-500/10 to-yellow-500/10 border-orange-500/20 hover:border-orange-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
-                      <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <Card className="bg-warning/5 border-warning/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
                       <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
                         <p className="text-xs text-muted-foreground mb-1">Avg Progress</p>
-                        <p className="text-xl font-bold text-orange-600 group-hover:scale-105 transition-transform duration-300 origin-left">
+                        <p className="text-xl font-bold text-warning">
                           {Math.round(
                             safeInvestments.length > 0
                               ? safeInvestments.reduce((sum, inv) => sum + calculateProgress(inv.startDate, inv.endDate, inv.status, inv.progressPercentage), 0) / safeInvestments.length
@@ -467,9 +423,8 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                         return (
                           <Card
                             key={inv.id}
-                            className="bg-gradient-to-br from-card/60 to-card/30 border-border/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 overflow-hidden group h-full flex flex-col"
+                            className="bg-card border-border hover:shadow-md transition-all duration-300 overflow-hidden h-full flex flex-col"
                           >
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             <CardHeader className="pb-3 relative">
                               <div className="flex items-start justify-between gap-3">
                                 <div className="flex-1 min-w-0">
@@ -487,13 +442,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                             <CardContent className="space-y-4 relative flex-1 flex flex-col">
                               {/* Amount & Profit */}
                               <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-colors duration-300 border border-white/5 group-hover:border-white/10">
+                                <div className="bg-muted/50 rounded-lg p-3 border border-border">
                                   <p className="text-xs text-muted-foreground mb-1">Amount Invested</p>
-                                  <p className="text-base sm:text-lg font-bold text-blue-600">
+                                  <p className="text-base sm:text-lg font-bold text-primary">
                                     ${(inv.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                   </p>
                                 </div>
-                                <div className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-colors duration-300 border border-white/5 group-hover:border-white/10">
+                                <div className="bg-muted/50 rounded-lg p-3 border border-border">
                                   <p className="text-xs text-muted-foreground mb-1">{inv.accumulatedProfit ? "Accumulated" : "Expected"} Profit</p>
                                   <p className="text-base sm:text-lg font-bold text-green-600">
                                     +${((inv.accumulatedProfit ?? inv.expectedProfit) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -505,7 +460,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               </div>
 
                               {/* Total Value */}
-                              <div className="bg-gradient-to-r from-primary/15 to-accent/15 hover:from-primary/25 hover:to-accent/25 rounded-lg p-3 border border-primary/20 transition-all duration-300">
+                              <div className="bg-primary/10 rounded-lg p-3 border border-primary/20">
                                 <p className="text-xs text-muted-foreground mb-1">Current Value</p>
                                 <p className="text-lg font-bold text-card-foreground">
                                   ${((inv.amount || 0) + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -519,7 +474,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               <div className="space-y-2.5">
                                 <div className="flex items-center justify-between">
                                   <p className="text-xs font-semibold text-muted-foreground">Progress</p>
-                                  <p className="text-sm font-bold text-card-foreground group-hover:text-primary transition-colors duration-300">{progress}%</p>
+                                  <p className="text-sm font-bold text-card-foreground">{progress}%</p>
                                 </div>
                                 <div className="relative h-2.5 bg-slate-200/30 dark:bg-slate-700/30 rounded-full overflow-hidden border border-slate-300/20 dark:border-slate-600/20">
                                   <div
@@ -530,10 +485,10 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               </div>
 
                               {/* ROI */}
-                              <div className="bg-white/5 hover:bg-white/10 rounded-lg p-3 border border-border/20 group-hover:border-border/50 transition-all duration-300 mt-auto">
+                              <div className="bg-muted/50 rounded-lg p-3 border border-border mt-auto">
                                 <p className="text-xs text-muted-foreground mb-2">Return on Investment</p>
                                 <div className="space-y-1.5">
-                                  <p className="text-lg font-bold text-accent group-hover:scale-105 transition-transform duration-300 origin-left">
+                                  <p className="text-lg font-bold text-accent">
                                     {calculateROI(inv).toFixed(2)}%
                                   </p>
                                   <p className="text-xs text-muted-foreground">
@@ -579,7 +534,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             </TabsContent>
 
             {/* Calculator Tab */}
-            <TabsContent value="calculator" className="p-3 sm:p-6">
+            <TabsContent value="calculator" className="p-3 sm:p-6 relative z-0">
               <div className="max-w-2xl mx-auto space-y-6">
                 <div className="text-center space-y-3 px-2">
                   <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
@@ -594,7 +549,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             </TabsContent>
 
             {/* Portfolio Tab */}
-            <TabsContent value="portfolio" className="p-3 sm:p-6">
+            <TabsContent value="portfolio" className="p-3 sm:p-6 relative z-0">
               <div className="space-y-6 sm:space-y-8">
                 <div className="text-center px-2 space-y-3">
                   <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
@@ -607,46 +562,42 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                 {/* Portfolio Summary Cards */}
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 hover:border-blue-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
                     <CardContent className="p-4 relative min-h-fit">
                       <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
-                      <p className="text-xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-300 origin-left">
+                      <p className="text-xl font-bold text-primary">
                         ${totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                       </p>
                       <p className="text-xs text-muted-foreground mt-2">across all positions</p>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20 hover:border-green-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
-                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Card className="bg-success/5 border-success/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
                     <CardContent className="p-4 relative min-h-fit">
                       <p className="text-xs text-muted-foreground mb-1">Expected Returns</p>
-                      <p className="text-xl font-bold text-green-600 group-hover:scale-105 transition-transform duration-300 origin-left">
+                      <p className="text-xl font-bold text-success">
                         +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                       </p>
-                      <p className="text-xs text-green-600/70 mt-2">
+                      <p className="text-xs text-success/70 mt-2">
                         {totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(1) : 0}% avg return
                       </p>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Card className="bg-accent/5 border-accent/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
                     <CardContent className="p-4 relative min-h-fit">
                       <p className="text-xs text-muted-foreground mb-1">Portfolio Value</p>
-                      <p className="text-xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-300 origin-left">
+                      <p className="text-xl font-bold text-accent">
                         ${(totalInvested + totalReturns).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                       </p>
                       <p className="text-xs text-muted-foreground mt-2">current valuation</p>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-gradient-to-br from-orange-500/10 to-yellow-500/10 border-orange-500/20 hover:border-orange-500/40 hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Card className="bg-warning/5 border-warning/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
                     <CardContent className="p-4 relative min-h-fit">
                       <p className="text-xs text-muted-foreground mb-1">Active Positions</p>
-                      <p className="text-xl font-bold text-orange-600 group-hover:scale-105 transition-transform duration-300 origin-left">
+                      <p className="text-xl font-bold text-warning">
                         {safeInvestments.length}
                       </p>
                       <p className="text-xs text-muted-foreground mt-2">{safeInvestments.length === 1 ? 'investment' : 'investments'} running</p>
@@ -655,7 +606,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                 </div>
 
                 {/* Portfolio Performance Chart */}
-                <Card className="bg-gradient-to-br from-card/80 to-card/40 border-border/50 hover:shadow-lg transition-all duration-300">
+                <Card className="bg-card border-border hover:shadow-md transition-all duration-300">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <TrendingUp className="h-5 w-5 text-accent" />
@@ -672,28 +623,26 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                 {/* Quick Actions */}
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                  <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30 hover:border-primary/50 hover:shadow-lg transition-all duration-300 group overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300 overflow-hidden">
                     <CardContent className="p-6 relative">
                       <h3 className="font-semibold text-card-foreground mb-2">Ready to Invest More?</h3>
                       <p className="text-sm text-muted-foreground mb-4">
                         Explore our investment plans and grow your portfolio further
                       </p>
-                      <Button onClick={() => setActiveTab("plans")} className="w-full hover:scale-105 transition-transform duration-300">
+                      <Button onClick={() => setActiveTab("plans")} className="w-full">
                         <BarChart3 className="h-4 w-4 mr-2" />
                         View Investment Plans
                       </Button>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/30 hover:border-accent/50 hover:shadow-lg transition-all duration-300 group overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-accent/0 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Card className="bg-accent/5 border-accent/20 hover:shadow-md transition-all duration-300 overflow-hidden">
                     <CardContent className="p-6 relative">
                       <h3 className="font-semibold text-card-foreground mb-2">Monitor Your Investments</h3>
                       <p className="text-sm text-muted-foreground mb-4">
                         Review detailed analytics of all your active investment positions
                       </p>
-                      <Button onClick={() => setActiveTab("active-investments")} variant="outline" className="w-full hover:scale-105 transition-transform duration-300">
+                      <Button onClick={() => setActiveTab("active-investments")} variant="outline" className="w-full">
                         <Target className="h-4 w-4 mr-2" />
                         View Active Investments
                       </Button>

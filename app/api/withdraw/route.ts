@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    // Calculate available balance (total balance - invested amount + profits)
+    // Calculate available balance (user balance is already post-investment deduction)
     let availableBalance = userData.balance
     try {
       const investedResult = await get(
@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
       )
       const totalInvested = typeof investedResult?.sum === 'number' ? investedResult.sum : 0
       const totalProfit = typeof profitResult?.sum === 'number' ? profitResult.sum : 0
-      availableBalance = userData.balance - totalInvested + totalProfit
+      // FIX: Balance is already reduced from investments, so available = current balance
+      availableBalance = Math.max(0, userData.balance)
     } catch (e) {
       availableBalance = userData.balance
     }

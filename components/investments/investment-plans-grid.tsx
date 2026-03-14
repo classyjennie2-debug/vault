@@ -43,7 +43,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
   const isPopular = (index: number) => index === 1
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-700">
+    <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-card-foreground">
           Investment Plans
@@ -65,7 +65,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
             <div key={plan.id} className="relative">
               {/* Popular Badge */}
               {isPopular(index) && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 animate-in fade-in slide-in-from-top duration-700">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
                   <Badge className="bg-primary text-white border-0 shadow-md uppercase text-xs font-bold tracking-wider">
                     ⭐ Most Popular
                   </Badge>
@@ -86,7 +86,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                           {plan.risk || "Medium"} Risk
                         </Badge>
                       </div>
-                      <Shield className="h-6 w-6 text-muted-foreground/50 flex-shrink-0 mt-1 group-hover:scale-110 transition-transform duration-300" />
+                      <Shield className="h-6 w-6 text-muted-foreground/50 flex-shrink-0 mt-1" />
                     </div>
                   </CardHeader>
 

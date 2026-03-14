@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getUserByEmail } from "@/lib/db"
-import { verifyPassword, issueToken } from "@/lib/auth"
+import { verifyPassword, issueToken, sendVerificationCode } from "@/lib/auth"
 import { cookies } from "next/headers"
 
 export async function POST(request: Request) {
@@ -21,11 +21,22 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
   }
-  if (!user.verified) {
-    return NextResponse.json({ error: "Email not verified" }, { status: 403 })
-  }
   if (!valid) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+  }
+  if (!user.verified) {
+    // Send verification code to unverified user (only after password is verified)
+    try {
+      await sendVerificationCode(user.email)
+    } catch (emailError) {
+      console.error("Failed to send verification code during login:", emailError)
+      // Continue anyway, user can request resend
+    }
+    return NextResponse.json({ 
+      error: "Email not verified",
+      requiresVerification: true,
+      email: user.email
+    }, { status: 403 })
   }
 
   const token = issueToken({ id: user.id, email: user.email, role: user.role })

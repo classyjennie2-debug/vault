@@ -29,6 +29,12 @@ export default function LoginPage() {
       })
       const data = await res.json()
       if (!res.ok) {
+        // Check if user needs to verify email
+        if (data.requiresVerification) {
+          // Redirect to verification page with email
+          router.push(`/verify?email=${encodeURIComponent(data.email)}&from=login`)
+          return
+        }
         setError(data.error || "Invalid credentials")
         return
       }

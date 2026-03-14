@@ -17,37 +17,43 @@ import type { Notification } from "@/lib/types"
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
-  const [hasInitialFetch, setHasInitialFetch] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const fetchNotifications = async () => {
     try {
+      setIsLoading(true)
       const response = await fetch("/api/notifications")
       if (response.ok) {
         const data = await response.json()
-        // Merge server data with local state, preserving any local updates if they're more recent
-        setNotifications(data.map((serverNotif: Notification) => {
-          const localNotif = notifications.find(n => n.id === serverNotif.id)
-          // If the notification exists locally with isRead=true, keep it as read
-          if (localNotif && localNotif.isRead && !serverNotif.isRead) {
-            return { ...serverNotif, isRead: true }
-          }
-          return serverNotif
-        }))
+        setNotifications(data)
       } else {
         console.error("Failed to fetch notifications")
       }
     } catch (error) {
       console.error("Error fetching notifications:", error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
+  // Fetch notifications on mount
   useEffect(() => {
-    // Initial fetch only once
-    if (!hasInitialFetch) {
+    fetchNotifications()
+    
+    // Set up polling to check for new notifications every 30 seconds
+    const interval = setInterval(() => {
       fetchNotifications()
-      setHasInitialFetch(true)
+    }, 30000)
+    
+    return () => clearInterval(interval)
+  }, [])
+
+  // Refetch notifications when sheet opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchNotifications()
     }
-  }, [hasInitialFetch])
+  }, [isOpen])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const unreadNotifications = notifications.filter((n) => !n.isRead)
@@ -61,27 +67,25 @@ export function NotificationBell() {
     
     // Then sync to server
     try {
-      const response = await fetch("/api/notifications", {
-        method: "PATCH",
+      const response = await fetch("/api/notifications/" + id + "/read", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ notificationId: id }),
       })
       
       if (!response.ok) {
-        // If the update failed, revert the optimistic update
-        setNotifications(
-          notifications.map((n) => (n.id === id ? { ...n, isRead: false } : n))
-        )
         console.error("Failed to mark notification as read")
+        // If the update failed, refetch to get the correct state
+        await fetchNotifications()
+      } else {
+        // After successful backend update, refetch to confirm
+        await fetchNotifications()
       }
     } catch (error) {
-      // If there's an error, revert the optimistic update
-      setNotifications(
-        notifications.map((n) => (n.id === id ? { ...n, isRead: false } : n))
-      )
       console.error("Error marking notification as read:", error)
+      // If there's an error, refetch to get the correct state
+      await fetchNotifications()
     }
   }
 

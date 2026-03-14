@@ -450,6 +450,35 @@ export async function consumeVerificationCode(code: string): Promise<boolean> {
   return true
 }
 
+export async function canResendVerificationCode(email: string): Promise<{ canResend: boolean; nextRetryAt?: string }> {
+  // Check for the most recent unused verification code for this email
+  const row = await get<{ expiresAt: string }>(
+    "SELECT expiresAt FROM verification_codes WHERE email = ? AND used = 0 ORDER BY expiresAt DESC LIMIT 1",
+    [email]
+  )
+  
+  if (!row) {
+    // No existing code, can send
+    return { canResend: true }
+  }
+  
+  // Calculate if 5 minutes have passed since code creation
+  // Code expiration is 10 minutes, so we allow resend after 5 minutes
+  const codeExpiresAt = new Date(row.expiresAt)
+  const codeCreatedAt = new Date(codeExpiresAt.getTime() - 10 * 60 * 1000) // subtract 10 minutes
+  const resendAllowedAt = new Date(codeCreatedAt.getTime() + 5 * 60 * 1000) // add 5 minutes
+  const now = new Date()
+  
+  if (now >= resendAllowedAt) {
+    return { canResend: true }
+  }
+  
+  return { 
+    canResend: false, 
+    nextRetryAt: resendAllowedAt.toISOString()
+  }
+}
+
 export async function getInvestmentPlansFromDb() {
   const rows: InvestmentPlan[] = await all("SELECT * FROM investment_plans")
   
@@ -560,15 +589,20 @@ export async function getUserStats(userId: string) {
     "SELECT balance FROM users WHERE id = ?",
     [userId]
   )
+  
   const totalInvested = totalInvestedRow?.sum || 0
   const totalProfit = totalProfitRow?.sum || 0
   const userBalance = userRow?.balance || 0
-  const availableBalance = userBalance - totalInvested + totalProfit
+  
+  // FIX: availableBalance is the current wallet balance
+  // The userBalance is ALREADY reduced by investments when they were made
+  // So we don't subtract investments again (that was double-counting!)
+  const availableBalance = Math.max(0, userBalance)
   
   return {
     totalInvested,
     totalProfit,
-    availableBalance: Math.max(0, availableBalance),
+    availableBalance,
     pendingDeposits: pendingDepositsRow?.cnt || 0,
     totalWithdrawn: totalWithdrawnRow?.sum || 0,
     activeInvestments: activeCountRow?.cnt || 0,
@@ -793,13 +827,28 @@ export async function createNotification(notification: {
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  // Delete all user-related data first
-  await run("DELETE FROM notifications WHERE userId = ?", [userId])
-  await run("DELETE FROM transactions WHERE userId = ?", [userId])
-  await run("DELETE FROM active_investments WHERE userId = ?", [userId])
-  await run("DELETE FROM wallet_addresses WHERE userId = ?", [userId])
-  // Finally delete the user
-  await run("DELETE FROM users WHERE id = ?", [userId])
+  try {
+    // Delete all user-related data first
+    // IMPORTANT: Must handle foreign key constraints in correct order
+    
+    // 1. Unassign any wallet addresses assigned to this user (FOREIGN KEY constraint)
+    await run("UPDATE wallet_addresses SET assignedTo = NULL, assignedAt = NULL WHERE assignedTo = ?", [userId])
+    
+    // 2. Delete notifications linked to this user
+    await run("DELETE FROM notifications WHERE userId = ?", [userId])
+    
+    // 3. Delete transactions for this user
+    await run("DELETE FROM transactions WHERE userId = ?", [userId])
+    
+    // 4. Delete active investments for this user
+    await run("DELETE FROM active_investments WHERE userId = ?", [userId])
+    
+    // 5. Finally delete the user (now safe - no foreign key violations)
+    await run("DELETE FROM users WHERE id = ?", [userId])
+  } catch (error) {
+    console.error(`Error deleting user ${userId}:`, error)
+    throw error
+  }
 }
 
 export default getDb

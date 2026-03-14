@@ -43,6 +43,13 @@ export async function POST(req: NextRequest) {
         progressPercentage = Math.min(100, (elapsed / totalDuration) * 100)
       }
 
+      // FIX: Persist progress percentage to database
+      // This allows historical tracking and avoids recalculating every time
+      await run(
+        `UPDATE active_investments SET progressPercentage = ? WHERE id = ?`,
+        [Math.round(progressPercentage * 100) / 100, inv.id]
+      )
+
       // Calculate accumulated profit based on progress
       const expectedProfit = Number(inv.expectedProfit) || 0
       const accumulatedProfit = Math.max(0, (expectedProfit * progressPercentage) / 100)
@@ -60,9 +67,15 @@ export async function POST(req: NextRequest) {
     // Update each user's total profit in the database
     for (const [userId, totalProfit] of Object.entries(userProfits)) {
       try {
-        // Store total profit in a separate column or transaction record
-        // For now, we'll create a 'profit' record in transactions table
-        // This allows tracking profit over time
+        // FIX: Delete old profit transactions to prevent duplication
+        // Each call to this endpoint creates new transactions
+        // We need to clear the old ones before creating new ones
+        await run(
+          `DELETE FROM transactions WHERE userId = ? AND type = 'return' AND description = 'Accumulated profit from active investments'`,
+          [userId]
+        )
+
+        // Now insert the fresh calculated profit
         await run(
           `INSERT INTO transactions 
            (id, userId, type, amount, status, description, date) 

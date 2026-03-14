@@ -277,10 +277,10 @@ export default function SupportPage() {
       </div>
 
       {/* Status Banner */}
-      <Card className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-blue-500/30">
+      <Card className="bg-primary/5 border-primary/20">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <Clock className="h-5 w-5 text-primary dark:text-primary" />
             <div>
               <CardTitle className="text-base">Average Response Time</CardTitle>
               <CardDescription>Our team responds within 24 hours</CardDescription>

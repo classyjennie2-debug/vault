@@ -47,11 +47,15 @@ export async function calculateMonthlyMetrics(userId: string) {
     }
   })
 
-  // Calculate monthly gain = deposits + returns - withdrawals
-  const monthlyGain = monthlyDeposits + monthlyReturns - monthlyWithdrawals
+  // FIX: Monthly gain should ONLY be investment returns, not cash flow
+  // monthlyReturns = actual profit earned from investments
+  // Deposits and withdrawals are cash movement, not profit
+  const monthlyGain = monthlyReturns
+  const monthlyNetCashFlow = monthlyDeposits - monthlyWithdrawals
 
   return {
     monthlyGain: Math.round(monthlyGain * 100) / 100,
+    monthlyNetCashFlow: Math.round(monthlyNetCashFlow * 100) / 100,
     monthlyDeposits: Math.round(monthlyDeposits * 100) / 100,
     monthlyReturns: Math.round(monthlyReturns * 100) / 100,
     monthlyInvestments: Math.round(monthlyInvestments * 100) / 100,

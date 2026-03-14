@@ -82,6 +82,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ message: "User deleted successfully" })
   } catch (error) {
     console.error("Admin delete user error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    const message = error instanceof Error ? error.message : "Internal server error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

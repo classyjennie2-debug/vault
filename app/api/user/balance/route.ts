@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
 
     const totalInvested = Number(investedResult?.sum ?? 0)
     const totalProfit = Number(profitResult?.sum ?? 0)
-    const availableBalance = Math.max(0, userData.balance - totalInvested + totalProfit)
+    // FIX: User balance is already reduced by investments when they were made
+    // Don't double-subtract! Available balance = current balance
+    const availableBalance = Math.max(0, userData.balance)
 
     return NextResponse.json({
       balance: userData.balance,

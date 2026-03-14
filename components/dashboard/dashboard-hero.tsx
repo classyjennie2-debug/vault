@@ -26,14 +26,9 @@ export function DashboardHero({ user, stats }: DashboardHeroProps) {
   const activeInvestments = stats?.activeInvestments || 0
 
   return (
-    <div className="w-full mb-3 sm:mb-4 md:mb-6 lg:mb-8 animate-in fade-in slide-in-from-top duration-700">
+    <div className="w-full mb-3 sm:mb-4 md:mb-6 lg:mb-8">
       {/* Main Hero Banner - Professional Navy & White Design */}
-      <div className="relative overflow-hidden rounded-lg sm:rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-        {/* Subtle accent gradient overlay */}
-        <div className="absolute inset-0 overflow-hidden opacity-30">
-          <div className="absolute -top-32 right-0 w-64 h-64 bg-gradient-to-l from-primary/10 to-transparent blur-3xl" />
-          <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-gradient-to-r from-accent/10 to-transparent blur-3xl" />
-        </div>
+      <div className="relative overflow-hidden rounded-lg sm:rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-slate-700 shadow-md">
 
         {/* Content */}
         <div className="relative z-10 px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 lg:px-10 lg:py-12">
@@ -42,16 +37,16 @@ export function DashboardHero({ user, stats }: DashboardHeroProps) {
               <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1 sm:mb-2">
                 Welcome back,
               </p>
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 line-clamp-2">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 line-clamp-2">
                 {user.name}
               </h1>
-              <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+              <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
                 Your portfolio is performing exceptionally well. Keep investing and watch your wealth grow!
               </p>
             </div>
 
             {/* Balance Display - Hidden on mobile, shown on md and up */}
-            <div className="hidden md:flex flex-col items-end gap-3 lg:gap-6 animate-in fade-in slide-in-from-right duration-700 delay-300 flex-shrink-0">
+            <div className="hidden md:flex flex-col items-end gap-3 lg:gap-6 flex-shrink-0">
               <div className="text-right">
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Total Balance</p>
                 <p className="text-3xl lg:text-5xl font-bold text-slate-900 dark:text-white">
@@ -78,7 +73,7 @@ export function DashboardHero({ user, stats }: DashboardHeroProps) {
       </div>
 
       {/* Quick Stats Bar - Professional Minimal Design */}
-      <div className="mt-2 sm:mt-3 md:mt-4 lg:mt-6 grid grid-cols-2 md:grid-cols-3 gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 animate-in fade-in slide-in-from-bottom duration-700 delay-300">
+      <div className="mt-2 sm:mt-3 md:mt-4 lg:mt-6 grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 lg:gap-4">
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 sm:p-3 md:p-4 lg:p-5 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md">
           <p className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 line-clamp-1">Total Profit</p>
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-emerald-600 dark:text-emerald-500 mt-0.5 sm:mt-1.5">${(totalProfit).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
