@@ -345,60 +345,16 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             {/* Active Investments Tab */}
             <TabsContent value="active-investments" className="p-3 sm:p-6 relative z-0">
               <div className="space-y-6 sm:space-y-8">
-                <div className="text-center px-2 space-y-3">
-                  <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
-                    Your Active Investments
-                  </h2>
-                  <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-                    Track and monitor your ongoing investment positions with comprehensive analytics
-                  </p>
-                </div>
-
-                {/* Active Investments Summary */}
-                {safeInvestments.length > 0 && (
-                  <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
-                      <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
-                        <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
-                        <p className="text-xl font-bold text-primary">
-                          ${totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">{safeInvestments.length} active {safeInvestments.length === 1 ? 'position' : 'positions'}</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-success/5 border-success/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
-                      <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
-                        <p className="text-xs text-muted-foreground mb-1">Expected Returns</p>
-                        <p className="text-xl font-bold text-success">
-                          +${safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                        </p>
-                        <p className="text-xs text-success/70 mt-2">
-                          {totalInvested > 0 ? ((safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0) / Math.max(totalInvested, 1)) * 100).toFixed(1) : '0'}% avg return
-                        </p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-accent/5 border-accent/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
-                      <CardContent className="p-4 relative min-h-24 flex flex-col justify-center">
-                        <p className="text-xs text-muted-foreground mb-1">Total Value</p>
-                        <p className="text-xl font-bold text-accent">
-                          ${(totalInvested + safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">portfolio balance</p>
-                      </CardContent>
-                    </Card>
-
-
-                  </div>
-                )}
-
                 {/* Investment Cards - Differentiated View */}
                 {safeInvestments.length > 0 && (
-                  <div className="space-y-4 pt-4">
-                    <div className="flex items-center gap-2 px-2">
-                      <div className="h-1 w-1 rounded-full bg-primary" />
-                      <h3 className="text-lg font-semibold text-card-foreground">Investment Positions</h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
+                        Your Active Investments
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Track and monitor your ongoing investment positions
+                      </p>
                     </div>
                     <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                       {safeInvestments.map((inv, idx) => {
@@ -494,19 +450,6 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                   </div>
                 )}
 
-
-
-                {/* Table View */}
-                {safeInvestments.length > 0 && (
-                  <div className="space-y-4 pt-4 border-t border-border/30">
-                    <div className="flex items-center gap-2 px-2">
-                      <div className="h-1 w-1 rounded-full bg-primary" />
-                      <h3 className="text-lg font-semibold text-card-foreground">All Positions</h3>
-                    </div>
-                    <ActiveInvestmentsTable investments={safeInvestments} />
-                  </div>
-                )}
-
                 {safeInvestments.length === 0 && (
                   <div className="text-center py-12 sm:py-16 px-2">
                     <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mb-4">
@@ -543,104 +486,99 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
             {/* Portfolio Tab */}
             <TabsContent value="portfolio" className="p-3 sm:p-6 relative z-0">
               <div className="space-y-6 sm:space-y-8">
-                <div className="text-center px-2 space-y-3">
+                <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
-                    Portfolio Overview
+                    Portfolio Performance
                   </h2>
-                  <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-                    Comprehensive view of your investment portfolio performance and allocation
+                  <p className="text-sm text-muted-foreground">
+                    Analyze your investment performance and growth over time
                   </p>
                 </div>
 
-                {/* Portfolio Summary Cards */}
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
-                    <CardContent className="p-4 relative min-h-fit">
-                      <p className="text-xs text-muted-foreground mb-1">Total Invested</p>
-                      <p className="text-xl font-bold text-primary">
-                        ${totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">across all positions</p>
-                    </CardContent>
-                  </Card>
+                {safeInvestments.length > 0 ? (
+                  <>
+                    {/* Portfolio Performance Chart */}
+                    <Card className="bg-card border-border hover:shadow-md transition-all duration-300">
+                      <CardHeader className="pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <TrendingUp className="h-5 w-5 text-accent" />
+                          Portfolio Value Over Time
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <PortfolioPerformanceChart investments={safeInvestments} />
+                      </CardContent>
+                    </Card>
 
-                  <Card className="bg-success/5 border-success/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
-                    <CardContent className="p-4 relative min-h-fit">
-                      <p className="text-xs text-muted-foreground mb-1">Expected Returns</p>
-                      <p className="text-xl font-bold text-success">
-                        +${totalReturns.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                      </p>
-                      <p className="text-xs text-success/70 mt-2">
-                        {totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(1) : 0}% avg return
-                      </p>
-                    </CardContent>
-                  </Card>
+                    {/* Portfolio Stats Grid */}
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                      <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300">
+                        <CardContent className="p-6">
+                          <p className="text-sm text-muted-foreground mb-3">Total Invested Amount</p>
+                          <p className="text-2xl font-bold text-primary">
+                            ${totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-2">{safeInvestments.length} active {safeInvestments.length === 1 ? 'position' : 'positions'}</p>
+                        </CardContent>
+                      </Card>
 
-                  <Card className="bg-accent/5 border-accent/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
-                    <CardContent className="p-4 relative min-h-fit">
-                      <p className="text-xs text-muted-foreground mb-1">Portfolio Value</p>
-                      <p className="text-xl font-bold text-accent">
-                        ${(totalInvested + totalReturns).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">current valuation</p>
-                    </CardContent>
-                  </Card>
+                      <Card className="bg-success/5 border-success/20 hover:shadow-md transition-all duration-300">
+                        <CardContent className="p-6">
+                          <p className="text-sm text-muted-foreground mb-3">Expected Returns</p>
+                          <p className="text-2xl font-bold text-success">
+                            +${safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </p>
+                          <p className="text-xs text-success/70 mt-2">
+                            {totalInvested > 0 ? ((safeInvestments.reduce((sum, inv) => sum + ((inv.accumulatedProfit ?? inv.expectedProfit) || 0), 0) / Math.max(totalInvested, 1)) * 100).toFixed(1) : '0'}% average return
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </div>
 
-                  <Card className="bg-warning/5 border-warning/20 hover:shadow-md transition-all duration-300 overflow-hidden h-full">
-                    <CardContent className="p-4 relative min-h-fit">
-                      <p className="text-xs text-muted-foreground mb-1">Active Positions</p>
-                      <p className="text-xl font-bold text-warning">
-                        {safeInvestments.length}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">{safeInvestments.length === 1 ? 'investment' : 'investments'} running</p>
-                    </CardContent>
-                  </Card>
-                </div>
+                    {/* Quick Actions */}
+                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                      <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300 overflow-hidden">
+                        <CardContent className="p-6 relative">
+                          <h3 className="font-semibold text-card-foreground mb-2">Ready to Invest More?</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Explore our investment plans and grow your portfolio further
+                          </p>
+                          <Button onClick={() => setActiveTab("plans")} className="w-full">
+                            <BarChart3 className="h-4 w-4 mr-2" />
+                            View Investment Plans
+                          </Button>
+                        </CardContent>
+                      </Card>
 
-                {/* Portfolio Performance Chart */}
-                <Card className="bg-card border-border hover:shadow-md transition-all duration-300">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <TrendingUp className="h-5 w-5 text-accent" />
-                      Portfolio Performance
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Real-time portfolio value and profit accumulation over time
+                      <Card className="bg-accent/5 border-accent/20 hover:shadow-md transition-all duration-300 overflow-hidden">
+                        <CardContent className="p-6 relative">
+                          <h3 className="font-semibold text-card-foreground mb-2">View Your Positions</h3>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            Review detailed analytics of all your active investment positions
+                          </p>
+                          <Button onClick={() => setActiveTab("active-investments")} variant="outline" className="w-full">
+                            <Target className="h-4 w-4 mr-2" />
+                            View Active Investments
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-12 sm:py-16 px-2">
+                    <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-accent/10 mb-4">
+                      <TrendingUp className="h-8 w-8 text-accent/60" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-card-foreground mb-2">No Portfolio Data</h3>
+                    <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+                      Start by investing in one of our plans to build your portfolio and see performance analytics.
                     </p>
-                  </CardHeader>
-                  <CardContent>
-                    <PortfolioPerformanceChart investments={safeInvestments} />
-                  </CardContent>
-                </Card>
-
-                {/* Quick Actions */}
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                  <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300 overflow-hidden">
-                    <CardContent className="p-6 relative">
-                      <h3 className="font-semibold text-card-foreground mb-2">Ready to Invest More?</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Explore our investment plans and grow your portfolio further
-                      </p>
-                      <Button onClick={() => setActiveTab("plans")} className="w-full">
-                        <BarChart3 className="h-4 w-4 mr-2" />
-                        View Investment Plans
-                      </Button>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-accent/5 border-accent/20 hover:shadow-md transition-all duration-300 overflow-hidden">
-                    <CardContent className="p-6 relative">
-                      <h3 className="font-semibold text-card-foreground mb-2">Monitor Your Investments</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Review detailed analytics of all your active investment positions
-                      </p>
-                      <Button onClick={() => setActiveTab("active-investments")} variant="outline" className="w-full">
-                        <Target className="h-4 w-4 mr-2" />
-                        View Active Investments
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
+                    <Button onClick={() => setActiveTab("plans")} className="hover:scale-105 transition-transform duration-300">
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      View Investment Plans
+                    </Button>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
