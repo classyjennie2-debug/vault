@@ -12,10 +12,14 @@ if (DATABASE_URL) {
   // Dynamically import Pool to avoid errors when postgres is not installed
   try {
     const { Pool } = require('pg')
-    pgPool = new Pool({ connectionString: DATABASE_URL })
-  } catch (err) {
-    console.warn('PostgreSQL not available, falling back to SQLite')
+    pgPool = new Pool({ connectionString: DATABASE_URL, max: 1 })
+    console.log('PostgreSQL pool initialized')
+  } catch (err: any) {
+    console.warn('PostgreSQL not available, falling back to SQLite:', err.message)
+    pgPool = null
   }
+} else {
+  console.log('DATABASE_URL not set, using SQLite')
 }
 
 const DB_PATH = path.join(process.cwd(), "vault.db")
