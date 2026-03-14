@@ -4,17 +4,24 @@ import { getUserNotifications, markNotificationAsRead, get } from "@/lib/db"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const user = await requireAuthAPI()
-    if (user instanceof NextResponse) return user
-
-    const notificationId = params.id
+    // Handle both Promise and object params (Next.js version compatibility)
+    let notificationId: string
+    if (params instanceof Promise) {
+      const resolvedParams = await params
+      notificationId = resolvedParams.id
+    } else {
+      notificationId = params.id
+    }
 
     if (!notificationId) {
       return NextResponse.json({ error: "Notification ID required" }, { status: 400 })
     }
+
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
 
     // Verify the notification belongs to the user
     const notifications = await getUserNotifications(user.id)
@@ -53,18 +60,32 @@ export async function PUT(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    console.log("[NOTIFICATIONS] POST /api/notifications/[id]/read called")
+    console.log("[NOTIFICATIONS] Raw params:", params)
+    
+    // Handle both Promise and object params (Next.js version compatibility)
+    let notificationId: string
+    if (params instanceof Promise) {
+      const resolvedParams = await params
+      notificationId = resolvedParams.id
+    } else {
+      notificationId = params.id
+    }
+    
+    console.log(`[NOTIFICATIONS] Resolved notificationId: ${notificationId}`)
+
+    if (!notificationId) {
+      console.log("[NOTIFICATIONS] No notification ID provided")
+      return NextResponse.json({ error: "Notification ID required" }, { status: 400 })
+    }
+
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user
 
-    const notificationId = params.id
     console.log(`[NOTIFICATIONS] Marking notification ${notificationId} as read for user ${user.id}`)
-
-    if (!notificationId) {
-      return NextResponse.json({ error: "Notification ID required" }, { status: 400 })
-    }
 
     // Verify the notification belongs to the user
     const notifications = await getUserNotifications(user.id)
