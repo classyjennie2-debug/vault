@@ -9,7 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Notification } from "@/lib/types"
@@ -18,7 +18,7 @@ export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [lastFetchTime, setLastFetchTime] = useState(0)
+  const pendingUpdates = useRef<Set<string>>(new Set())
 
   const fetchNotifications = async () => {
     try {
@@ -26,8 +26,19 @@ export function NotificationBell() {
       const response = await fetch("/api/notifications")
       if (response.ok) {
         const data = await response.json()
-        setNotifications(data)
-        setLastFetchTime(Date.now())
+        
+        // Merge with local state to preserve optimistic updates for pending items
+        setNotifications((prevNotifications) => {
+          const merged = data.map((serverNotif: any) => {
+            const localNotif = prevNotifications.find((n) => n.id === serverNotif.id)
+            // If this notification was recently updated, trust local state over server
+            if (pendingUpdates.current.has(serverNotif.id)) {
+              return localNotif || serverNotif
+            }
+            return serverNotif
+          })
+          return merged
+        })
       } else {
         console.error("Failed to fetch notifications")
       }
@@ -50,15 +61,15 @@ export function NotificationBell() {
     return () => clearInterval(interval)
   }, [])
 
-  // Don't refetch when sheet opens/closes to preserve optimistic updates
-  // Users can manually refresh by closing and reopening after the 30s poll
-
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const unreadNotifications = notifications.filter((n) => !n.isRead)
   const readNotifications = notifications.filter((n) => n.isRead)
 
   const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
+    
+    // Track this as a pending update
+    pendingUpdates.current.add(id)
     
     // Optimistically update local state immediately
     setNotifications((prev) =>
@@ -77,12 +88,18 @@ export function NotificationBell() {
       if (!response.ok) {
         console.error("Failed to mark notification as read")
         // If the update failed, refetch to get the correct state
+        pendingUpdates.current.delete(id)
         await fetchNotifications()
+      } else {
+        // On success, remove from pending after a short delay to avoid polling conflicts
+        setTimeout(() => {
+          pendingUpdates.current.delete(id)
+        }, 2000)
       }
-      // On success, just trust the optimistic update - don't refetch
     } catch (error) {
       console.error("Error marking notification as read:", error)
       // If there's an error, refetch to get the correct state
+      pendingUpdates.current.delete(id)
       await fetchNotifications()
     }
   }
@@ -163,11 +180,9 @@ export function NotificationBell() {
             <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors duration-200" />
             {unreadCount > 0 && (
               <>
-                {/* Pulse animation rings */}
                 <div className="absolute inset-0 rounded-full animate-pulse">
                   <div className="absolute inset-0 rounded-full border-2 border-red-500/30 -m-1" />
                 </div>
-                {/* Badge */}
                 <span className="absolute -top-2 -right-2 inline-flex items-center justify-center h-6 w-6 text-xs font-bold leading-none text-white bg-gradient-to-br from-red-500 to-red-600 rounded-full shadow-lg shadow-red-500/40 animate-pulse ring-2 ring-white dark:ring-slate-900">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
