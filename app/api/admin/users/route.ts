@@ -16,15 +16,67 @@ export async function GET() {
     const users = await all("SELECT id, name, email, balance, role, joinedAt, avatar, verified FROM users")
     
     // Enrich with investment and deposit data
-    const enrichedUsers = users.map((u: any) => ({
-      ...u,
-      verified: Boolean(u.verified),
-      totalBalance: Number(u.balance || 0),
-      totalInvested: 0,
-      activeInvestmentsCount: 0,
-      totalDeposits: 0,
-      totalProfit: 0,
-    }))
+    const enrichedUsers = users.map((u: any) => {
+      return {
+        ...u,
+        verified: Boolean(u.verified),
+        totalBalance: Number(u.balance || 0),
+        totalInvested: 0,
+        activeInvestmentsCount: 0,
+        totalDeposits: 0,
+        totalProfit: 0,
+      }
+    })
+    
+    // Try to add investment data for each user
+    for (const enrichedUser of enrichedUsers) {
+      try {
+        // Get total invested
+        const investmentResult = await all(
+          "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",
+          [enrichedUser.id]
+        )
+        if (investmentResult && investmentResult.length > 0) {
+          enrichedUser.totalInvested = Number(investmentResult[0]?.totalInvested) || 0
+        }
+
+        // Get active investment count
+        const countResult = await all(
+          "SELECT COUNT(*) as count FROM active_investments WHERE userId = ? AND status = 'active'",
+          [enrichedUser.id]
+        )
+        if (countResult && countResult.length > 0) {
+          enrichedUser.activeInvestmentsCount = Number(countResult[0]?.count) || 0
+        }
+
+        // Get total deposits
+        const depositsResult = await all(
+          "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'approved'",
+          [enrichedUser.id]
+        )
+        if (depositsResult && depositsResult.length > 0) {
+          enrichedUser.totalDeposits = Number(depositsResult[0]?.totalDeposits) || 0
+        }
+
+        // Get accumulated profit
+        const profitResult = await all(
+          "SELECT SUM(CAST(expectedProfit AS REAL) * CAST(progressPercentage AS REAL) / 100) as totalProfit FROM active_investments WHERE userId = ?",
+          [enrichedUser.id]
+        )
+        if (profitResult && profitResult.length > 0) {
+          enrichedUser.totalProfit = Number(profitResult[0]?.totalProfit) || 0
+        }
+
+        // Update totalBalance
+        enrichedUser.totalBalance = 
+          Number(enrichedUser.balance || 0) + 
+          Number(enrichedUser.totalInvested || 0) + 
+          Number(enrichedUser.totalProfit || 0)
+      } catch (err) {
+        console.warn(`Warning: Failed to enrich user ${enrichedUser.id}:`, err)
+        // Continue with basic data if enrichment fails
+      }
+    }
     
     return NextResponse.json(enrichedUsers)
   } catch (error) {
