@@ -17,22 +17,21 @@ if (DATABASE_URL) {
     const { Pool } = require('pg')
     pgPool = new Pool({ connectionString: DATABASE_URL, max: 1 })
     console.log('[DB INIT] PostgreSQL pool initialized successfully')
-    
-    // Test the connection immediately
+    // Test the connection immediately (sync)
     pgPool.query('SELECT 1', (err: any) => {
       if (err) {
         console.error('[DB INIT] PostgreSQL connection test failed:', err.message)
-        pgPool = null
+        throw new Error('[DB INIT] PostgreSQL connection failed: ' + err.message)
       } else {
         console.log('[DB INIT] PostgreSQL connection test successful')
       }
     })
   } catch (err: any) {
-    console.warn('[DB INIT] PostgreSQL not available, falling back to SQLite:', err.message)
-    pgPool = null
+    console.error('[DB INIT] PostgreSQL not available:', err.message)
+    throw new Error('[DB INIT] PostgreSQL not available: ' + err.message)
   }
 } else {
-  console.log('[DB INIT] DATABASE_URL not set, using SQLite')
+  throw new Error('[DB INIT] DATABASE_URL not set. PostgreSQL is required in production.')
 }
 
 const DB_PATH = path.join(process.cwd(), "vault.db")
@@ -186,138 +185,7 @@ async function initializePostgres() {
   await pgInitPromise
 }
 
-function getDb(): Database.Database {
-  if (_db) return _db
-
-  _db = new Database(DB_PATH)
-  _db.pragma("journal_mode = WAL")
-  _db.pragma("foreign_keys = ON")
-
-  // Create tables if they don't exist
-  _db.exec(`
-    CREATE TABLE IF NOT EXISTS _meta (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      passwordHash TEXT,
-      verified INTEGER NOT NULL DEFAULT 0,
-      role TEXT NOT NULL DEFAULT 'user',
-      balance REAL NOT NULL DEFAULT 0,
-      joinedAt TEXT NOT NULL,
-      avatar TEXT NOT NULL,
-      lastLogin TEXT
-    );
-
-    CREATE TABLE IF NOT EXISTS transactions (
-      id TEXT PRIMARY KEY,
-      userId TEXT NOT NULL,
-      type TEXT NOT NULL,
-      amount REAL NOT NULL,
-      status TEXT NOT NULL DEFAULT 'pending',
-      description TEXT NOT NULL,
-      date TEXT NOT NULL,
-      FOREIGN KEY (userId) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS investment_plans (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      minAmount REAL NOT NULL,
-      maxAmount REAL NOT NULL,
-      returnRate REAL NOT NULL,
-      duration INTEGER NOT NULL,
-      durationUnit TEXT NOT NULL,
-      risk TEXT NOT NULL,
-      description TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS active_investments (
-      id TEXT PRIMARY KEY,
-      userId TEXT NOT NULL,
-      planId TEXT NOT NULL,
-      planName TEXT NOT NULL,
-      amount REAL NOT NULL,
-      expectedProfit REAL NOT NULL,
-      startDate TEXT NOT NULL,
-      endDate TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'active',
-      progressPercentage REAL NOT NULL DEFAULT 0,
-      FOREIGN KEY (userId) REFERENCES users(id),
-      FOREIGN KEY (planId) REFERENCES investment_plans(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS wallet_addresses (
-      id TEXT PRIMARY KEY,
-      coin TEXT NOT NULL,
-      network TEXT NOT NULL,
-      address TEXT NOT NULL,
-      assignedTo TEXT,
-      assignedAt TEXT,
-      createdAt TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'active',
-      FOREIGN KEY (assignedTo) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS notifications (
-      id TEXT PRIMARY KEY,
-      userId TEXT NOT NULL,
-      title TEXT NOT NULL,
-      message TEXT NOT NULL,
-      type TEXT NOT NULL,
-      isRead INTEGER NOT NULL DEFAULT 0,
-      timestamp TEXT NOT NULL,
-      actionUrl TEXT,
-      FOREIGN KEY (userId) REFERENCES users(id)
-    );
-
-    CREATE TABLE IF NOT EXISTS verification_codes (
-      id TEXT PRIMARY KEY,
-      email TEXT NOT NULL,
-      code TEXT NOT NULL,
-      expiresAt TEXT NOT NULL,
-      used INTEGER NOT NULL DEFAULT 0
-    );
-
-    CREATE TABLE IF NOT EXISTS activity_log (
-      id TEXT PRIMARY KEY,
-      userId TEXT NOT NULL,
-      type TEXT NOT NULL,
-      description TEXT NOT NULL,
-      metadata TEXT,
-      timestamp TEXT NOT NULL,
-      FOREIGN KEY (userId) REFERENCES users(id)
-    );
-  `)
-
-  // Seed data on first run
-  const seeded = _db.prepare("SELECT value FROM _meta WHERE key = 'seeded'").get() as { value: string } | undefined
-  if (!seeded) {
-    seedDatabaseSync(_db)
-    _db.prepare("INSERT INTO _meta (key, value) VALUES ('seeded', 'true')").run()
-  }
-
-  // Run migrations
-  try {
-    const walletTable = _db.prepare("PRAGMA table_info(wallet_addresses)").all() as any[]
-    if (!walletTable.some(col => col.name === 'status')) {
-      _db.prepare("ALTER TABLE wallet_addresses ADD COLUMN status TEXT NOT NULL DEFAULT 'active'").run()
-    }
-    
-    const usersTable = _db.prepare("PRAGMA table_info(users)").all() as any[]
-    if (!usersTable.some(col => col.name === 'lastLogin')) {
-      _db.prepare("ALTER TABLE users ADD COLUMN lastLogin TEXT").run()
-    }
-  } catch (err) {
-    console.warn('Migration warning:', err)
-  }
-
-  return _db
-}
+// SQLite fallback removed for production. Only PostgreSQL is supported.
 
 // utility helpers to abstract sqlite / postgres differences
 function adaptSql(sql: string) {
