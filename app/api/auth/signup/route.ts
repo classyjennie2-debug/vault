@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     await createNotification({
       userId: id,
       title: "Welcome to Vault!",
-      message: `Hi ${name}, your account has been created. Start exploring investment opportunities and manage your portfolio with Vault.",
+      message: `Hi ${name}, your account has been created. Start exploring investment opportunities and manage your portfolio with Vault.`,
       type: "success",
     })
 
