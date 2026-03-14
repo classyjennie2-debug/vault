@@ -42,17 +42,17 @@ export function NotificationBell() {
     }
   }
 
-  // Fetch on initial mount and set up polling
+  // Fetch on initial mount and when sheet opens
   useEffect(() => {
     fetchNotifications()
-    
-    // Set up polling every 10 seconds to keep state fresh
-    const interval = setInterval(() => {
-      fetchNotifications()
-    }, 10000)
-    
-    return () => clearInterval(interval)
   }, [])
+
+  // Refetch whenever sheet opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchNotifications()
+    }
+  }, [isOpen])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const unreadNotifications = notifications.filter((n) => !n.isRead)
