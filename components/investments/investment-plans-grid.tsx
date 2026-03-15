@@ -57,10 +57,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
         {plans.map((plan, index) => {
           const minAmount = safeNumber(plan.minAmount, 1000)
           const maxAmount = safeNumber(plan.maxAmount, 500000)
-          const returnRate = safeNumber(plan.returnRate, 8)
-          const duration = safeNumber(plan.duration, 6)
-          const durationUnit = plan.durationUnit || "months"
-          
+          // Dynamic: rate and duration are user-selected, not fixed
           return (
             <div key={plan.id} className="relative">
               {/* Popular Badge */}
@@ -102,22 +99,19 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                           ${minAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </p>
                       </div>
+                      <div className="bg-white/5 rounded-lg p-3 backdrop-blur-sm">
+                        <p className="text-xs text-muted-foreground">Max Investment</p>
+                        <p className="text-lg font-bold text-card-foreground mt-1">
+                          ${maxAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Duration</p>
-                        <p className="text-sm font-semibold text-card-foreground mt-1">
-                          {formatDuration(duration, durationUnit)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Annual Return</p>
-                        <p className="flex items-center gap-1 text-sm font-semibold text-accent mt-1">
-                          <TrendingUp className="h-4 w-4" />
-                          {returnRate.toFixed(1)}%
-                        </p>
-                      </div>
+                    <div className="mt-3 text-xs text-accent font-semibold">
+                      <TrendingUp className="inline h-4 w-4 mr-1 align-text-bottom" />
+                      <span>Return rate and duration are flexible!</span>
+                      <br />
+                      <span>Choose any duration from 7 to 365 days. The longer you invest, the higher your profit (up to 30% annualized).</span>
                     </div>
 
                     <DialogTrigger asChild className="mt-auto">

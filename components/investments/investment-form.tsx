@@ -7,33 +7,36 @@ import { Label } from "@/components/ui/label"
 import type { InvestmentPlan } from "@/lib/types"
 import { AlertCircle, Check } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { safeNumber, validateInvestmentAmount, calculateExpectedProfit } from "@/lib/investment-utils"
+import { safeNumber, validateInvestmentAmount, calculateExpectedProfit, calculateDynamicReturnRate } from "@/lib/investment-utils"
 
 interface InvestmentFormProps {
   plan: InvestmentPlan
   onSuccess: () => void
 }
 
-export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
   // Safe plan values with proper null checking
   const minAmount = safeNumber(plan.minAmount, 100)
   const maxAmount = safeNumber(plan.maxAmount, Infinity)
   // Ensure initial amount is always at least minAmount and at least 100
   const initialAmount = Math.max(minAmount, 100)
-  
+
   const [amount, setAmount] = useState<string>(initialAmount.toString())
+  const [duration, setDuration] = useState<number>(7) // min 7 days
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const amountNum = safeNumber(amount, 0)
-  
+  const durationNum = safeNumber(duration, 7)
+
   // Use the imported validation function for min/max checking
   const validation = validateInvestmentAmount(amountNum, minAmount, maxAmount)
-  const isValid = validation.isValid && amountNum > 0
+  const isValid = validation.isValid && amountNum > 0 && durationNum >= 7
 
-  // Calculate expected profit based on return rate safely using utility function
-  const expectedProfit = calculateExpectedProfit(amountNum, plan.returnRate)
+  // Calculate dynamic return rate
+  const dynamicReturnRate = calculateDynamicReturnRate(durationNum)
+  // Calculate expected profit based on dynamic return rate
+  const expectedProfit = calculateExpectedProfit(amountNum, dynamicReturnRate)
   const totalReturn = Math.round((amountNum + expectedProfit) * 100) / 100
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,7 +54,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
       const res = await fetch("/api/investments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: plan.id, amount: roundedAmount, depositMethod: 'bank_transfer' }),
+        body: JSON.stringify({ planId: plan.id, amount: roundedAmount, duration: durationNum, depositMethod: 'bank_transfer' }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -145,11 +148,28 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
         </p>
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="duration">Investment Duration (days)</Label>
+        <Input
+          id="duration"
+          type="number"
+          min={7}
+          max={365}
+          step={1}
+          value={duration}
+          onChange={e => setDuration(Number(e.target.value))}
+          className="pl-3"
+        />
+        <p className="text-xs text-muted-foreground">
+          Minimum: 7 days. Longer duration = higher profit.
+        </p>
+      </div>
+
       {!isValid && amount && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {validation.error || "Please enter a valid investment amount"}
+            {validation.error || "Please enter a valid investment amount and duration (min 7 days)"}
           </AlertDescription>
         </Alert>
       )}
@@ -167,12 +187,12 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Return Rate:</span>
-            <span className="font-medium text-accent">{(plan.returnRate || 0)}%</span>
+            <span className="font-medium text-accent">{dynamicReturnRate.toFixed(2)}%</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Duration:</span>
             <span className="font-medium text-card-foreground">
-              {plan.duration || 0} {plan.durationUnit || "months"}
+              {durationNum} days
             </span>
           </div>
           <div className="border-t border-border pt-2 mt-2 flex justify-between">

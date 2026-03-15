@@ -40,8 +40,11 @@ export async function PUT(
       [notificationId]
     )
     
-    if (!updatedNotification || !updatedNotification.isRead) {
-      console.error(`Failed to mark notification ${notificationId} as read`)
+    const isReadValue = updatedNotification?.isRead;
+    const isReadBool = Boolean(Number(isReadValue));
+    console.log(`[API] Notification update check: id=${notificationId}, isRead=`, isReadValue, `type=`, typeof isReadValue, `asBool=`, isReadBool);
+    if (!updatedNotification || !isReadBool) {
+      console.error(`Failed to mark notification ${notificationId} as read (isRead value:`, isReadValue, ", type:", typeof isReadValue, ", asBool:", isReadBool, ")")
       return NextResponse.json(
         { error: "Failed to update notification" },
         { status: 500 }

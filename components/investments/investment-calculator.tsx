@@ -22,12 +22,14 @@ import { TrendingUp } from "lucide-react"
 export function InvestmentCalculator() {
   const [selectedPlanId, setSelectedPlanId] = useState<string>("")
   const [amount, setAmount] = useState<string>("1000")
+  import { calculateDynamicReturnRate, safeNumber, calculateExpectedProfit } from "@/lib/investment-utils"
   const [plans, setPlans] = useState<InvestmentPlan[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
+    const [duration, setDuration] = useState<number>(7)
         const res = await fetch("/api/investment-plans")
         if (res.ok) {
           const data = await res.json()
@@ -49,6 +51,7 @@ export function InvestmentCalculator() {
   if (loading) return <div>Loading calculator...</div>
   if (!selectedPlan) return null
 
+    const durationNum = safeNumber(duration, 7)
   // plan might not include fees (real data), so default to zero
   const fees = selectedPlan.fees || { management: 0, performance: 0, withdrawal: 0 }
 
@@ -57,7 +60,9 @@ export function InvestmentCalculator() {
   
   // Convert duration to years for fee calculation
   let durationInYears = selectedPlan.duration || 0
-  if (selectedPlan.durationUnit === "months") {
+    // Dynamic return rate based on duration
+    const dynamicReturnRate = calculateDynamicReturnRate(durationNum)
+    const grossProfit = calculateExpectedProfit(investmentAmount, dynamicReturnRate)
     durationInYears = selectedPlan.duration / 12
   } else if (selectedPlan.durationUnit === "days") {
     durationInYears = selectedPlan.duration / 365
@@ -103,6 +108,20 @@ export function InvestmentCalculator() {
           <Label htmlFor="amount-input" className="text-sm sm:text-base">Investment Amount ($)</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base">
+          <div className="space-y-2">
+            <Label htmlFor="duration-input" className="text-sm sm:text-base">Investment Duration (days)</Label>
+            <Input
+              id="duration-input"
+              type="number"
+              min={7}
+              max={365}
+              step={1}
+              value={duration}
+              onChange={e => setDuration(Number(e.target.value))}
+              className="h-11 sm:h-10 text-base sm:text-sm"
+            />
+            <p className="text-xs text-muted-foreground">Minimum: 7 days. Longer duration = higher profit.</p>
+          </div>
               $
             </span>
             <Input
@@ -138,7 +157,7 @@ export function InvestmentCalculator() {
                 {selectedPlan.returnRate}%
               </span>
             </div>
-
+              <span className="font-bold text-accent text-base">{dynamicReturnRate.toFixed(2)}%</span>
             <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
               <span className="text-muted-foreground">Management Fee:</span>
               <span className="text-orange-600">

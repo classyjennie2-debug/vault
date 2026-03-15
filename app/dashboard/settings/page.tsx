@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Card,
   CardContent,
@@ -36,13 +36,78 @@ export default function SettingsPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [saved, setSaved] = useState(false)
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [passwordSuccess, setPasswordSuccess] = useState("")
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPasswordError("")
+    setPasswordSuccess("")
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError("All fields are required.")
+      return
+    }
+    if (newPassword.length < 8) {
+      setPasswordError("New password must be at least 8 characters.")
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match.")
+      return
+    }
+    setIsUpdatingPassword(true)
+    const res = await fetch("/api/auth/update-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+    const data = await res.json()
+    setIsUpdatingPassword(false)
+    if (!res.ok) {
+      setPasswordError(data.error || "Failed to update password.")
+      return
+    }
+    setPasswordSuccess("Password updated successfully.")
+    setCurrentPassword("")
+    setNewPassword("")
+    setConfirmPassword("")
+  }
 
   const [userSettings, setUserSettings] = useState({
-    fullName: "Alexandra Chen",
-    email: "alex@example.com",
-    phone: "+1 (555) 123-4567",
+    fullName: "",
+    email: "",
+    phone: "",
     timezone: "EST",
   })
+  const [loadingUser, setLoadingUser] = useState(true)
+  const [userError, setUserError] = useState("")
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoadingUser(true)
+      setUserError("")
+      try {
+        const res = await fetch("/api/user/balance")
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || "Failed to fetch user info")
+        setUserSettings((prev) => ({
+          ...prev,
+          fullName: data?.user?.name || "",
+          email: data?.user?.email || "",
+          // phone is not in DB yet, leave blank or fetch if available
+        }))
+      } catch (e: any) {
+        setUserError(e.message || "Failed to fetch user info")
+      } finally {
+        setLoadingUser(false)
+      }
+    }
+    fetchUser()
+  }, [])
 
   const [securitySettings, setSecuritySettings] = useState({
     twoFactorEnabled: true,
@@ -112,17 +177,18 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+
           <div>
             <Label htmlFor="fullName">Full Name</Label>
             <Input
               id="fullName"
               value={userSettings.fullName}
-              onChange={(e) =>
-                setUserSettings({ ...userSettings, fullName: e.target.value })
-              }
-              className="mt-1"
+              readOnly
+              disabled
+              className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
             />
           </div>
+
 
           <div>
             <Label htmlFor="email">Email Address</Label>
@@ -136,6 +202,7 @@ export default function SettingsPage() {
               className="mt-1"
             />
           </div>
+
 
           <div>
             <Label htmlFor="phone">Phone Number</Label>
@@ -167,11 +234,14 @@ export default function SettingsPage() {
             </Select>
           </div>
 
-          <Button onClick={handleSaveSettings} className="flex items-center gap-2">
+          <Button onClick={handleSaveSettings} className="flex items-center gap-2" disabled={loadingUser}>
             <Save className="h-4 w-4" />
-            Save Changes
+            {loadingUser ? "Loading..." : "Save Changes"}
           </Button>
 
+          {userError && (
+            <div className="p-3 bg-red-500/10 text-red-600 rounded-lg text-sm">{userError}</div>
+          )}
           {saved && (
             <div className="p-3 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg text-sm">
               ✓ Settings saved successfully
@@ -234,7 +304,8 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-border space-y-4">
+
+          <form className="pt-4 border-t border-border space-y-4" onSubmit={handleUpdatePassword}>
             <h3 className="font-semibold text-sm">Change Password</h3>
             <div>
               <Label htmlFor="currentPassword">Current Password</Label>
@@ -243,6 +314,8 @@ export default function SettingsPage() {
                   id="currentPassword"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -265,6 +338,8 @@ export default function SettingsPage() {
                 type="password"
                 placeholder="••••••••"
                 className="mt-1"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
               />
             </div>
 
@@ -275,11 +350,22 @@ export default function SettingsPage() {
                 type="password"
                 placeholder="••••••••"
                 className="mt-1"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
               />
             </div>
 
-            <Button variant="outline">Update Password</Button>
-          </div>
+            {passwordError && (
+              <div className="p-2 bg-red-500/10 text-red-600 rounded text-sm">{passwordError}</div>
+            )}
+            {passwordSuccess && (
+              <div className="p-2 bg-green-500/10 text-green-600 rounded text-sm">{passwordSuccess}</div>
+            )}
+
+            <Button variant="outline" type="submit" disabled={isUpdatingPassword}>
+              {isUpdatingPassword ? "Updating..." : "Update Password"}
+            </Button>
+          </form>
 
           <div className="p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-sm">
             Last password change: {securitySettings.passwordLastChanged}

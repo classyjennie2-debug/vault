@@ -37,6 +37,13 @@ if (DATABASE_URL) {
 const DB_PATH = path.join(process.cwd(), "vault.db")
 
 let _db: Database.Database | null = null
+
+function getDb(): Database.Database {
+  if (!_db) {
+    _db = new Database(DB_PATH)
+  }
+  return _db
+}
 let pgInitPromise: Promise<void> | null = null
 
 async function initializePostgres() {
@@ -265,19 +272,53 @@ export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []):
   return result
 }
 
+
+// Dynamic plan templates (no fixed duration/rate)
+const planTemplates = [
+  {
+    id: "p1",
+    name: "Flexible Growth Plan",
+    minAmount: 500,
+    maxAmount: 1000000,
+    risk: "Medium",
+    description: "Choose your own duration. The longer you invest, the higher your return!"
+  },
+  {
+    id: "p2",
+    name: "High Yield Staking",
+    minAmount: 1000,
+    maxAmount: 2000000,
+    risk: "High",
+    description: "Maximize your profit with longer staking periods."
+  },
+  {
+    id: "p3",
+    name: "Safe Starter Plan",
+    minAmount: 100,
+    maxAmount: 50000,
+    risk: "Low",
+    description: "Ideal for new investors. Flexible duration, steady returns."
+  }
+]
+
 function seedDatabaseSync(db: Database.Database) {
-  // ── Investment Plans ────────────────────────────────────────────────
+  // Only insert plan templates (no fixed duration/rate)
   const insertPlan = db.prepare(
     "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
   )
-
-  const plans = [
-    ["p1", "Conservative Bond Fund", 1000, 100000, 6.5, 12, "months", "Low", "A stable, low-risk fund investing primarily in government and corporate bonds. Ideal for capital preservation with steady returns."],
-    ["p2", "Growth Portfolio", 5000, 500000, 12.8, 6, "months", "Medium", "A balanced portfolio combining equities and fixed income for moderate growth. Designed for investors seeking higher returns with manageable risk."],
-    ["p3", "High Yield Equity Fund", 10000, 1000000, 22.5, 3, "months", "High", "An aggressive equity fund targeting high-growth sectors. Suitable for experienced investors with higher risk tolerance."],
-    ["p4", "Real Estate Trust", 25000, 500000, 9.2, 24, "months", "Medium", "Diversified real estate investment trust providing exposure to commercial and residential properties with quarterly dividends."],
-  ]
-  for (const p of plans) insertPlan.run(...p)
+  for (const tpl of planTemplates) {
+    insertPlan.run(
+      tpl.id,
+      tpl.name,
+      tpl.minAmount,
+      tpl.maxAmount,
+      0, // returnRate (dynamic)
+      0, // duration (user-chosen)
+      "days", // durationUnit
+      tpl.risk,
+      tpl.description
+    )
+  }
 }
 
 async function seedDatabasePostgres() {
@@ -288,27 +329,23 @@ async function seedDatabasePostgres() {
 
   const pool = pgPool
 
-  // Only seed investment plans - no mock users or transactions
-
-  // ── Investment Plans ────────────────────────────────────────────────
-  const plans = [
-    ["p1", "Conservative Bond Fund", 1000, 100000, 6.5, 12, "months", "Low", "A stable, low-risk fund investing primarily in government and corporate bonds. Ideal for capital preservation with steady returns."],
-    ["p2", "Growth Portfolio", 5000, 500000, 12.8, 6, "months", "Medium", "A balanced portfolio combining equities and fixed income for moderate growth. Designed for investors seeking higher returns with manageable risk."],
-    ["p3", "High Yield Equity Fund", 10000, 1000000, 22.5, 3, "months", "High", "An aggressive equity fund targeting high-growth sectors. Suitable for experienced investors with higher risk tolerance."],
-    ["p4", "Real Estate Trust", 25000, 500000, 9.2, 24, "months", "Medium", "Diversified real estate investment trust providing exposure to commercial and residential properties with quarterly dividends."],
-  ]
-  for (const p of plans) {
+  // Only seed plan templates (no fixed duration/rate)
+  for (const tpl of planTemplates) {
     await pool.query(
       "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO NOTHING",
-      p
+      [
+        tpl.id,
+        tpl.name,
+        tpl.minAmount,
+        tpl.maxAmount,
+        0, // returnRate (dynamic)
+        0, // duration (user-chosen)
+        "days",
+        tpl.risk,
+        tpl.description
+      ]
     )
   }
-
-  // Active investments seeded by real user data only
-
-  // Wallet addresses seeded by real user data only
-
-  // Notifications seeded by real user data only
 }
 
 

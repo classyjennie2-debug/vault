@@ -1,4 +1,31 @@
 /**
+ * Calculate dynamic return rate based on duration (days)
+ * - 7 days: 2%
+ * - 30 days: 7%
+ * - 90 days: 15%
+ * - 180 days: 21%
+ * - 365 days: 30%
+ * Linear interpolation for in-between. Capped at 30%.
+ */
+export function calculateDynamicReturnRate(durationDays: number): number {
+  if (durationDays < 7) return 0
+  if (durationDays >= 365) return 30
+  if (durationDays >= 180) {
+    // 180-365: 21% to 30%
+    return 21 + ((durationDays - 180) / (365 - 180)) * (30 - 21)
+  }
+  if (durationDays >= 90) {
+    // 90-180: 15% to 21%
+    return 15 + ((durationDays - 90) / (180 - 90)) * (21 - 15)
+  }
+  if (durationDays >= 30) {
+    // 30-90: 7% to 15%
+    return 7 + ((durationDays - 30) / (90 - 30)) * (15 - 7)
+  }
+  // 7-30: 2% to 7%
+  return 2 + ((durationDays - 7) / (30 - 7)) * (7 - 2)
+}
+/**
  * Investment Utility Functions
  * Handles all calculations for investment progress and accumulated profit
  */

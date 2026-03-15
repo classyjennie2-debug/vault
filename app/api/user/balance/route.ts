@@ -29,6 +29,15 @@ export async function GET(req: NextRequest) {
     const availableBalance = Math.max(0, userData.balance)
 
     return NextResponse.json({
+      user: {
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        balance: userData.balance,
+        joinedAt: userData.joinedAt,
+        avatar: userData.avatar,
+      },
       balance: userData.balance,
       totalInvested,
       totalProfit,

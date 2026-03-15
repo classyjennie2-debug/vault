@@ -84,7 +84,7 @@ export function NotificationBell() {
     // Sync to server immediately
     try {
       const response = await fetch("/api/notifications/" + id + "/read", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
