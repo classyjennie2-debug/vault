@@ -97,9 +97,9 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                         </p>
                       </div>
                       <div className="bg-white/5 rounded-lg p-3 backdrop-blur-sm">
-                        <p className="text-xs text-muted-foreground">7-Day Return</p>
+                        <p className="text-xs text-muted-foreground">1-Year Return</p>
                         <p className="text-lg font-bold text-accent mt-1">
-                          {displayRate.toFixed(2)}%
+                          {annualRate.toFixed(1)}%
                         </p>
                       </div>
                     </div>
@@ -108,13 +108,13 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                       <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-accent/20">
                         <Flame className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-semibold text-accent">Flexible Duration</p>
-                          <p className="text-muted-foreground">7 to 365 days with compound returns</p>
+                          <p className="font-semibold text-accent">Duration: Flexible 7-365 Days</p>
+                          <p className="text-muted-foreground">Choose your investment period for optimal returns</p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between px-2 py-1">
-                        <span className="text-muted-foreground">Annual Potential:</span>
-                        <span className="font-bold text-accent">{annualRate.toFixed(0)}%</span>
+                      <div className="flex items-center justify-between px-3 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
+                        <span className="text-muted-foreground font-semibold">1-Year Return Rate:</span>
+                        <span className="font-bold text-green-600 dark:text-green-400">{annualRate.toFixed(1)}%</span>
                       </div>
                     </div>
 

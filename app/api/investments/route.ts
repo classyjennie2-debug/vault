@@ -130,18 +130,9 @@ export async function POST(req: NextRequest) {
 
     const startDate = new Date().toISOString()
     
-    // Compute end date by adding plan's default duration safely
+    // Compute end date by adding the user's selected duration (in days)
     const end = new Date()
-    const planDuration = safeNumber(plan.duration, 0)
-    const durationUnit = plan.durationUnit || "months"
-
-    if (durationUnit === "months") {
-      end.setMonth(end.getMonth() + planDuration)
-    } else if (durationUnit === "years") {
-      end.setFullYear(end.getFullYear() + planDuration)
-    } else if (durationUnit === "days") {
-      end.setDate(end.getDate() + planDuration)
-    }
+    end.setDate(end.getDate() + durationDays)
     
     const endDate = end.toISOString()
     const investmentId = uuidv4()
