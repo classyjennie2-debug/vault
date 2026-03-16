@@ -9,7 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Notification } from "@/lib/types"
@@ -19,20 +19,16 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
-  const localReadStateRef = useRef<Set<string>>(new Set())
+  const [updatingNotification, setUpdatingNotification] = useState<string | null>(null)
 
   const fetchNotifications = async () => {
     try {
       const response = await fetch("/api/notifications")
       if (response.ok) {
         const data = await response.json()
-        
-        // Merge server data with local read state
-        // If we've marked something as read locally, keep it marked as read
-        // even if the server shows it as unread (gives server time to catch up)
         setNotifications(data.map((notif: any) => ({
           ...notif,
-          isRead: localReadStateRef.current.has(notif.id) ? true : Boolean(notif.isRead)
+          isRead: Boolean(notif.isRead)
         })))
       } else {
         console.error("Failed to fetch notifications")
@@ -47,11 +43,11 @@ export function NotificationBell() {
     fetchNotifications()
   }, [])
 
-  // Poll for new notifications every 8 seconds
+  // Poll for new notifications every 3 seconds (more aggressive)
   useEffect(() => {
     const interval = setInterval(() => {
       fetchNotifications()
-    }, 8000)
+    }, 3000)
     
     return () => clearInterval(interval)
   }, [])
@@ -70,18 +66,14 @@ export function NotificationBell() {
   const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
     
-    // Track that we've marked this as read locally
-    localReadStateRef.current.add(id)
-    
-    // Optimistically update local state immediately
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-    )
-    
-    // Clear any previous error
+    setUpdatingNotification(id)
     setErrorMessage("")
     
-    // Sync to server immediately
+    // Immediately update local state to reflect the change
+    setNotifications(prev => prev.map(n => 
+      n.id === id ? { ...n, isRead: true } : n
+    ))
+    
     try {
       const response = await fetch("/api/notifications/" + id + "/read", {
         method: "PUT",
@@ -95,29 +87,25 @@ export function NotificationBell() {
         const errorMsg = errorData.error || "Failed to mark notification as read"
         console.error("API Error:", errorMsg)
         setErrorMessage(errorMsg)
-        
-        // On failure, remove from local tracking so it can be refetched
-        localReadStateRef.current.delete(id)
-        
-        // Refetch to get actual state from server
-        setTimeout(() => {
-          fetchNotifications()
-        }, 500)
+        // Revert the local state if the API call fails
+        setNotifications(prev => prev.map(n => 
+          n.id === id ? { ...n, isRead: false } : n
+        ))
       } else {
-        // Success - notification is persisted
-        console.log("Notification marked as read and persisted successfully")
+        // On success, refetch to confirm server state and catch any missed updates
+        console.log("Notification marked as read - refetching to confirm")
+        await new Promise(resolve => setTimeout(resolve, 200))
+        await fetchNotifications()
       }
     } catch (error) {
       console.error("Error marking notification as read:", error)
       setErrorMessage("Network error - notification update failed")
-      
-      // On error, remove from local tracking
-      localReadStateRef.current.delete(id)
-      
-      // Refetch to get actual state from server
-      setTimeout(() => {
-        fetchNotifications()
-      }, 500)
+      // Revert the local state on network error
+      setNotifications(prev => prev.map(n => 
+        n.id === id ? { ...n, isRead: false } : n
+      ))
+    } finally {
+      setUpdatingNotification(null)
     }
   }
 

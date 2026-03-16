@@ -7,7 +7,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { getInvestmentPlansFromDb } from "@/lib/db"
-import { safeNumber, formatCurrency } from "@/lib/investment-utils"
+import { safeNumber, formatCurrency, getPlanAnnualRate } from "@/lib/investment-utils"
 import { Shield, TrendingUp, AlertTriangle, Clock, DollarSign } from "lucide-react"
 
 const riskConfig = {
@@ -51,7 +51,8 @@ export default async function PlansPage() {
           // Safe value extraction
           const minAmount = safeNumber(plan.minAmount, 0)
           const maxAmount = safeNumber(plan.maxAmount, Infinity)
-          const returnRate = safeNumber(plan.returnRate, 0)
+          // Get the annual return rate based on plan type
+          const annualReturnRate = getPlanAnnualRate(plan.planType || "Conservative Bond Fund")
           const duration = safeNumber(plan.duration, 0)
           const durationUnit = plan.durationUnit || "months"
           const risk = riskConfig[plan.risk as keyof typeof riskConfig] || riskConfig.Medium
@@ -84,7 +85,7 @@ export default async function PlansPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-accent">
-                      {returnRate.toFixed(1)}%
+                      {annualReturnRate.toFixed(1)}%
                     </p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                       Annual Return

@@ -32,24 +32,20 @@ export async function PUT(
     }
 
     // Mark the notification as read in database
-    await markNotificationAsRead(notificationId)
+    const updateSuccess = await markNotificationAsRead(notificationId)
     
-    // Verify the update was successful by fetching the notification again
-    const updatedNotification = await get(
-      "SELECT * FROM notifications WHERE id = ?",
-      [notificationId]
-    )
-    
-    const isReadValue = updatedNotification?.isRead;
-    const isReadBool = Boolean(Number(isReadValue));
-    console.log(`[API] Notification update check: id=${notificationId}, isRead=`, isReadValue, `type=`, typeof isReadValue, `asBool=`, isReadBool);
-    if (!updatedNotification || !isReadBool) {
-      console.error(`Failed to mark notification ${notificationId} as read (isRead value:`, isReadValue, ", type:", typeof isReadValue, ", asBool:", isReadBool, ")")
+    if (!updateSuccess) {
       return NextResponse.json(
         { error: "Failed to update notification" },
         { status: 500 }
       )
     }
+    
+    // Fetch the updated notification
+    const updatedNotification = await get(
+      "SELECT * FROM notifications WHERE id = ?",
+      [notificationId]
+    )
 
     return NextResponse.json({ success: true, notification: updatedNotification })
   } catch (error) {

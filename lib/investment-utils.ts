@@ -1,29 +1,57 @@
 /**
- * Calculate dynamic return rate based on duration (days)
- * - 7 days: 2%
- * - 30 days: 7%
- * - 90 days: 15%
- * - 180 days: 21%
- * - 365 days: 30%
- * Linear interpolation for in-between. Capped at 30%.
+ * Calculate return rate based on plan type and duration
+ * Each plan has different base rates and risk profiles
+ */
+export function calculateReturnRate(durationDays: number, planType: string = "Conservative Bond Fund"): number {
+  if (durationDays < 7) return 0
+  
+  // Plan-specific base returns for 7 days
+  const planBaseReturns: Record<string, number> = {
+    "Conservative Bond Fund": 0.217,      // 21.7% for 7 days
+    "Growth Portfolio": 0.35,             // 35% for 7 days (1.61x Conservative)
+    "High Yield Equity Fund": 0.50,       // 50% for 7 days (2.30x Conservative)
+    "Real Estate Trust": 0.40              // 40% for 7 days (1.84x Conservative)
+  }
+  
+  // Plan-specific caps to show differentiation
+  const planCaps: Record<string, number> = {
+    "Conservative Bond Fund": 800,        // Conservative caps at 800%
+    "Growth Portfolio": 1200,             // Growth goes higher at 1200%
+    "High Yield Equity Fund": 2000,       // High Yield even higher at 2000%
+    "Real Estate Trust": 1000              // Real Estate at 1000%
+  }
+  
+  const baseReturn = planBaseReturns[planType] || 0.217
+  const cap = planCaps[planType] || 800
+  
+  // Compound return: (1 + baseReturn)^(durationDays/7) - 1
+  const cyclesOf7 = durationDays / 7
+  const compoundReturn = (Math.pow(1 + baseReturn, cyclesOf7) - 1) * 100
+  
+  // Apply plan-specific cap to show differentiation between plans
+  return Math.min(compoundReturn, cap)
+}
+
+/**
+ * Get the display return rate for a plan (7-day rate for marketing)
+ */
+export function getPlanDisplayRate(planType: string = "Conservative Bond Fund"): number {
+  return calculateReturnRate(7, planType)
+}
+
+/**
+ * Get the annual return rate for a plan (365-day rate)
+ */
+export function getPlanAnnualRate(planType: string = "Conservative Bond Fund"): number {
+  return calculateReturnRate(365, planType)
+}
+
+/**
+ * Calculate dynamic return rate based on duration (days) - DEPRECATED
+ * Use calculateReturnRate instead
  */
 export function calculateDynamicReturnRate(durationDays: number): number {
-  if (durationDays < 7) return 0
-  if (durationDays >= 365) return 30
-  if (durationDays >= 180) {
-    // 180-365: 21% to 30%
-    return 21 + ((durationDays - 180) / (365 - 180)) * (30 - 21)
-  }
-  if (durationDays >= 90) {
-    // 90-180: 15% to 21%
-    return 15 + ((durationDays - 90) / (180 - 90)) * (21 - 15)
-  }
-  if (durationDays >= 30) {
-    // 30-90: 7% to 15%
-    return 7 + ((durationDays - 30) / (90 - 30)) * (15 - 7)
-  }
-  // 7-30: 2% to 7%
-  return 2 + ((durationDays - 7) / (30 - 7)) * (7 - 2)
+  return calculateReturnRate(durationDays, "Conservative Bond Fund")
 }
 /**
  * Investment Utility Functions

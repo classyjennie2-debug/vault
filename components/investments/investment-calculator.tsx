@@ -18,18 +18,18 @@ import {
 } from "@/components/ui/select"
 import type { InvestmentPlan } from "@/lib/types"
 import { TrendingUp } from "lucide-react"
+import { calculateReturnRate, safeNumber, calculateExpectedProfit } from "@/lib/investment-utils"
 
 export function InvestmentCalculator() {
   const [selectedPlanId, setSelectedPlanId] = useState<string>("")
   const [amount, setAmount] = useState<string>("1000")
-  import { calculateDynamicReturnRate, safeNumber, calculateExpectedProfit } from "@/lib/investment-utils"
+  const [duration, setDuration] = useState<number>(7)
   const [plans, setPlans] = useState<InvestmentPlan[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-    const [duration, setDuration] = useState<number>(7)
         const res = await fetch("/api/investment-plans")
         if (res.ok) {
           const data = await res.json()
@@ -47,22 +47,22 @@ export function InvestmentCalculator() {
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId)
   const investmentAmount = parseFloat(amount) || 0
+  const durationNum = safeNumber(duration, 7)
 
   if (loading) return <div>Loading calculator...</div>
   if (!selectedPlan) return null
 
-    const durationNum = safeNumber(duration, 7)
   // plan might not include fees (real data), so default to zero
   const fees = selectedPlan.fees || { management: 0, performance: 0, withdrawal: 0 }
 
-  // Calculate returns with optional fees
-  const grossProfit = (investmentAmount * selectedPlan.returnRate) / 100
-  
+  // Dynamic return rate based on duration and plan type
+  const planTypeToUse = selectedPlan.planType || "Conservative Bond Fund"
+  const dynamicReturnRate = calculateReturnRate(durationNum, planTypeToUse)
+  const grossProfit = calculateExpectedProfit(investmentAmount, dynamicReturnRate)
+
   // Convert duration to years for fee calculation
   let durationInYears = selectedPlan.duration || 0
-    // Dynamic return rate based on duration
-    const dynamicReturnRate = calculateDynamicReturnRate(durationNum)
-    const grossProfit = calculateExpectedProfit(investmentAmount, dynamicReturnRate)
+  if (selectedPlan.durationUnit === "months") {
     durationInYears = selectedPlan.duration / 12
   } else if (selectedPlan.durationUnit === "days") {
     durationInYears = selectedPlan.duration / 365
@@ -97,7 +97,7 @@ export function InvestmentCalculator() {
             <SelectContent>
               {plans.map((plan) => (
                 <SelectItem key={plan.id} value={plan.id} className="text-sm">
-                  {plan.name} ({plan.returnRate}% return)
+                  {plan.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -105,23 +105,28 @@ export function InvestmentCalculator() {
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="duration-input" className="text-sm sm:text-base">Investment Duration</Label>
+          <select
+            id="duration-input"
+            value={duration}
+            onChange={e => setDuration(Number(e.target.value))}
+            className="w-full h-11 sm:h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-slate-800 text-foreground text-base sm:text-sm"
+          >
+            <option value={7}>7 Days</option>
+            <option value={14}>14 Days (2 weeks)</option>
+            <option value={30}>30 Days (1 month)</option>
+            <option value={60}>60 Days (2 months)</option>
+            <option value={90}>90 Days (3 months)</option>
+            <option value={180}>180 Days (6 months)</option>
+            <option value={365}>365 Days (1 year)</option>
+          </select>
+          <p className="text-xs text-muted-foreground">Longer duration = higher profit!</p>
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="amount-input" className="text-sm sm:text-base">Investment Amount ($)</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base">
-          <div className="space-y-2">
-            <Label htmlFor="duration-input" className="text-sm sm:text-base">Investment Duration (days)</Label>
-            <Input
-              id="duration-input"
-              type="number"
-              min={7}
-              max={365}
-              step={1}
-              value={duration}
-              onChange={e => setDuration(Number(e.target.value))}
-              className="h-11 sm:h-10 text-base sm:text-sm"
-            />
-            <p className="text-xs text-muted-foreground">Minimum: 7 days. Longer duration = higher profit.</p>
-          </div>
               $
             </span>
             <Input
@@ -140,59 +145,19 @@ export function InvestmentCalculator() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg p-3 sm:p-4 space-y-2 sm:space-y-3">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
-              <span className="text-muted-foreground">
-                Investment Amount:
-              </span>
-              <span className="font-bold text-card-foreground">
-                ${investmentAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
-              <span className="text-muted-foreground">Gross Return Rate:</span>
-              <span className="font-bold text-accent">
-                {selectedPlan.returnRate}%
-              </span>
-            </div>
-              <span className="font-bold text-accent text-base">{dynamicReturnRate.toFixed(2)}%</span>
-            <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
-              <span className="text-muted-foreground">Management Fee:</span>
-              <span className="text-orange-600">
-                -${managementFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
-              <span className="text-muted-foreground">Performance Fee:</span>
-              <span className="text-orange-600">
-                -${performanceFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </span>
-            </div>
-
-            <div className="border-t border-border/50 pt-2">
-              <div className="flex items-center justify-between text-xs sm:text-sm gap-2 font-medium">
-                <span className="text-muted-foreground">Net Return:</span>
-                <span className="text-green-600">
-                  ${netProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })} ({netReturnRate.toFixed(1)}%)
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-xs sm:text-base gap-2 font-medium mt-1">
-                <span className="text-muted-foreground">Total Value:</span>
-                <span className="text-card-foreground">
-                  ${totalReturn.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                </span>
-              </div>
-            </div>
+        <div className="space-y-2">
+          <Label className="text-sm sm:text-base">Estimated Returns</Label>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">Gross Profit:</span>
+            <span className="font-bold text-accent text-base">${grossProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
           </div>
-
-          <div className="text-xs text-muted-foreground pt-2 space-y-1">
-            <p>📅 Duration: {selectedPlan.duration} {selectedPlan.durationUnit}</p>
-            <p>⚠️ Risk Level: {selectedPlan.risk}</p>
-            <p>🏷️ Category: {selectedPlan.category ?? "—"}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">Total Return:</span>
+            <span className="font-bold text-card-foreground text-base">${totalReturn.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">Return Rate:</span>
+            <span className="font-bold text-accent text-base">{dynamicReturnRate.toFixed(2)}%</span>
           </div>
         </div>
       </CardContent>

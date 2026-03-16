@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label"
 import type { InvestmentPlan } from "@/lib/types"
 import { AlertCircle, Check } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { safeNumber, validateInvestmentAmount, calculateExpectedProfit, calculateDynamicReturnRate } from "@/lib/investment-utils"
+import { safeNumber, validateInvestmentAmount, calculateExpectedProfit, calculateReturnRate } from "@/lib/investment-utils"
 
 interface InvestmentFormProps {
   plan: InvestmentPlan
   onSuccess: () => void
 }
 
+export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
   // Safe plan values with proper null checking
   const minAmount = safeNumber(plan.minAmount, 100)
   const maxAmount = safeNumber(plan.maxAmount, Infinity)
@@ -33,8 +34,9 @@ interface InvestmentFormProps {
   const validation = validateInvestmentAmount(amountNum, minAmount, maxAmount)
   const isValid = validation.isValid && amountNum > 0 && durationNum >= 7
 
-  // Calculate dynamic return rate
-  const dynamicReturnRate = calculateDynamicReturnRate(durationNum)
+  // Calculate dynamic return rate based on plan type
+  const planTypeToUse = plan.planType || "Conservative Bond Fund"
+  const dynamicReturnRate = calculateReturnRate(durationNum, planTypeToUse)
   // Calculate expected profit based on dynamic return rate
   const expectedProfit = calculateExpectedProfit(amountNum, dynamicReturnRate)
   const totalReturn = Math.round((amountNum + expectedProfit) * 100) / 100
@@ -149,19 +151,23 @@ interface InvestmentFormProps {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="duration">Investment Duration (days)</Label>
-        <Input
+        <Label htmlFor="duration">Investment Duration</Label>
+        <select
           id="duration"
-          type="number"
-          min={7}
-          max={365}
-          step={1}
           value={duration}
           onChange={e => setDuration(Number(e.target.value))}
-          className="pl-3"
-        />
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-slate-800 text-foreground"
+        >
+          <option value={7}>7 Days</option>
+          <option value={14}>14 Days (2 weeks)</option>
+          <option value={30}>30 Days (1 month)</option>
+          <option value={60}>60 Days (2 months)</option>
+          <option value={90}>90 Days (3 months)</option>
+          <option value={180}>180 Days (6 months)</option>
+          <option value={365}>365 Days (1 year)</option>
+        </select>
         <p className="text-xs text-muted-foreground">
-          Minimum: 7 days. Longer duration = higher profit.
+          Longer duration = higher profit!
         </p>
       </div>
 

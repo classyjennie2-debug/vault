@@ -22,8 +22,11 @@ export function loadTawkChat() {
       return
     }
 
-    // If already loaded, just open it
+    // If already loaded, just show it
     if (window.Tawk_API) {
+      if (window.Tawk_API.showWidget) {
+        window.Tawk_API.showWidget()
+      }
       if (window.Tawk_API.toggle) {
         window.Tawk_API.toggle()
       } else if (window.Tawk_API.popupMaximize) {
@@ -37,7 +40,10 @@ export function loadTawkChat() {
       // Initialize window properties for Tawk
       window.Tawk_API = {
         onLoad: function() {
-          // Tawk has loaded
+          // Tawk has loaded - hide by default
+          if (window.Tawk_API?.hideWidget) {
+            window.Tawk_API.hideWidget()
+          }
         },
         onStatusChange: function(status: string) {
           // Status changed

@@ -15,7 +15,12 @@ export async function GET() {
       isRead: Boolean(n.isRead) // Convert 0/1 to false/true
     }))
     
-    return NextResponse.json(formattedNotifications)
+    const response = NextResponse.json(formattedNotifications)
+    // Prevent caching to ensure fresh data on every fetch
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    return response
   } catch (error) {
     console.error("Error fetching notifications:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

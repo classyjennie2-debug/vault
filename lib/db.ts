@@ -95,7 +95,8 @@ async function initializePostgres() {
           duration INTEGER NOT NULL,
           durationUnit TEXT NOT NULL,
           risk TEXT NOT NULL,
-          description TEXT NOT NULL
+          description TEXT NOT NULL,
+          planType TEXT NOT NULL DEFAULT 'Conservative Bond Fund'
         )`,
         `CREATE TABLE IF NOT EXISTS active_investments (
           id TEXT PRIMARY KEY,
@@ -161,6 +162,18 @@ async function initializePostgres() {
         await pgPool.query(`
           ALTER TABLE wallet_addresses 
           ADD COLUMN status TEXT NOT NULL DEFAULT 'active'
+        `)
+      } catch (err: any) {
+        if (!err.message.includes('already exists') && !err.message.includes('duplicate')) {
+          console.warn('Migration warning:', err.message)
+        }
+      }
+
+      // Add planType column to investment_plans if it doesn't exist
+      try {
+        await pgPool.query(`
+          ALTER TABLE investment_plans 
+          ADD COLUMN planType TEXT NOT NULL DEFAULT 'Conservative Bond Fund'
         `)
       } catch (err: any) {
         if (!err.message.includes('already exists') && !err.message.includes('duplicate')) {
@@ -274,37 +287,77 @@ export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []):
 
 
 // Dynamic plan templates (no fixed duration/rate)
+// Investment plan presets with fixed durations and plan-specific returns
 const planTemplates = [
+  // 1. Conservative Bond Fund - Low risk, steady returns
+  // Base: 21.7% for 7 days
+  // At 365 days (52 cycles): (1.217^52 - 1) * 100 = ~1000% (capped)
   {
-    id: "p1",
-    name: "Flexible Growth Plan",
-    minAmount: 500,
-    maxAmount: 1000000,
-    risk: "Medium",
-    description: "Choose your own duration. The longer you invest, the higher your return!"
-  },
-  {
-    id: "p2",
-    name: "High Yield Staking",
-    minAmount: 1000,
-    maxAmount: 2000000,
-    risk: "High",
-    description: "Maximize your profit with longer staking periods."
-  },
-  {
-    id: "p3",
-    name: "Safe Starter Plan",
+    id: "cbf",
+    name: "Conservative Bond Fund",
     minAmount: 100,
     maxAmount: 50000,
+    returnRate: 0,  // Dynamic based on duration
+    duration: 0,  // Duration selector available
+    durationUnit: "custom",
     risk: "Low",
-    description: "Ideal for new investors. Flexible duration, steady returns."
+    description: "Safe, steady returns. Select 7-365 days. Up to 1000%+ yearly potential.",
+    planType: "Conservative Bond Fund"
+  },
+  
+  // 2. Growth Portfolio - Medium risk, higher returns
+  // Base: 35% for 7 days
+  // At 365 days: (1.35^52 - 1) * 100 = ~1000% (capped)
+  {
+    id: "gp",
+    name: "Growth Portfolio",
+    minAmount: 500,
+    maxAmount: 100000,
+    returnRate: 0,  // Dynamic based on duration
+    duration: 0,  // Duration selector available
+    durationUnit: "custom",
+    risk: "Medium",
+    description: "Balanced growth. Select 7-365 days. Potential 1000%+ annually.",
+    planType: "Growth Portfolio"
+  },
+  
+  // 3. High Yield Equity Fund - Higher risk, aggressive returns
+  // Base: 50% for 7 days
+  // At 365 days: (1.50^52 - 1) * 100 = ~1000% (capped)
+  {
+    id: "hyef",
+    name: "High Yield Equity Fund",
+    minAmount: 1000,
+    maxAmount: 200000,
+    returnRate: 0,  // Dynamic based on duration
+    duration: 0,  // Duration selector available
+    durationUnit: "custom",
+    risk: "High",
+    description: "Aggressive equity growth. Select 7-365 days. Maximum compound returns.",
+    planType: "High Yield Equity Fund"
+  },
+  
+  // 4. Real Estate Trust - Medium-low risk, consistent returns
+  // Base: 40% for 7 days
+  // At 365 days: (1.40^52 - 1) * 100 = ~1000% (capped)
+  {
+    id: "ret",
+    name: "Real Estate Trust",
+    minAmount: 5000,
+    maxAmount: 500000,
+    returnRate: 0,  // Dynamic based on duration
+    duration: 0,  // Duration selector available
+    durationUnit: "custom",
+    risk: "Medium-Low",
+    description: "Real estate backed. Select 7-365 days. Stable compound growth potential.",
+    planType: "Real Estate Trust"
   }
 ]
 
 function seedDatabaseSync(db: Database.Database) {
-  // Only insert plan templates (no fixed duration/rate)
+  // Insert plan templates with fixed duration and return rates
   const insertPlan = db.prepare(
-    "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description, planType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   )
   for (const tpl of planTemplates) {
     insertPlan.run(
@@ -312,11 +365,12 @@ function seedDatabaseSync(db: Database.Database) {
       tpl.name,
       tpl.minAmount,
       tpl.maxAmount,
-      0, // returnRate (dynamic)
-      0, // duration (user-chosen)
-      "days", // durationUnit
+      tpl.returnRate, // Fixed return rate
+      tpl.duration, // Fixed duration
+      tpl.durationUnit,
       tpl.risk,
-      tpl.description
+      tpl.description,
+      tpl.planType
     )
   }
 }
@@ -329,20 +383,21 @@ async function seedDatabasePostgres() {
 
   const pool = pgPool
 
-  // Only seed plan templates (no fixed duration/rate)
+  // Seed plan templates with fixed duration and return rates
   for (const tpl of planTemplates) {
     await pool.query(
-      "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO NOTHING",
+      "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description, planType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (id) DO NOTHING",
       [
         tpl.id,
         tpl.name,
         tpl.minAmount,
         tpl.maxAmount,
-        0, // returnRate (dynamic)
-        0, // duration (user-chosen)
-        "days",
+        tpl.returnRate, // Fixed return rate
+        tpl.duration, // Fixed duration
+        tpl.durationUnit,
         tpl.risk,
-        tpl.description
+        tpl.description,
+        tpl.planType
       ]
     )
   }
@@ -510,6 +565,8 @@ export async function getInvestmentPlansFromDb() {
     duration: Number.isFinite(p.duration) && p.duration > 0 ? p.duration : 6,
     durationUnit: p.durationUnit || "months",
     risk: p.risk || "Medium",
+    // Explicitly include planType
+    planType: p.planType || "Conservative Bond Fund",
     // Optional fields
     fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
     category: p.category || "",
@@ -521,6 +578,7 @@ export async function getInvestmentPlanById(planId: string) {
   if (!p) return undefined
   return {
     ...p,
+    planType: p.planType || "Conservative Bond Fund",
     fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
     category: p.category || "",
   }
@@ -531,44 +589,66 @@ export async function getUserTransactions(userId: string) {
 }
 
 export async function getUserNotifications(userId: string) {
-  return all("SELECT * FROM notifications WHERE userId = ? ORDER BY timestamp DESC", [userId])
+  const notifications = await all("SELECT id, userId, title, message, type, isRead, timestamp, actionUrl FROM notifications WHERE userId = ? ORDER BY timestamp DESC", [userId])
+  // Ensure isRead is properly cast to boolean for consistency
+  return notifications.map((n: any) => ({
+    id: n.id,
+    userId: n.userId,
+    title: n.title,
+    message: n.message,
+    type: n.type,
+    timestamp: n.timestamp,
+    actionUrl: n.actionUrl,
+    isRead: n.isRead === 1 || n.isRead === true || n.isRead === '1' // Explicitly handle all cases
+  }))
 }
 
 export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
-  console.log(`[markNotificationAsRead] Starting for notification ${notificationId}, using ${pgPool ? 'PostgreSQL' : 'SQLite'}`)
-  
-  // First, verify it exists
-  const beforeNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
-  console.log(`[markNotificationAsRead] Before update - notification exists:`, beforeNotif)
-  
-  if (!beforeNotif) {
-    console.error(`[markNotificationAsRead] Notification ${notificationId} not found!`)
-    return false
+  try {
+    console.log(`[markNotificationAsRead] Starting for notification ${notificationId}, using ${pgPool ? 'PostgreSQL' : 'SQLite'}`)
+    
+    // First, verify it exists
+    const beforeNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
+    console.log(`[markNotificationAsRead] Before update - notification exists:`, beforeNotif)
+    
+    if (!beforeNotif) {
+      console.error(`[markNotificationAsRead] Notification ${notificationId} not found!`)
+      return false
+    }
+
+    console.log(`[markNotificationAsRead] Executing: UPDATE notifications SET isRead = ? WHERE id = ?`)
+    // Use parameterized query for both isRead value and id
+    const changes = await run("UPDATE notifications SET isRead = ? WHERE id = ?", [1, notificationId])
+    console.log(`[markNotificationAsRead] Update completed. Rows affected: ${changes}`)
+
+    if (changes === 0) {
+      console.error(`[markNotificationAsRead] UPDATE affected no rows`)
+      return false
+    }
+
+    // Verify the update immediately with a fresh read
+    const afterNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
+    console.log(`[markNotificationAsRead] After update - notification:`, afterNotif)
+    
+    if (!afterNotif) {
+      console.error(`[markNotificationAsRead] Notification disappeared after update!`)
+      return false
+    }
+
+    const isReadValue = afterNotif.isRead
+    console.log(`[markNotificationAsRead] Verification - isRead value: ${isReadValue} (type: ${typeof isReadValue})`)
+    
+    if (isReadValue === 0 || isReadValue === false) {
+      console.error(`[markNotificationAsRead] Update verification FAILED - isRead is still: ${isReadValue}`)
+      return false
+    }
+
+    console.log(`[markNotificationAsRead] ✅ Update verified successfully - notification is marked as read`)
+    return true
+  } catch (err) {
+    console.error(`[markNotificationAsRead] Exception occurred:`, err)
+    throw err
   }
-
-  console.log(`[markNotificationAsRead] Executing: UPDATE notifications SET isRead = 1 WHERE id = ?`)
-  const changes = await run("UPDATE notifications SET isRead = 1 WHERE id = ?", [notificationId])
-  console.log(`[markNotificationAsRead] Update completed. Rows affected: ${changes}`)
-
-  // Verify the update immediately
-  const afterNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
-  console.log(`[markNotificationAsRead] After update - notification:`, afterNotif)
-  
-  if (!afterNotif) {
-    console.error(`[markNotificationAsRead] Notification disappeared after update!`)
-    return false
-  }
-
-  const isReadValue = afterNotif.isRead
-  console.log(`[markNotificationAsRead] Verification - isRead value: ${isReadValue} (type: ${typeof isReadValue})`)
-  
-  if (isReadValue === 0 || isReadValue === false) {
-    console.error(`[markNotificationAsRead] Update verification FAILED - isRead is still: ${isReadValue}`)
-    return false
-  }
-
-  console.log(`[markNotificationAsRead] ✅ Update verified successfully - notification is marked as read`)
-  return true
 }
 
 export async function getRecentActivities(userId: string) {

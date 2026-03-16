@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { InvestmentForm } from "@/components/investments/investment-form"
-import { safeNumber } from "@/lib/investment-utils"
+import { safeNumber, getPlanDisplayRate } from "@/lib/investment-utils"
 import { Shield, TrendingUp, Zap } from "lucide-react"
 import { useState } from "react"
 
@@ -57,6 +57,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
         {plans.map((plan, index) => {
           const minAmount = safeNumber(plan.minAmount, 1000)
           const maxAmount = safeNumber(plan.maxAmount, 500000)
+          const displayRate = getPlanDisplayRate(plan.planType || "Conservative Bond Fund")
           // Dynamic: rate and duration are user-selected, not fixed
           return (
             <div key={plan.id} className="relative">
@@ -100,9 +101,9 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                         </p>
                       </div>
                       <div className="bg-white/5 rounded-lg p-3 backdrop-blur-sm">
-                        <p className="text-xs text-muted-foreground">Max Investment</p>
-                        <p className="text-lg font-bold text-card-foreground mt-1">
-                          ${maxAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        <p className="text-xs text-muted-foreground">7-Day Return</p>
+                        <p className="text-lg font-bold text-accent mt-1">
+                          {displayRate.toFixed(2)}%
                         </p>
                       </div>
                     </div>

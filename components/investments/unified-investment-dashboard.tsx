@@ -30,6 +30,7 @@ import {
   Clock,
   Star
 } from "lucide-react"
+import { getPlanDisplayRate } from "@/lib/investment-utils"
 import { TrustBadges, ComplianceFooter } from "@/components/ui/trust-badges"
 
 interface UnifiedInvestmentDashboardProps {
@@ -303,7 +304,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               </div>
                               <div className="flex items-center gap-1 text-accent font-bold">
                                 <TrendingUp className="h-4 w-4" />
-                                {plan.returnRate}%
+                                {getPlanDisplayRate(plan.planType || "Conservative Bond Fund").toFixed(2)}%
                               </div>
                             </div>
 

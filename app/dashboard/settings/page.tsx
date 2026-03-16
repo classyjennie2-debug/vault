@@ -81,6 +81,8 @@ export default function SettingsPage() {
     fullName: "",
     email: "",
     phone: "",
+    dateOfBirth: "",
+    address: "",
     timezone: "EST",
   })
   const [loadingUser, setLoadingUser] = useState(true)
@@ -98,7 +100,9 @@ export default function SettingsPage() {
           ...prev,
           fullName: data?.user?.name || "",
           email: data?.user?.email || "",
-          // phone is not in DB yet, leave blank or fetch if available
+          phone: data?.user?.phone || "",
+          dateOfBirth: data?.user?.dateOfBirth || "",
+          address: data?.user?.address || "",
         }))
       } catch (e: any) {
         setUserError(e.message || "Failed to fetch user info")
@@ -186,6 +190,28 @@ export default function SettingsPage() {
               readOnly
               disabled
               className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Input
+              id="dateOfBirth"
+              type="date"
+              value={userSettings.dateOfBirth}
+              onChange={(e) => setUserSettings({ ...userSettings, dateOfBirth: e.target.value })}
+              className="mt-1"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="address">Address</Label>
+            <Input
+              id="address"
+              type="text"
+              value={userSettings.address}
+              onChange={(e) => setUserSettings({ ...userSettings, address: e.target.value })}
+              className="mt-1"
             />
           </div>
 

@@ -30,6 +30,8 @@ export type InvestmentPlan = {
   durationUnit: "days" | "months" | "years"
   risk: "Low" | "Medium" | "High"
   description: string
+  // Plan type determines the return rate curve
+  planType?: string
   // optional fields for plans loaded from mock data or extended schema
   fees?: {
     management: number // Annual percentage
