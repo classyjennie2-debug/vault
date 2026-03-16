@@ -1,5 +1,3 @@
-"use client"
-
 import Link from "next/link"
 import {
   ArrowRight,
@@ -15,6 +13,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { TrustBadges } from "@/components/ui/trust-badges"
 import { Logo } from "@/components/ui/logo"
+import { getInvestmentPlansFromDb } from "@/lib/db"
+import { getPlanAnnualRate } from "@/lib/investment-utils"
 
 const features = [
   {
@@ -83,7 +83,33 @@ const testimonials = [
   },
 ]
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // Fetch real investment plans from database
+  const plans = await getInvestmentPlansFromDb()
+  
+  // Create plan details mapping
+  const planDetails: Record<string, { risk: string; featured: boolean; desc: string }> = {
+    "cbf": {
+      risk: "Low Risk",
+      featured: false,
+      desc: "Ideal for risk-averse investors seeking stable, long-term growth."
+    },
+    "gp": {
+      risk: "Medium Risk",
+      featured: true,
+      desc: "Balanced portfolio combining growth and stability. Our most popular choice."
+    },
+    "hyef": {
+      risk: "High Risk",
+      featured: false,
+      desc: "Aggressive strategy for experienced investors seeking maximum returns."
+    },
+    "ret": {
+      risk: "Medium-Low Risk",
+      featured: false,
+      desc: "Real estate-backed investments offering consistent returns."
+    }
+  }
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -257,70 +283,52 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
-            {[
-              {
-                name: "Conservative",
-                rate: "6.5%",
-                risk: "Low Risk",
-                min: "$1,000",
-                desc: "Ideal for risk-averse investors seeking stable, long-term growth.",
-              },
-              {
-                name: "Growth",
-                rate: "12.8%",
-                risk: "Medium Risk",
-                min: "$5,000",
-                featured: true,
-                desc: "Balanced portfolio combining growth and stability. Our most popular choice.",
-              },
-              {
-                name: "High Yield",
-                rate: "22.5%",
-                risk: "High Risk",
-                min: "$10,000",
-                desc: "Aggressive strategy for experienced investors seeking maximum returns.",
-              },
-            ].map((plan) => (
-              <div
-                key={plan.name}
-                className={`group relative rounded-lg border p-7 transition-all duration-300 ${
-                  plan.featured
-                    ? "border-accent bg-gradient-to-br from-accent/5 to-primary/5 dark:from-accent/10 dark:to-primary/10 shadow-xl shadow-accent/10 dark:shadow-accent/20"
-                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md"
-                }`}
-              >
-                {plan.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-accent to-primary px-4 py-1 text-xs font-bold text-white">
-                    Most Popular
-                  </div>
-                )}
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  {plan.name}
-                </h3>
-                <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-                  {plan.risk}
-                </p>
-                <p className="mt-5 text-5xl font-bold text-slate-900 dark:text-white">
-                  {plan.rate}
-                </p>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">annual return*</p>
-                <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                  {plan.desc}
-                </p>
-                <div className="my-6 border-t border-slate-200 dark:border-slate-700 pt-6">
-                  <p className="text-xs text-slate-600 dark:text-slate-400">
-                    <span className="font-semibold text-slate-900 dark:text-white">Min. Investment:</span> {plan.min}
-                  </p>
-                </div>
-                <Button
-                  className="w-full"
-                  variant={plan.featured ? "default" : "outline"}
-                  asChild
+            {plans.map((plan) => {
+              const detail = planDetails[plan.id] || { risk: "Medium Risk", featured: false, desc: "Diversified investment opportunity" }
+              const annualRate = getPlanAnnualRate(plan.planType || "Conservative Bond Fund")
+              
+              return (
+                <div
+                  key={plan.id}
+                  className={`group relative rounded-lg border p-7 transition-all duration-300 ${
+                    detail.featured
+                      ? "border-accent bg-gradient-to-br from-accent/5 to-primary/5 dark:from-accent/10 dark:to-primary/10 shadow-xl shadow-accent/10 dark:shadow-accent/20"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md"
+                  }`}
                 >
-                  <Link href="/register">Get Started</Link>
-                </Button>
-              </div>
-            ))}
+                  {detail.featured && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-accent to-primary px-4 py-1 text-xs font-bold text-white">
+                      Most Popular
+                    </div>
+                  )}
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    {plan.name}
+                  </h3>
+                  <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
+                    {detail.risk}
+                  </p>
+                  <p className="mt-5 text-5xl font-bold text-slate-900 dark:text-white">
+                    {annualRate.toFixed(0)}%
+                  </p>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">annual return*</p>
+                  <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    {detail.desc}
+                  </p>
+                  <div className="my-6 border-t border-slate-200 dark:border-slate-700 pt-6">
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      <span className="font-semibold text-slate-900 dark:text-white">Min. Investment:</span> ${(plan.minAmount || 0).toLocaleString()}
+                    </p>
+                  </div>
+                  <Button
+                    className="w-full"
+                    variant={detail.featured ? "default" : "outline"}
+                    asChild
+                  >
+                    <Link href="/register">Get Started</Link>
+                  </Button>
+                </div>
+              )
+            })}
           </div>
           <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-8">*Past performance does not guarantee future results</p>
         </div>
