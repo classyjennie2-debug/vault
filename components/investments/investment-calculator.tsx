@@ -60,15 +60,9 @@ export function InvestmentCalculator() {
   const dynamicReturnRate = calculateReturnRate(durationNum, planTypeToUse)
   const grossProfit = calculateExpectedProfit(investmentAmount, dynamicReturnRate)
 
-  // Convert duration to years for fee calculation
-  let durationInYears = selectedPlan.duration || 0
-  if (selectedPlan.durationUnit === "months") {
-    durationInYears = selectedPlan.duration / 12
-  } else if (selectedPlan.durationUnit === "days") {
-    durationInYears = selectedPlan.duration / 365
-  }
-  // else: duration is already in years
-  
+  // Convert user-selected duration (days) to years for fee calculation
+  const durationInYears = durationNum / 365
+
   const managementFee =
     investmentAmount * (fees.management / 100) * durationInYears
   const performanceFee = grossProfit * (fees.performance / 100)
@@ -76,8 +70,10 @@ export function InvestmentCalculator() {
   // Net profit is what you actually keep after fees are deducted
   const netProfit = grossProfit - totalFees
   const totalReturn = investmentAmount + netProfit
-  // Net return rate shows the effective return after all fees
   const netReturnRate = investmentAmount > 0 ? (netProfit / investmentAmount) * 100 : 0
+
+  const belowMin = investmentAmount > 0 && investmentAmount < (selectedPlan.minAmount || 0)
+  const aboveMax = investmentAmount > (selectedPlan.maxAmount || Infinity)
 
   return (
     <Card>
@@ -143,6 +139,11 @@ export function InvestmentCalculator() {
           <p className="text-xs text-muted-foreground whitespace-normal break-words">
             Min: ${(selectedPlan?.minAmount || 0).toLocaleString()} | Max: ${(selectedPlan?.maxAmount || 0).toLocaleString()}
           </p>
+          {(belowMin || aboveMax) && (
+            <p className="text-[11px] text-amber-600 dark:text-amber-400">
+              {belowMin ? "Amount is below this plan's minimum." : "Amount exceeds this plan's maximum."}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -152,12 +153,20 @@ export function InvestmentCalculator() {
             <span className="font-bold text-accent text-base">${grossProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">Fees (mgmt + performance):</span>
+            <span className="font-semibold text-foreground text-base">${totalFees.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+          </div>
+          <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-sm">Total Return:</span>
             <span className="font-bold text-card-foreground text-base">${totalReturn.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-sm">Return Rate:</span>
             <span className="font-bold text-accent text-base">{dynamicReturnRate.toFixed(2)}%</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">Net (after fees):</span>
+            <span className="font-bold text-emerald-600 dark:text-emerald-400 text-base">{netReturnRate.toFixed(2)}%</span>
           </div>
         </div>
       </CardContent>

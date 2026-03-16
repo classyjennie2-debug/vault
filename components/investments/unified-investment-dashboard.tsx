@@ -2,22 +2,14 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { InvestmentPlan, ActiveInvestment } from "@/lib/types"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { InvestmentForm } from "@/components/investments/investment-form"
 import { InvestmentCalculator } from "@/components/investments/investment-calculator"
-import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
 import { PortfolioPerformanceChart } from "@/components/investments/portfolio-performance-chart"
 import {
   Shield,
@@ -80,7 +72,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
         day: "numeric",
         year: "numeric",
       })
-    } catch (error) {
+    } catch (_error) {
       return "Invalid date"
     }
   }

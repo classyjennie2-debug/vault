@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { run, all } from "@/lib/db"
 
@@ -6,7 +6,7 @@ import { run, all } from "@/lib/db"
  * ADMIN ONLY: Manually fix all investment plans with correct planType values
  * This is a safety net to ensure database is synced with expected plan types
  */
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user

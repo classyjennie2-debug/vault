@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import getDb, { getUserByEmail } from "@/lib/db"
+import { getUserByEmail } from "@/lib/db"
 import { verifyPassword } from "@/lib/auth"
 
 /**

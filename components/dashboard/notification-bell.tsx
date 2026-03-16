@@ -80,7 +80,7 @@ export function NotificationBell() {
         fetch(`/api/notifications/${id}/read`, { method: "PUT", headers: { "Content-Type": "application/json" } })
       ))
       await fetchNotifications()
-    } catch (err) {
+    } catch (_err) {
       setErrorMessage("Failed to mark all as read")
       // best-effort refetch
       fetchNotifications()

@@ -7,7 +7,7 @@ import { transactionLogger, logAuditEvent } from "@/lib/logging"
 import { rateLimitConfigs, checkRateLimit, getClientIp } from "@/lib/rate-limiting"
 import { validateOrigin } from "@/lib/csrf"
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user

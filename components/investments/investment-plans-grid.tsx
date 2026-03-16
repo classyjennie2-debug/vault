@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { InvestmentForm } from "@/components/investments/investment-form"
 import { safeNumber, getPlanDisplayRate, getPlanAnnualRate } from "@/lib/investment-utils"
-import { Shield, TrendingUp, Zap, Flame } from "lucide-react"
+import { Shield, Zap, Flame } from "lucide-react"
 import { useState } from "react"
 
 export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
@@ -36,10 +36,6 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
     return "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
   }
 
-  const formatDuration = (duration: number, unit: string) => {
-    return `${duration} ${unit}`
-  }
-
   const isPopular = (index: number) => index === 1
 
   return (
@@ -56,7 +52,6 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan, index) => {
           const minAmount = safeNumber(plan.minAmount, 1000)
-          const maxAmount = safeNumber(plan.maxAmount, 500000)
           const displayRate = getPlanDisplayRate(plan.planType || "Conservative Bond Fund")
           const annualRate = getPlanAnnualRate(plan.planType || "Conservative Bond Fund")
           

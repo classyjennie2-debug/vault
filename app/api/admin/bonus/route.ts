@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import { v4 as uuidv4 } from "uuid"
 import { requireAuthAPI } from "@/lib/auth"
 import { getUserById, setUserBalance, createTransaction, createNotification } from "@/lib/db"
 import { validateOrigin } from "@/lib/csrf"
@@ -10,10 +9,10 @@ export async function POST(request: Request) {
     const csrf = validateOrigin(request as any)
     if (csrf) return csrf
 
-    const user = await requireAuthAPI()
-    if (user instanceof NextResponse) return user
+    const authUser = await requireAuthAPI()
+    if (authUser instanceof NextResponse) return authUser
 
-    if (user.role !== "admin") {
+    if (authUser.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
