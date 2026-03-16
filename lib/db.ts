@@ -181,7 +181,8 @@ async function initializePostgres() {
         }
       }
 
-      // Update existing plans with correct planType based on ID
+      // CRITICAL: Always update existing plans with correct planType
+      // This runs even if database was already initialized
       try {
         const planMappings = [
           { id: 'cbf', planType: 'Conservative Bond Fund' },
@@ -190,27 +191,43 @@ async function initializePostgres() {
           { id: 'ret', planType: 'Real Estate Trust' },
         ]
         
+        console.log('[Migration] Starting planType synchronization for all plans...')
+        
         for (const mapping of planMappings) {
-          await pgPool.query(
+          const result = await pgPool.query(
             'UPDATE investment_plans SET planType = $1 WHERE id = $2',
             [mapping.planType, mapping.id]
           )
+          console.log(`[Migration] Updated plan ${mapping.id}: ${result.rowCount} rows affected`)
         }
-        console.log('[Migration] Updated existing plans with correct planType')
+        
+        // Verify the updates
+        const verifyResult = await pgPool.query('SELECT id, planType FROM investment_plans ORDER BY id')
+        console.log('[Migration] ✓ Current planType values in database:')
+        for (const row of verifyResult.rows) {
+          console.log(`  ${row.id}: ${row.plantype}`)
+        }
       } catch (err) {
         console.warn('[Migration] Warning updating plan types:', err)
       }
 
-      // Check if already seeded
+      // Ensure plans exist in database - insert if not present
       try {
-        const res = await pgPool.query("SELECT value FROM _meta WHERE key = 'seeded'")
-        if (res.rows.length === 0) {
+        console.log('[Seeding] Checking if investment plans exist...')
+        const existingPlans = await pgPool.query('SELECT COUNT(*) as count FROM investment_plans')
+        const planCount = parseInt(existingPlans.rows[0].count || '0')
+        
+        console.log(`[Seeding] Found ${planCount} existing plans`)
+        
+        if (planCount === 0) {
+          console.log('[Seeding] No plans found, creating them now...')
           await seedDatabasePostgres()
-          await pgPool.query("INSERT INTO _meta (key, value) VALUES ('seeded', 'true')")
+        } else {
+          console.log('[Seeding] Plans already exist, skipping creation')
         }
       } catch (seedError) {
-        console.error("Error during seeding:", seedError)
-        // Continue even if seeding fails (data might already exist)
+        console.error("[Seeding] Error during seeding:", seedError)
+        // Continue even if seeding fails
       }
       
       pgInitialized = true
@@ -580,37 +597,136 @@ export async function canResendVerificationCode(email: string): Promise<{ canRes
 }
 
 export async function getInvestmentPlansFromDb() {
-  const rows: InvestmentPlan[] = await all("SELECT * FROM investment_plans")
-  
-  // Log for debugging
-  if (rows.length > 0) {
-    console.log("Plans from DB:", JSON.stringify(rows.slice(0, 1), null, 2))
+  try {
+    const rows: InvestmentPlan[] = await all("SELECT * FROM investment_plans")
+    
+    console.log("[getInvestmentPlansFromDb] Raw DB rows count:", rows.length)
+    
+    // Log for debugging - show first row to verify planType is present
+    if (rows.length > 0) {
+      console.log("[getInvestmentPlansFromDb] First row raw:", JSON.stringify(rows[0], null, 2))
+    }
+    
+    // Map to include optional fields and ensure correct defaults
+    const mappedPlans = rows.map((p: any, idx: number) => {
+      const mapped = {
+        ...p,
+        // Ensure numeric fields have proper values
+        minAmount: Number.isFinite(p.minAmount) && p.minAmount > 0 ? p.minAmount : 1000,
+        maxAmount: Number.isFinite(p.maxAmount) && p.maxAmount > 0 ? p.maxAmount : 500000,
+        returnRate: Number.isFinite(p.returnRate) && p.returnRate > 0 ? p.returnRate : 8,
+        duration: Number.isFinite(p.duration) && p.duration > 0 ? p.duration : 6,
+        durationUnit: p.durationUnit || "months",
+        risk: p.risk || "Medium",
+        // CRITICAL: Explicitly include planType with proper fallback based on ID
+        planType: p.planType && p.planType.trim() ? p.planType.trim() : getPlanTypeById(p.id),
+        // Optional fields
+        fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
+        category: p.category || "",
+      }
+      
+      // Log each plan to verify planType is correct
+      if (idx < 4) {  // Only log first 4 plans to avoid spam
+        console.log(`[getInvestmentPlansFromDb] Plan ${p.id}: planType="${mapped.planType}"`)
+      }
+      
+      return mapped
+    })
+    
+    console.log("[getInvestmentPlansFromDb] Mapped plans count:", mappedPlans.length)
+    return mappedPlans
+  } catch (error) {
+    console.error("[getInvestmentPlansFromDb] Error fetching plans:", error)
+    // Return hardcoded plans if database fails
+    return getDefaultPlans()
   }
-  
-  // map to include optional fields expected by the UI and ensure correct defaults
-  return rows.map((p) => ({
-    ...p,
-    // Ensure numeric fields have proper values
-    minAmount: Number.isFinite(p.minAmount) && p.minAmount > 0 ? p.minAmount : 1000,
-    maxAmount: Number.isFinite(p.maxAmount) && p.maxAmount > 0 ? p.maxAmount : 500000,
-    returnRate: Number.isFinite(p.returnRate) && p.returnRate > 0 ? p.returnRate : 8,
-    duration: Number.isFinite(p.duration) && p.duration > 0 ? p.duration : 6,
-    durationUnit: p.durationUnit || "months",
-    risk: p.risk || "Medium",
-    // Explicitly include planType
-    planType: p.planType || "Conservative Bond Fund",
-    // Optional fields
-    fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
-    category: p.category || "",
-  }))
+}
+
+/**
+ * Get the correct planType for a plan ID
+ * This is a fallback when planType is not in the database
+ */
+function getPlanTypeById(planId: string): string {
+  const typeMap: Record<string, string> = {
+    "cbf": "Conservative Bond Fund",
+    "gp": "Growth Portfolio",
+    "hyef": "High Yield Equity Fund",
+    "ret": "Real Estate Trust"
+  }
+  return typeMap[planId] || "Conservative Bond Fund"
+}
+
+/**
+ * Get default plans as fallback
+ * This ensures the UI always has valid plan data even if DB fails
+ */
+function getDefaultPlans(): InvestmentPlan[] {
+  return [
+    {
+      id: "cbf",
+      name: "Conservative Bond Fund",
+      minAmount: 100,
+      maxAmount: 50000,
+      returnRate: 0,
+      duration: 0,
+      durationUnit: "custom",
+      risk: "Low",
+      description: "Safe, steady returns. Select 7-365 days. Up to 1000%+ yearly potential.",
+      planType: "Conservative Bond Fund"
+    },
+    {
+      id: "gp",
+      name: "Growth Portfolio",
+      minAmount: 500,
+      maxAmount: 100000,
+      returnRate: 0,
+      duration: 0,
+      durationUnit: "custom",
+      risk: "Medium",
+      description: "Balanced growth. Select 7-365 days. Potential 1000%+ annually.",
+      planType: "Growth Portfolio"
+    },
+    {
+      id: "hyef",
+      name: "High Yield Equity Fund",
+      minAmount: 1000,
+      maxAmount: 200000,
+      returnRate: 0,
+      duration: 0,
+      durationUnit: "custom",
+      risk: "High",
+      description: "Aggressive equity growth. Select 7-365 days. Maximum compound returns.",
+      planType: "High Yield Equity Fund"
+    },
+    {
+      id: "ret",
+      name: "Real Estate Trust",
+      minAmount: 5000,
+      maxAmount: 500000,
+      returnRate: 0,
+      duration: 0,
+      durationUnit: "custom",
+      risk: "Medium-Low",
+      description: "Real estate backed. Select 7-365 days. Stable compound growth potential.",
+      planType: "Real Estate Trust"
+    }
+  ]
 }
 
 export async function getInvestmentPlanById(planId: string) {
   const p: InvestmentPlan | undefined = await get("SELECT * FROM investment_plans WHERE id = ?", [planId])
-  if (!p) return undefined
+  if (!p) {
+    console.warn(`[getInvestmentPlanById] Plan ${planId} not found in database`)
+    return undefined
+  }
+  
+  // Log for debugging
+  console.log(`[getInvestmentPlanById] Found plan ${planId}, planType="${p.planType}"`)
+  
   return {
     ...p,
-    planType: p.planType || "Conservative Bond Fund",
+    // CRITICAL: Ensure planType is set with fallback to ID-based mapping
+    planType: p.planType && p.planType.trim() ? p.planType.trim() : getPlanTypeById(p.id),
     fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
     category: p.category || "",
   }
