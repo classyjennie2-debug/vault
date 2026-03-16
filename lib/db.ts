@@ -96,7 +96,7 @@ async function initializePostgres() {
           durationUnit TEXT NOT NULL,
           risk TEXT NOT NULL,
           description TEXT NOT NULL,
-          planType TEXT NOT NULL DEFAULT 'Conservative Bond Fund'
+          plantype TEXT NOT NULL DEFAULT 'Conservative Bond Fund'
         )`,
         `CREATE TABLE IF NOT EXISTS active_investments (
           id TEXT PRIMARY KEY,
@@ -173,16 +173,16 @@ async function initializePostgres() {
       try {
         await pgPool.query(`
           ALTER TABLE investment_plans 
-          ADD COLUMN planType TEXT NOT NULL DEFAULT 'Conservative Bond Fund'
+          ADD COLUMN plantype VARCHAR(255)
         `)
       } catch (err: any) {
         if (!err.message.includes('already exists') && !err.message.includes('duplicate')) {
-          console.warn('Migration warning:', err.message)
+          console.warn('Migration warning adding plantype column:', err.message)
         }
       }
 
       // CRITICAL: Always update existing plans with correct planType
-      // This runs even if database was already initialized
+      // This runs EVERY TIME the app starts to ensure data stays in sync
       try {
         const planMappings = [
           { id: 'cbf', planType: 'Conservative Bond Fund' },
@@ -195,7 +195,7 @@ async function initializePostgres() {
         
         for (const mapping of planMappings) {
           const result = await pgPool.query(
-            'UPDATE investment_plans SET planType = $1 WHERE id = $2',
+            'UPDATE investment_plans SET plantype = $1 WHERE id = $2',
             [mapping.planType, mapping.id]
           )
           console.log(`[Migration] Updated plan ${mapping.id}: ${result.rowCount} rows affected`)
@@ -423,8 +423,9 @@ async function seedDatabasePostgres() {
   // Seed plan templates with fixed duration and return rates
   for (const tpl of planTemplates) {
     // Use UPSERT to ensure planType is always set correctly
+    // Use lowercase 'plantype' for PostgreSQL compatibility
     await pool.query(
-      `INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description, planType) 
+      `INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description, plantype) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
        ON CONFLICT (id) DO UPDATE SET 
          name = $2,
@@ -435,7 +436,7 @@ async function seedDatabasePostgres() {
          durationUnit = $7,
          risk = $8,
          description = $9,
-         planType = $10`,
+         plantype = $10`,
       [
         tpl.id,
         tpl.name,
