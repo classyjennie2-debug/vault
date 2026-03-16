@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
     const validationResult = validate(investmentSchema, {
       amount: body.amount,
       planId: body.planId,
+      duration: body.duration,
       depositMethod: body.depositMethod || 'bank_transfer',
     })
 
