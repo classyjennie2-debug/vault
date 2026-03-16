@@ -202,7 +202,7 @@ async function initializePostgres() {
         }
         
         // Verify the updates
-        const verifyResult = await pgPool.query('SELECT id, planType FROM investment_plans ORDER BY id')
+        const verifyResult = await pgPool.query('SELECT id, plantype FROM investment_plans ORDER BY id')
         console.log('[Migration] ✓ Current planType values in database:')
         for (const row of verifyResult.rows) {
           console.log(`  ${row.id}: ${row.plantype}`)
@@ -609,6 +609,9 @@ export async function getInvestmentPlansFromDb() {
     
     // Map to include optional fields and ensure correct defaults
     const mappedPlans = rows.map((p: any, idx: number) => {
+      // PostgreSQL returns column names in lowercase, so check both planType and plantype
+      const planTypeValue = p.planType || p.plantype
+      
       const mapped = {
         ...p,
         // Ensure numeric fields have proper values
@@ -619,7 +622,8 @@ export async function getInvestmentPlansFromDb() {
         durationUnit: p.durationUnit || "months",
         risk: p.risk || "Medium",
         // CRITICAL: Explicitly include planType with proper fallback based on ID
-        planType: p.planType && p.planType.trim() ? p.planType.trim() : getPlanTypeById(p.id),
+        // Check both camelCase (planType) and lowercase (plantype) for PostgreSQL compatibility
+        planType: planTypeValue && String(planTypeValue).trim() ? String(planTypeValue).trim() : getPlanTypeById(p.id),
         // Optional fields
         fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
         category: p.category || "",
@@ -627,7 +631,7 @@ export async function getInvestmentPlansFromDb() {
       
       // Log each plan to verify planType is correct
       if (idx < 4) {  // Only log first 4 plans to avoid spam
-        console.log(`[getInvestmentPlansFromDb] Plan ${p.id}: planType="${mapped.planType}"`)
+        console.log(`[getInvestmentPlansFromDb] Plan ${p.id}: raw.plantype="${p.plantype}", mapped.planType="${mapped.planType}"`)
       }
       
       return mapped
@@ -720,13 +724,16 @@ export async function getInvestmentPlanById(planId: string) {
     return undefined
   }
   
+  // PostgreSQL returns column names in lowercase
+  const planTypeValue = (p as any).planType || (p as any).plantype
+  
   // Log for debugging
-  console.log(`[getInvestmentPlanById] Found plan ${planId}, planType="${p.planType}"`)
+  console.log(`[getInvestmentPlanById] Found plan ${planId}, raw.plantype="${(p as any).plantype}", planType="${planTypeValue}"`)
   
   return {
     ...p,
     // CRITICAL: Ensure planType is set with fallback to ID-based mapping
-    planType: p.planType && p.planType.trim() ? p.planType.trim() : getPlanTypeById(p.id),
+    planType: planTypeValue && String(planTypeValue).trim() ? String(planTypeValue).trim() : getPlanTypeById(p.id),
     fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
     category: p.category || "",
   }
