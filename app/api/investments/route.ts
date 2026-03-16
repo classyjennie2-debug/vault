@@ -130,17 +130,17 @@ export async function POST(req: NextRequest) {
 
     const startDate = new Date().toISOString()
     
-    // Compute end date by adding duration safely
+    // Compute end date by adding plan's default duration safely
     const end = new Date()
-    const duration = safeNumber(plan.duration, 0)
+    const planDuration = safeNumber(plan.duration, 0)
     const durationUnit = plan.durationUnit || "months"
-    
+
     if (durationUnit === "months") {
-      end.setMonth(end.getMonth() + duration)
+      end.setMonth(end.getMonth() + planDuration)
     } else if (durationUnit === "years") {
-      end.setFullYear(end.getFullYear() + duration)
+      end.setFullYear(end.getFullYear() + planDuration)
     } else if (durationUnit === "days") {
-      end.setDate(end.getDate() + duration)
+      end.setDate(end.getDate() + planDuration)
     }
     
     const endDate = end.toISOString()

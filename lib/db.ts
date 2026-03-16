@@ -135,6 +135,15 @@ async function initializePostgres() {
           expiresAt TEXT NOT NULL,
           used INTEGER NOT NULL DEFAULT 0
         )`,
+        `CREATE TABLE IF NOT EXISTS password_reset_tokens (
+          id TEXT PRIMARY KEY,
+          userId TEXT NOT NULL,
+          token TEXT UNIQUE NOT NULL,
+          expiresAt TEXT NOT NULL,
+          used INTEGER NOT NULL DEFAULT 0,
+          createdAt TEXT NOT NULL,
+          FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+        )`,
         `CREATE TABLE IF NOT EXISTS activity_log (
           id TEXT PRIMARY KEY,
           userId TEXT NOT NULL,
@@ -591,6 +600,44 @@ export async function canResendVerificationCode(email: string): Promise<{ canRes
   }
 }
 
+// ───────────────────────────────────────────────────────────────────────────────
+// Password Reset Token Management
+// ───────────────────────────────────────────────────────────────────────────────
+
+export async function createPasswordResetToken(userId: string, tokenString: string, expirationMinutes: number = 30): Promise<string> {
+  const { v4: uuidv4 } = await import('uuid')
+  const tokenId = uuidv4()
+  const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000).toISOString()
+  
+  await run(
+    "INSERT INTO password_reset_tokens (id, userId, token, expiresAt, used, createdAt) VALUES (?, ?, ?, ?, ?, ?)",
+    [tokenId, userId, tokenString, expiresAt, 0, new Date().toISOString()]
+  )
+  
+  return tokenString
+}
+
+export async function validatePasswordResetToken(token: string): Promise<{ userId: string } | null> {
+  const row = await get<{ userId: string; used: number }>(
+    "SELECT userId, used FROM password_reset_tokens WHERE token = ? AND used = 0 AND expiresAt > ?",
+    [token, new Date().toISOString()]
+  )
+  
+  if (!row) return null
+  
+  // Return user ID but don't mark as used yet - that happens after password is actually updated
+  return { userId: row.userId }
+}
+
+export async function markResetTokenAsUsed(token: string): Promise<boolean> {
+  const changes = await run(
+    "UPDATE password_reset_tokens SET used = 1 WHERE token = ?",
+    [token]
+  )
+  
+  return changes > 0
+}
+
 export async function getInvestmentPlansFromDb() {
   try {
     const rows: InvestmentPlan[] = await all("SELECT * FROM investment_plans")
@@ -755,48 +802,17 @@ export async function getUserNotifications(userId: string) {
 
 export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
   try {
-    console.log(`[markNotificationAsRead] Starting for notification ${notificationId}, using ${pgPool ? 'PostgreSQL' : 'SQLite'}`)
-    
-    // First, verify it exists
-    const beforeNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
-    console.log(`[markNotificationAsRead] Before update - notification exists:`, beforeNotif)
-    
-    if (!beforeNotif) {
-      console.error(`[markNotificationAsRead] Notification ${notificationId} not found!`)
-      return false
-    }
-
-    console.log(`[markNotificationAsRead] Executing: UPDATE notifications SET isRead = ? WHERE id = ?`)
-    // Use parameterized query for both isRead value and id
+    // Use parameterized query to mark notification as read
     const changes = await run("UPDATE notifications SET isRead = ? WHERE id = ?", [1, notificationId])
-    console.log(`[markNotificationAsRead] Update completed. Rows affected: ${changes}`)
-
+    
     if (changes === 0) {
-      console.error(`[markNotificationAsRead] UPDATE affected no rows`)
+      console.error(`[Notification] Failed to mark notification as read: ${notificationId}`)
       return false
     }
 
-    // Verify the update immediately with a fresh read
-    const afterNotif = await get("SELECT id, isRead FROM notifications WHERE id = ?", [notificationId])
-    console.log(`[markNotificationAsRead] After update - notification:`, afterNotif)
-    
-    if (!afterNotif) {
-      console.error(`[markNotificationAsRead] Notification disappeared after update!`)
-      return false
-    }
-
-    const isReadValue = afterNotif.isRead
-    console.log(`[markNotificationAsRead] Verification - isRead value: ${isReadValue} (type: ${typeof isReadValue})`)
-    
-    if (isReadValue === 0 || isReadValue === false) {
-      console.error(`[markNotificationAsRead] Update verification FAILED - isRead is still: ${isReadValue}`)
-      return false
-    }
-
-    console.log(`[markNotificationAsRead] ✅ Update verified successfully - notification is marked as read`)
     return true
   } catch (err) {
-    console.error(`[markNotificationAsRead] Exception occurred:`, err)
+    console.error(`[Notification] Error marking as read:`, err)
     throw err
   }
 }

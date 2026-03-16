@@ -4,17 +4,12 @@ import { getUserNotifications, markNotificationAsRead, get } from "@/lib/db"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Handle both Promise and object params (Next.js version compatibility)
-    let notificationId: string
-    if (params instanceof Promise) {
-      const resolvedParams = await params
-      notificationId = resolvedParams.id
-    } else {
-      notificationId = params.id
-    }
+    // Resolve params - Next.js 16 uses promises
+    const resolvedParams = await params
+    const notificationId = resolvedParams.id
 
     if (!notificationId) {
       return NextResponse.json({ error: "Notification ID required" }, { status: 400 })

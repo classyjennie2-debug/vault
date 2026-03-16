@@ -21,6 +21,7 @@ export function NotificationBell() {
   const [errorMessage, setErrorMessage] = useState("")
   const [updatingNotification, setUpdatingNotification] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
 
   const fetchNotifications = async () => {
     setIsLoading(true)
@@ -63,26 +64,36 @@ export function NotificationBell() {
   const readNotifications = notifications.filter((n) => n.isRead)
 
   const markAllAsRead = async () => {
-    if (notifications.length === 0) return
+    if (unreadNotifications.length === 0) return
     setErrorMessage("")
     const ids = unreadNotifications.map((n) => n.id)
-    if (ids.length === 0) return
+    
+    // Set as pending to prevent duplicate requests
+    setPendingIds(new Set(ids))
 
     // optimistic local update
     setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, isRead: true } : n))
 
-    const failures: string[] = []
+    const failures: { id: string; error: string }[] = []
     for (const id of ids) {
       try {
         const res = await fetch(`/api/notifications/${id}/read`, { method: "PUT" })
-        if (!res.ok) failures.push(id)
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          failures.push({ id, error: data.error || "Unknown error" })
+        }
       } catch (err) {
-        failures.push(id)
+        failures.push({ id, error: err instanceof Error ? err.message : "Network error" })
       }
     }
 
+    // Clear pending set
+    setPendingIds(new Set())
+
     if (failures.length > 0) {
-      setErrorMessage(`Failed to mark ${failures.length} notification(s) as read`)
+      // Show specific failures
+      const failedCount = failures.length
+      setErrorMessage(`Failed to mark ${failedCount} notification${failedCount > 1 ? 's' : ''} as read`)
       await fetchNotifications()
     } else {
       // refresh to ensure server state
@@ -90,7 +101,17 @@ export function NotificationBell() {
     }
   }
 
-  const clearRead = () => {
+  const deleteNotification = async (id: string) => {
+    // For now, just remove from local state
+    // In a full implementation, this would call a DELETE endpoint
+    setNotifications(prev => prev.filter(n => n.id !== id))
+  }
+
+  const clearRead = async () => {
+    if (readNotifications.length === 0) return
+    
+    // Delete all read notifications (remove from local state)
+    // In a full implementation, this would call a bulk DELETE endpoint
     setNotifications(unreadNotifications)
   }
 
@@ -103,11 +124,19 @@ export function NotificationBell() {
     return Object.entries(groups)
   }
 
-  const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
+  const handleMarkAsRead = async (id: string, e?: React.MouseEvent, actionUrl?: string | null) => {
     e?.stopPropagation()
+    
+    // Prevent duplicate requests - check if already pending
+    if (pendingIds.has(id) || updatingNotification === id) {
+      return
+    }
     
     setUpdatingNotification(id)
     setErrorMessage("")
+    
+    // Add to pending set
+    setPendingIds(prev => new Set(prev).add(id))
     
     // Immediately update local state to reflect the change
     setNotifications(prev => prev.map(n => 
@@ -125,7 +154,6 @@ export function NotificationBell() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         const errorMsg = errorData.error || "Failed to mark notification as read"
-        console.error("API Error:", errorMsg)
         setErrorMessage(errorMsg)
         // Revert the local state if the API call fails
         setNotifications(prev => prev.map(n => 
@@ -134,9 +162,7 @@ export function NotificationBell() {
       } else {
         // On success, refetch to confirm server state and catch any missed updates
         await fetchNotifications()
-        // if notification has an actionUrl, navigate there
-        const clicked = notifications.find(n => n.id === id)
-        const actionUrl = clicked?.actionUrl
+        // Use the provided actionUrl (avoid reading stale state)
         if (actionUrl) {
           // small delay to allow UI to update
           setTimeout(() => { window.location.href = actionUrl }, 150)
@@ -151,6 +177,12 @@ export function NotificationBell() {
       ))
     } finally {
       setUpdatingNotification(null)
+      // Remove from pending set
+      setPendingIds(prev => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
     }
   }
 
@@ -189,7 +221,7 @@ export function NotificationBell() {
       className="p-4 border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
       style={{ animationDelay: `${idx * 50}ms` }}
       onClick={(e) => {
-        handleMarkAsRead(notification.id, e)
+        handleMarkAsRead(notification.id, e, notification.actionUrl)
       }}
     >
       <div className="flex items-start gap-3">
@@ -203,9 +235,20 @@ export function NotificationBell() {
             <p className="text-sm font-bold text-card-foreground group-hover:text-accent transition-colors truncate">
               {notification.title}
             </p>
-            {!notification.isRead && (
-              <div className="h-2 w-2 rounded-full bg-accent flex-shrink-0 shadow-lg shadow-accent/50 animate-pulse" />
-            )}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {!notification.isRead && (
+                <div className="h-2 w-2 rounded-full bg-accent shadow-lg shadow-accent/50 animate-pulse" />
+              )}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  deleteNotification(notification.id)
+                }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/10 rounded"
+              >
+                <X className="h-4 w-4 text-red-500" />
+              </button>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2 group-hover:text-muted-foreground/80">
             {notification.message}

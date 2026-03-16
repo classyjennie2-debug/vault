@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcrypt"
-import { getUserById, setUserPassword } from "@/lib/db"
+import { validatePasswordResetToken, setUserPassword, markResetTokenAsUsed } from "@/lib/db"
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,32 +14,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Password must be at least 8 characters long" }, { status: 400 })
     }
 
-    // In a real application, you would:
-    // 1. Validate the reset token from the database
-    // 2. Check if it's not expired
-    // 3. Find the associated user
-    // 4. Update the password
-    // 5. Invalidate the token
-
-    // For this demo, we'll simulate with a simple token check
-    // In production, you'd have a proper token system
-    const tokenParts = token.split('_')
-    if (tokenParts.length !== 3 || tokenParts[0] !== 'reset') {
-      return NextResponse.json({ error: "Invalid reset token" }, { status: 400 })
-    }
-
-    const userId = tokenParts[1]
-    const user = getUserById(userId)
-
-    if (!user) {
-      return NextResponse.json({ error: "Invalid reset token" }, { status: 400 })
+    // Validate the reset token against the database
+    const resetRecord = await validatePasswordResetToken(token)
+    
+    if (!resetRecord) {
+      return NextResponse.json({ error: "Invalid or expired reset token" }, { status: 400 })
     }
 
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Update the user's password
-    setUserPassword(userId, hashedPassword)
+    await setUserPassword(resetRecord.userId, hashedPassword)
+
+    // Mark the token as used so it can't be reused
+    await markResetTokenAsUsed(token)
 
     return NextResponse.json({ message: "Password updated successfully" })
   } catch (error) {

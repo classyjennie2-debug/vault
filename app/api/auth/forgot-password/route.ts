@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getUserByEmail } from "@/lib/db"
+import { getUserByEmail, createPasswordResetToken } from "@/lib/db"
+import crypto from "crypto"
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,30 +11,24 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await getUserByEmail(email)
-    if (!user) {
-      // Don't reveal if email exists or not for security
-      return NextResponse.json({
-        message: "If an account with this email exists, we've sent a password reset link."
-      })
+    if (user) {
+      // Generate a cryptographically secure token (32 bytes = 256 bits)
+      const token = crypto.randomBytes(32).toString("hex")
+      
+      // Store the token in the database with 30-minute expiration
+      await createPasswordResetToken(user.id, token, 30)
+
+      // In production, send reset link via email
+      // For now, just log it in development
+      if (process.env.NODE_ENV === "development") {
+        const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${token}`
+        console.log(`Password reset link for ${email}: ${resetLink}`)
+      }
     }
 
-    // Generate a simple reset token (in production, use a proper JWT or secure token)
-    const resetToken = `reset_${user.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`
-
-    // In a real application, you would send an email here
-    // Log reset link in development only
-    if (process.env.NODE_ENV === "development") {
-      console.log(`Password reset link for ${email}: ${resetLink}`)
-    }
-
-    // For demo purposes, we'll log the link
-    // In production, you'd use a service like SendGrid, Mailgun, etc.
-
+    // Always return same message regardless of whether email exists (don't leak user existence)
     return NextResponse.json({
-      message: "If an account with this email exists, we've sent a password reset link.",
-      // For demo purposes, include the link in the response (remove in production)
-      resetLink
+      message: "If an account with this email exists, we've sent a password reset link."
     })
   } catch (error) {
     console.error("Forgot password error:", error)

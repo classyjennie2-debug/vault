@@ -139,6 +139,24 @@ export async function POST(req: NextRequest) {
           { transactionId, depositAmount: transaction.amount, newBalance, userId: transaction.userId },
           user.id
         )
+      } else if (!approved && transaction.type === "withdrawal") {
+        // If withdrawal is REJECTED, restore the balance to the user
+        const userData = await getUserById(transaction.userId)
+        if (!userData) {
+          throw new Error(`User ${transaction.userId} not found for withdrawal rejection`)
+        }
+
+        const restoredBalance = userData.balance + transaction.amount
+        await run("UPDATE users SET balance = ? WHERE id = ?", [restoredBalance, transaction.userId])
+
+        responseUserBalance = restoredBalance
+        responseUserName = userData.name
+        responseUserEmail = userData.email
+
+        transactionLogger.info('Withdrawal rejected and balance restored', 
+          { transactionId, withdrawalAmount: transaction.amount, restoredBalance, userId: transaction.userId },
+          user.id
+        )
       } else {
         const userData = await getUserById(transaction.userId)
         if (userData) {

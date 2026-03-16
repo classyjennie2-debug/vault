@@ -17,28 +17,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    // Calculate available balance (user balance is already post-investment deduction)
-    let availableBalance = userData.balance
-    try {
-      const investedResult = await get(
-        "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'",
-        [user.id]
-      )
-      const profitResult = await get(
-        "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'",
-        [user.id]
-      )
-      const totalInvested = typeof investedResult?.sum === 'number' ? investedResult.sum : 0
-      const totalProfit = typeof profitResult?.sum === 'number' ? profitResult.sum : 0
-      // FIX: Balance is already reduced from investments, so available = current balance
-      availableBalance = Math.max(0, userData.balance)
-    } catch (e) {
-      availableBalance = userData.balance
-    }
+    // Use atomic balance update to prevent race condition
+    // This ensures no two concurrent withdrawals can both succeed if balance is insufficient
+    const updateResult = await run(
+      `UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?`,
+      [amount, user.id, amount]
+    )
 
-    if (amount > availableBalance) {
+    // Check if the update was successful (rows affected > 0)
+    const changesResult = await get(
+      `SELECT changes() as changedRows`
+    ) as any
+    
+    if (!changesResult || changesResult.changedRows === 0) {
       return NextResponse.json({ error: "Insufficient available balance" }, { status: 400 })
     }
+
+    // Get updated balance for the notification
+    const updatedUserData = await getUserById(user.id)
+    const updatedBalance = updatedUserData?.balance ?? 0
 
     if (method === "bank" && !bankAccount) {
       return NextResponse.json({ error: "Bank account required" }, { status: 400 })
@@ -48,33 +45,57 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Crypto address required" }, { status: 400 })
     }
 
-    // Create withdrawal transaction
-    const transaction = await createTransaction({
-      userId: user.id,
-      type: "withdrawal",
-      amount,
-      status: "pending",
-      method,
-      bankAccount: method === "bank" ? bankAccount : undefined,
-      cryptoAddress: method === "crypto" ? cryptoAddress : undefined,
-    })
+    // Use transaction to ensure all operations succeed or all fail
+    await run(`BEGIN`)
+    
+    try {
+      // Use atomic balance update to prevent race condition
+      // This ensures no two concurrent withdrawals can both succeed if balance is insufficient
+      const updateResult = await run(
+        `UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?`,
+        [amount, user.id, amount]
+      )
 
-    // Deduct from user balance (will be returned if withdrawal is rejected)
-    await run(`UPDATE users SET balance = balance - ? WHERE id = ?`, [amount, user.id])
+      // Check if the update was successful (rows affected > 0)
+      const changesResult = await get(
+        `SELECT changes() as changedRows`
+      ) as any
+      
+      if (!changesResult || changesResult.changedRows === 0) {
+        await run(`ROLLBACK`)
+        return NextResponse.json({ error: "Insufficient available balance" }, { status: 400 })
+      }
 
-    // Create notification for pending withdrawal
-    await createNotification({
-      userId: user.id,
-      title: "Withdrawal Submitted",
-      message: `Your withdrawal request of $${amount.toLocaleString()} is pending admin approval. You'll be notified once processed.`,
-      type: "warning",
-      actionUrl: "/dashboard/transactions"
-    })
+      // Create withdrawal transaction
+      const transaction = await createTransaction({
+        userId: user.id,
+        type: "withdrawal",
+        amount,
+        status: "pending",
+        method,
+        bankAccount: method === "bank" ? bankAccount : undefined,
+        cryptoAddress: method === "crypto" ? cryptoAddress : undefined,
+      })
 
-    return NextResponse.json({
-      message: "Withdrawal request submitted",
-      transaction
-    })
+      // Create notification for pending withdrawal
+      await createNotification({
+        userId: user.id,
+        title: "Withdrawal Submitted",
+        message: `Your withdrawal request of $${amount.toLocaleString()} is pending admin approval. You'll be notified once processed.`,
+        type: "warning",
+        actionUrl: "/dashboard/transactions"
+      })
+
+      await run(`COMMIT`)
+
+      return NextResponse.json({
+        message: "Withdrawal request submitted",
+        transaction
+      })
+    } catch (txError) {
+      await run(`ROLLBACK`)
+      throw txError
+    }
   } catch (error) {
     console.error("Withdraw error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
