@@ -49,20 +49,13 @@ export function NotificationBell() {
     fetchNotifications()
   }, [])
 
-  // Poll only when the sheet is open (every 12s)
+  // When the sheet opens: fetch immediately and start a polling interval.
   useEffect(() => {
     if (!isOpen) return
-    const interval = setInterval(() => {
-      fetchNotifications()
-    }, 12000)
+    // fetch once immediately when opened
+    fetchNotifications()
+    const interval = setInterval(() => fetchNotifications(), 12000)
     return () => clearInterval(interval)
-  }, [isOpen])
-
-  // Refetch whenever sheet opens
-  useEffect(() => {
-    if (isOpen) {
-      fetchNotifications()
-    }
   }, [isOpen])
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
@@ -73,17 +66,27 @@ export function NotificationBell() {
     if (notifications.length === 0) return
     setErrorMessage("")
     const ids = unreadNotifications.map((n) => n.id)
-    // optimistic update
+    if (ids.length === 0) return
+
+    // optimistic local update
     setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, isRead: true } : n))
-    try {
-      await Promise.all(ids.map(id =>
-        fetch(`/api/notifications/${id}/read`, { method: "PUT", headers: { "Content-Type": "application/json" } })
-      ))
+
+    const failures: string[] = []
+    for (const id of ids) {
+      try {
+        const res = await fetch(`/api/notifications/${id}/read`, { method: "PUT" })
+        if (!res.ok) failures.push(id)
+      } catch (err) {
+        failures.push(id)
+      }
+    }
+
+    if (failures.length > 0) {
+      setErrorMessage(`Failed to mark ${failures.length} notification(s) as read`)
       await fetchNotifications()
-    } catch (_err) {
-      setErrorMessage("Failed to mark all as read")
-      // best-effort refetch
-      fetchNotifications()
+    } else {
+      // refresh to ensure server state
+      await fetchNotifications()
     }
   }
 
@@ -130,9 +133,14 @@ export function NotificationBell() {
         ))
       } else {
         // On success, refetch to confirm server state and catch any missed updates
-        console.log("Notification marked as read - refetching to confirm")
-        await new Promise(resolve => setTimeout(resolve, 200))
         await fetchNotifications()
+        // if notification has an actionUrl, navigate there
+        const clicked = notifications.find(n => n.id === id)
+        const actionUrl = clicked?.actionUrl
+        if (actionUrl) {
+          // small delay to allow UI to update
+          setTimeout(() => { window.location.href = actionUrl }, 150)
+        }
       }
     } catch (error) {
       console.error("Error marking notification as read:", error)
