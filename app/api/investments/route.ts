@@ -8,7 +8,7 @@ import {
   getUserById,
   getUserActiveInvestmentsWithProfit,
 } from "@/lib/db"
-import { safeNumber, validateInvestmentAmount, calculateExpectedProfit } from "@/lib/investment-utils"
+import { safeNumber, validateInvestmentAmount, calculateExpectedProfit, calculateReturnRate } from "@/lib/investment-utils"
 import { validate, investmentSchema } from "@/lib/validation"
 import { mapErrorToResponse, createErrorResponse, InsufficientFundsError, NotFoundError, ValidationError } from "@/lib/error-handling"
 import { investmentLogger } from "@/lib/logging"
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       return createErrorResponse(appError)
     }
 
-    const { amount, planId } = validationResult.data
+    const { amount, planId, duration } = validationResult.data
     const safeAmount = safeNumber(amount, 0)
 
     // Get current user to check balance
@@ -123,9 +123,10 @@ export async function POST(req: NextRequest) {
       return createErrorResponse(appError)
     }
 
-    // Calculate expected profit safely
-    const returnRate = safeNumber(plan.returnRate, 0)
-    const expectedProfit = calculateExpectedProfit(safeAmount, returnRate)
+    // Calculate expected profit using dynamic plan rate based on selected duration (days)
+    const durationDays = safeNumber(duration, 7)
+    const computedReturnRate = calculateReturnRate(durationDays, plan.planType || plan.name || "Conservative Bond Fund")
+    const expectedProfit = calculateExpectedProfit(safeAmount, computedReturnRate)
 
     const startDate = new Date().toISOString()
     
@@ -182,7 +183,7 @@ export async function POST(req: NextRequest) {
           'investment',
           safeAmount,
           'approved',
-          `${plan.name || "Investment"} - Investment started`,
+          `${plan.name || "Investment"} - ${computedReturnRate.toFixed(2)}% for ${durationDays} days`,
           new Date().toISOString()
         ]
       )
