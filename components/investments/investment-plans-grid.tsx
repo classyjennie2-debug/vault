@@ -12,8 +12,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { InvestmentForm } from "@/components/investments/investment-form"
-import { safeNumber, getPlanDisplayRate } from "@/lib/investment-utils"
-import { Shield, TrendingUp, Zap } from "lucide-react"
+import { safeNumber, getPlanDisplayRate, getPlanAnnualRate } from "@/lib/investment-utils"
+import { Shield, TrendingUp, Zap, Flame } from "lucide-react"
 import { useState } from "react"
 
 export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
@@ -58,7 +58,8 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
           const minAmount = safeNumber(plan.minAmount, 1000)
           const maxAmount = safeNumber(plan.maxAmount, 500000)
           const displayRate = getPlanDisplayRate(plan.planType || "Conservative Bond Fund")
-          // Dynamic: rate and duration are user-selected, not fixed
+          const annualRate = getPlanAnnualRate(plan.planType || "Conservative Bond Fund")
+          
           return (
             <div key={plan.id} className="relative">
               {/* Popular Badge */}
@@ -108,11 +109,18 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                       </div>
                     </div>
 
-                    <div className="mt-3 text-xs text-accent font-semibold">
-                      <TrendingUp className="inline h-4 w-4 mr-1 align-text-bottom" />
-                      <span>Return rate and duration are flexible!</span>
-                      <br />
-                      <span>Choose any duration from 7 to 365 days. The longer you invest, the higher your profit (up to 30% annualized).</span>
+                    <div className="mt-4 space-y-2 text-xs text-card-foreground/80">
+                      <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-accent/20">
+                        <Flame className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold text-accent">Flexible Duration</p>
+                          <p className="text-muted-foreground">7 to 365 days with compound returns</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between px-2 py-1">
+                        <span className="text-muted-foreground">Annual Potential:</span>
+                        <span className="font-bold text-accent">{annualRate.toFixed(0)}%</span>
+                      </div>
                     </div>
 
                     <DialogTrigger asChild className="mt-auto">
