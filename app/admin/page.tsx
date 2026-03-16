@@ -9,6 +9,8 @@ import {
 import { Users, DollarSign, Clock, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface User {
   id: string
@@ -35,6 +37,8 @@ export default function AdminOverviewPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [userQuery, setUserQuery] = useState("")
+  const [txStatus, setTxStatus] = useState<"all" | "pending" | "approved" | "rejected">("all")
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,8 +69,13 @@ export default function AdminOverviewPage() {
   }, [])
 
   const totalBalance = users.reduce((sum, u) => sum + u.balance, 0)
-  const pendingTx = transactions.filter((t) => t.status === "pending")
-  const approvedTx = transactions.filter((t) => t.status === "approved")
+  const filteredUsers = users.filter((u) =>
+    u.name.toLowerCase().includes(userQuery.toLowerCase()) ||
+    u.email.toLowerCase().includes(userQuery.toLowerCase())
+  )
+  const statusFilteredTx = txStatus === "all" ? transactions : transactions.filter((t) => t.status === txStatus)
+  const pendingTx = statusFilteredTx.filter((t) => t.status === "pending")
+  const approvedTx = statusFilteredTx.filter((t) => t.status === "approved")
   const approvedVolume = approvedTx.reduce((sum, t) => sum + t.amount, 0)
 
   const stats = [
@@ -171,6 +180,19 @@ export default function AdminOverviewPage() {
           </Link>
         </CardHeader>
         <CardContent>
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <Select value={txStatus} onValueChange={(v) => setTxStatus(v as any)}>
+              <SelectTrigger className="w-40 h-9">
+                <SelectValue placeholder="Filter status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           {pendingTx.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
               No pending transactions.
@@ -218,12 +240,20 @@ export default function AdminOverviewPage() {
             href="/admin/users"
             className="text-xs text-accent hover:underline"
           >
-            Manage users
+          Manage users
           </Link>
         </CardHeader>
         <CardContent>
+          <div className="mb-4">
+            <Input
+              placeholder="Search name or email"
+              value={userQuery}
+              onChange={(e) => setUserQuery(e.target.value)}
+              className="max-w-sm h-9"
+            />
+          </div>
           <div className="flex flex-col gap-3">
-            {users.slice(0, 5).map((user) => (
+            {filteredUsers.slice(0, 5).map((user) => (
               <div
                 key={user.id}
                 className="flex items-center justify-between rounded-lg border border-border p-4"

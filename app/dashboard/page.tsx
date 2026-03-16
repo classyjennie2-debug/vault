@@ -6,6 +6,7 @@ import { RecentActivities } from "@/components/dashboard/recent-activities"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
 import LiveChatButton from "@/components/live-chat-button"
+import { GlanceStrip } from "@/components/dashboard/glance-strip"
 import { requireAuth } from "@/lib/auth"
 import { getUserStats, generatePortfolioData, getUserActiveInvestmentsWithProfit } from "@/lib/db"
 import { calculateMonthlyMetrics, calculateReturnRate } from "@/lib/monthly-metrics"
@@ -27,15 +28,22 @@ export default async function DashboardPage() {
   // Use live profit if available, otherwise fallback to stats
   const displayProfit = liveProfit > 0 ? liveProfit : stats.totalProfit
   const totalReturnRate = calculateReturnRate(displayProfit, stats.totalInvested)
+  const totalBalance = stats.availableBalance + stats.totalInvested + displayProfit
+  const weeklyChange =
+    stats.totalInvested > 0
+      ? ((monthlyMetrics.monthlyReturns / Math.max(stats.totalInvested, 1)) * 100) / 4
+      : 0
 
   return (
     <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
       <DashboardHero user={user} stats={stats} />
 
+      <GlanceStrip totalBalance={totalBalance} monthlyGain={monthlyMetrics.monthlyGain} />
+
       <QuickActions />
 
       <DashboardCards
-        totalBalance={stats.availableBalance + stats.totalInvested + displayProfit}
+        totalBalance={totalBalance}
         totalInvested={stats.totalInvested}
         totalProfit={displayProfit}
         availableBalance={stats.availableBalance}
@@ -45,6 +53,7 @@ export default async function DashboardPage() {
         monthlyGain={monthlyMetrics.monthlyGain}
         monthlyReturns={monthlyMetrics.monthlyReturns}
         totalReturnRate={totalReturnRate}
+        weeklyChange={weeklyChange}
       />
 
       <div className="grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-5">

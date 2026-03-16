@@ -1,10 +1,22 @@
 import { NextResponse } from "next/server"
 import { v4 as uuidv4 } from "uuid"
+import { requireAuthAPI } from "@/lib/auth"
 import { getUserById, setUserBalance, createTransaction, createNotification } from "@/lib/db"
+import { validateOrigin } from "@/lib/csrf"
 
 // Admin sends a bonus to a user
 export async function POST(request: Request) {
   try {
+    const csrf = validateOrigin(request as any)
+    if (csrf) return csrf
+
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
+
+    if (user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
+    }
+
     const { userId, amount, note } = await request.json()
     if (!userId || !amount || isNaN(amount) || amount <= 0) {
       return NextResponse.json({ error: "Invalid user or amount" }, { status: 400 })

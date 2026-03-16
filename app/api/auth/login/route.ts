@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server"
 import { getUserByEmail, updateLastLogin, logActivity } from "@/lib/db"
 import { verifyPassword, issueToken, sendVerificationCode } from "@/lib/auth"
+import { rateLimitedResponse, rateLimitConfigs, getClientIp } from "@/lib/rate-limiting"
 import { cookies } from "next/headers"
 
 export async function POST(request: Request) {
   const { email, password } = await request.json()
+  const clientIp = await getClientIp(request)
+
+  return rateLimitedResponse(`login_${clientIp}_${email ?? 'unknown'}`, rateLimitConfigs.login, async () => {
   console.log('login attempt', { email, passwordProvided: !!password })
   if (!email || !password) {
     console.log('missing fields')
@@ -52,11 +56,12 @@ export async function POST(request: Request) {
   const cookieStore = await cookies()
   cookieStore.set("vault_token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: "strict",
     maxAge: 60 * 60 * 24 * 7, // 7 days
     path: "/",
   })
   
   return NextResponse.json({ success: true })
+  })
 }

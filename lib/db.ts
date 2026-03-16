@@ -6,31 +6,25 @@ import type { ActiveInvestment, InvestmentPlan } from "./types"
 // support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)
 let pgPool: any = null
 const DATABASE_URL = process.env.DATABASE_URL
+const isProduction = process.env.NODE_ENV === 'production'
 let pgInitialized = false
 
-console.log('[DB INIT] DATABASE_URL present:', !!DATABASE_URL)
-console.log('[DB INIT] DATABASE_URL value (first 50 chars):', DATABASE_URL?.substring(0, 50))
-
 if (DATABASE_URL) {
-  // Dynamically import Pool to avoid errors when postgres is not installed
   try {
     const { Pool } = require('pg')
     pgPool = new Pool({ connectionString: DATABASE_URL, max: 1 })
-    console.log('[DB INIT] PostgreSQL pool initialized successfully')
-    // Test the connection immediately (sync)
+    console.log('[DB INIT] PostgreSQL pool initialized')
     pgPool.query('SELECT 1', (err: any) => {
       if (err) {
         console.error('[DB INIT] PostgreSQL connection test failed:', err.message)
         throw new Error('[DB INIT] PostgreSQL connection failed: ' + err.message)
-      } else {
-        console.log('[DB INIT] PostgreSQL connection test successful')
       }
     })
   } catch (err: any) {
     console.error('[DB INIT] PostgreSQL not available:', err.message)
-    throw new Error('[DB INIT] PostgreSQL not available: ' + err.message)
+    if (isProduction) throw new Error('[DB INIT] PostgreSQL not available: ' + err.message)
   }
-} else {
+} else if (isProduction) {
   throw new Error('[DB INIT] DATABASE_URL not set. PostgreSQL is required in production.')
 }
 

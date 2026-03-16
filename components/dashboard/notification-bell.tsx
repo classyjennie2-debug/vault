@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Zap, AlertCircle, CheckCircle, Info, X } from "lucide-react"
+import { Bell, Zap, AlertCircle, CheckCircle, Info, X, RefreshCw, Check } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -20,8 +20,10 @@ export function NotificationBell() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   const [updatingNotification, setUpdatingNotification] = useState<string | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const fetchNotifications = async () => {
+    setIsLoading(true)
     try {
       const response = await fetch("/api/notifications")
       if (response.ok) {
@@ -30,11 +32,15 @@ export function NotificationBell() {
           ...notif,
           isRead: Boolean(notif.isRead)
         })))
+        setLastUpdated(new Date())
       } else {
         console.error("Failed to fetch notifications")
       }
     } catch (error) {
       console.error("Error fetching notifications:", error)
+      setErrorMessage("Unable to load notifications right now.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -43,14 +49,14 @@ export function NotificationBell() {
     fetchNotifications()
   }, [])
 
-  // Poll for new notifications every 3 seconds (more aggressive)
+  // Poll only when the sheet is open (every 12s)
   useEffect(() => {
+    if (!isOpen) return
     const interval = setInterval(() => {
       fetchNotifications()
-    }, 3000)
-    
+    }, 12000)
     return () => clearInterval(interval)
-  }, [])
+  }, [isOpen])
 
   // Refetch whenever sheet opens
   useEffect(() => {
@@ -62,6 +68,37 @@ export function NotificationBell() {
   const unreadCount = notifications.filter((n) => !n.isRead).length
   const unreadNotifications = notifications.filter((n) => !n.isRead)
   const readNotifications = notifications.filter((n) => n.isRead)
+
+  const markAllAsRead = async () => {
+    if (notifications.length === 0) return
+    setErrorMessage("")
+    const ids = unreadNotifications.map((n) => n.id)
+    // optimistic update
+    setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, isRead: true } : n))
+    try {
+      await Promise.all(ids.map(id =>
+        fetch(`/api/notifications/${id}/read`, { method: "PUT", headers: { "Content-Type": "application/json" } })
+      ))
+      await fetchNotifications()
+    } catch (err) {
+      setErrorMessage("Failed to mark all as read")
+      // best-effort refetch
+      fetchNotifications()
+    }
+  }
+
+  const clearRead = () => {
+    setNotifications(unreadNotifications)
+  }
+
+  const groupedNotifications = (items: Notification[]) => {
+    const groups: Record<string, Notification[]> = {}
+    items.forEach((n) => {
+      const key = n.timestamp ? new Date(n.timestamp).toDateString() : "Other"
+      groups[key] = groups[key] ? [...groups[key], n] : [n]
+    })
+    return Object.entries(groups)
+  }
 
   const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation()
@@ -202,15 +239,27 @@ export function NotificationBell() {
             <Zap className="h-5 w-5 text-accent" />
             Notifications
           </SheetTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 -mr-2"
-            onClick={() => setIsOpen(false)}
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close notifications</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => fetchNotifications()}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+              <span className="sr-only">Refresh</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 -mr-2"
+              onClick={() => setIsOpen(false)}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close notifications</span>
+            </Button>
+          </div>
         </SheetHeader>
 
         {errorMessage && (
@@ -220,29 +269,46 @@ export function NotificationBell() {
         )}
 
         <Tabs defaultValue="unread" className="flex-1 flex flex-col">
-          <TabsList className="grid w-full grid-cols-2 sticky top-16 z-10 mx-6 mt-4 bg-slate-100 dark:bg-slate-800">
-            <TabsTrigger value="unread" className="text-xs font-semibold">
-              Unread{" "}
-              {unreadCount > 0 && (
-                <Badge variant="secondary" className="ml-2 h-5 w-5 rounded-full flex items-center justify-center p-0 text-[10px]">
-                  {unreadCount}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="read" className="text-xs font-semibold">
-              Read ({readNotifications.length})
-            </TabsTrigger>
-          </TabsList>
+          <div className="sticky top-16 z-10 mx-6 mt-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+            <div className="flex items-center justify-between px-3 py-2">
+              <TabsList className="grid grid-cols-2 w-2/3">
+                <TabsTrigger value="unread" className="text-xs font-semibold">
+                  Unread{" "}
+                  {unreadCount > 0 && (
+                    <Badge variant="secondary" className="ml-2 h-5 w-5 rounded-full flex items-center justify-center p-0 text-[10px]">
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="read" className="text-xs font-semibold">
+                  Read ({readNotifications.length})
+                </TabsTrigger>
+              </TabsList>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" disabled={unreadCount === 0 || isLoading} onClick={markAllAsRead} className="text-xs">
+                  <Check className="h-3 w-3 mr-1" /> Mark all read
+                </Button>
+                <Button variant="ghost" size="sm" disabled={readNotifications.length === 0} onClick={clearRead} className="text-xs">
+                  Clear read
+                </Button>
+              </div>
+            </div>
+          </div>
 
           <TabsContent value="unread" className="flex-1 overflow-y-auto">
             {unreadNotifications.length > 0 ? (
               <div className="divide-y divide-border/20">
-                {unreadNotifications.map((notification, idx) => (
-                  <NotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    idx={idx}
-                  />
+                {groupedNotifications(unreadNotifications).map(([date, items]) => (
+                  <div key={date} className="pb-2">
+                    <p className="px-4 pt-3 text-[11px] uppercase tracking-wide text-muted-foreground/80">{date}</p>
+                    {items.map((notification, idx) => (
+                      <NotificationItem
+                        key={notification.id}
+                        notification={notification}
+                        idx={idx}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
             ) : (
@@ -257,12 +323,17 @@ export function NotificationBell() {
           <TabsContent value="read" className="flex-1 overflow-y-auto">
             {readNotifications.length > 0 ? (
               <div className="divide-y divide-border/20">
-                {readNotifications.map((notification, idx) => (
-                  <NotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    idx={idx}
-                  />
+                {groupedNotifications(readNotifications).map(([date, items]) => (
+                  <div key={date} className="pb-2">
+                    <p className="px-4 pt-3 text-[11px] uppercase tracking-wide text-muted-foreground/80">{date}</p>
+                    {items.map((notification, idx) => (
+                      <NotificationItem
+                        key={notification.id}
+                        notification={notification}
+                        idx={idx}
+                      />
+                    ))}
+                  </div>
                 ))}
               </div>
             ) : (
@@ -273,6 +344,10 @@ export function NotificationBell() {
             )}
           </TabsContent>
         </Tabs>
+
+        <div className="px-6 py-3 text-xs text-muted-foreground border-t border-border/30">
+          {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : "Waiting for updates..."}
+        </div>
       </SheetContent>
     </Sheet>
   )

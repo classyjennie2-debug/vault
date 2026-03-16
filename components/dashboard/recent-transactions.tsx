@@ -35,6 +35,8 @@ const statusColors = {
 export function RecentTransactions() {
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(0)
+  const pageSize = 5
 
   useEffect(() => {
     async function fetchTransactions() {
@@ -42,7 +44,7 @@ export function RecentTransactions() {
         const response = await fetch("/api/transactions")
         if (response.ok) {
           const data = await response.json()
-          setUserTransactions(data.slice(0, 5))
+          setUserTransactions(data)
         } else {
           console.error("Failed to fetch transactions")
         }
@@ -80,7 +82,7 @@ export function RecentTransactions() {
             No recent transactions
           </div>
         ) : (
-          userTransactions.map((tx, idx) => {
+          userTransactions.slice(page * pageSize, page * pageSize + pageSize).map((tx, idx) => {
             const Icon = typeIcons[tx.type as keyof typeof typeIcons] || TrendingUp
             const bgColor = typeBgColors[tx.type as keyof typeof typeBgColors] || "bg-primary/10 text-primary"
             const isPositive = tx.type === "deposit" || tx.type === "return"
@@ -125,6 +127,27 @@ export function RecentTransactions() {
               </div>
             )
           })
+        )}
+        {!loading && userTransactions.length > pageSize && (
+          <div className="flex items-center justify-between pt-2">
+            <button
+              className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              Previous
+            </button>
+            <p className="text-[11px] text-muted-foreground">
+              Page {page + 1} / {Math.ceil(userTransactions.length / pageSize)}
+            </p>
+            <button
+              className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+              onClick={() => setPage((p) => (p + 1 < Math.ceil(userTransactions.length / pageSize) ? p + 1 : p))}
+              disabled={page + 1 >= Math.ceil(userTransactions.length / pageSize)}
+            >
+              Next
+            </button>
+          </div>
         )}
       </CardContent>
     </Card>

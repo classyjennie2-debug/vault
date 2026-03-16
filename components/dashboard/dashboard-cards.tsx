@@ -29,6 +29,7 @@ interface DashboardCardsProps {
   monthlyGain?: number
   monthlyReturns?: number
   totalReturnRate?: number
+  weeklyChange?: number
 }
 
 const gradients = [
@@ -109,6 +110,7 @@ export function DashboardCards({
   monthlyGain = 0,
   monthlyReturns = 0,
   totalReturnRate = 0,
+  weeklyChange = 0,
 }: DashboardCardsProps) {
   const formattedBalance = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -146,6 +148,7 @@ export function DashboardCards({
     : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(monthlyGain)
 
   const returnRateFormatted = `${totalReturnRate.toFixed(2)}%`
+  const weeklyChangeFormatted = `${weeklyChange >= 0 ? "+" : ""}${weeklyChange.toFixed(2)}%`
 
   return (
     <div className="grid gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 animate-in fade-in slide-in-from-top duration-700">
@@ -169,7 +172,8 @@ export function DashboardCards({
         icon={TrendingUp}
         label="Total Invested"
         value={formattedInvested}
-        trend="Across all plans"
+        trend={weeklyChange !== 0 ? `${weeklyChangeFormatted} vs last week` : "Across all plans"}
+        trendColor={weeklyChange >= 0 ? "text-emerald-600 dark:text-emerald-500 font-medium" : "text-red-600 dark:text-red-500 font-medium"}
         gradientIndex={2}
       />
       <StatCard

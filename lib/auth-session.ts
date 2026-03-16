@@ -2,10 +2,7 @@ import { headers } from 'next/headers'
 import { cookies } from 'next/headers'
 import type { UserRow } from './db'
 import { get as queryDb } from './db'
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Session Type Definition
-// ─────────────────────────────────────────────────────────────────────────────
+import { verifyToken } from './auth'
 
 export interface Session {
   userId: string
@@ -29,45 +26,31 @@ export interface AuthError {
 
 export type AuthResponse = AuthResult | AuthError
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Session Storage & Validation
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Get current session from browser cookies or headers
- * Uses secure, httpOnly cookie approach (set by auth endpoints)
- */
 export async function getSession(): Promise<Session | null> {
   try {
     const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
+    const token = cookieStore.get('vault_token')?.value
+    if (!token) return null
 
-    if (!sessionCookie?.value) {
-      return null
+    const payload = verifyToken(token)
+    if (!payload) return null
+
+    return {
+      userId: payload.id,
+      email: payload.email,
+      role: (payload.role as 'user' | 'admin') ?? 'user',
+      verified: true,
+      // JWT expiry is authoritative; this mirrors the 7d max-age
+      expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
     }
-
-    // Parse and validate session token
-    // In production, this should verify a JWT signature
-    const session = parseSessionToken(sessionCookie.value)
-    
-    // Check if session is expired
-    if (session && session.expiresAt < Date.now()) {
-      // Clear expired session
-      cookieStore.delete('session')
-      return null
-    }
-
-    return session
   } catch (error) {
     console.error('Error retrieving session:', error)
     return null
   }
 }
 
-/**
- * Authenticate request with session validation
- * Call this from API routes to ensure user is authenticated
- */
+// Authenticate request with session validation
 export async function authenticateRequest(): Promise<AuthResponse> {
   const session = await getSession()
 
@@ -79,7 +62,7 @@ export async function authenticateRequest(): Promise<AuthResponse> {
     }
   }
 
-  // Verify session hasn't expired
+  // Verify session hasn't expired (defensive; JWT is already time-bound)
   if (session.expiresAt < Date.now()) {
     return {
       success: false,
@@ -88,12 +71,8 @@ export async function authenticateRequest(): Promise<AuthResponse> {
     }
   }
 
-  // Fetch user from database to verify they still exist
   try {
-    const user = await queryDb<UserRow>(
-      'SELECT * FROM users WHERE id = ?',
-      [session.userId]
-    )
+    const user = await queryDb<UserRow>('SELECT * FROM users WHERE id = ?', [session.userId])
 
     if (!user) {
       return {
@@ -103,11 +82,7 @@ export async function authenticateRequest(): Promise<AuthResponse> {
       }
     }
 
-    return {
-      success: true,
-      session,
-      user,
-    }
+    return { success: true, session, user }
   } catch (error) {
     console.error('Error validating session:', error)
     return {
@@ -118,15 +93,11 @@ export async function authenticateRequest(): Promise<AuthResponse> {
   }
 }
 
-/**
- * Check if user has required role
- */
+// Role check helper
 export async function requireRole(role: 'user' | 'admin'): Promise<AuthResponse> {
   const auth = await authenticateRequest()
 
-  if (!auth.success) {
-    return auth
-  }
+  if (!auth.success) return auth
 
   if (auth.session.role !== role && auth.session.role !== 'admin') {
     return {
@@ -139,72 +110,18 @@ export async function requireRole(role: 'user' | 'admin'): Promise<AuthResponse>
   return auth as AuthResult
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Session Token Management
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Create a new session token
- * In production, this should create and sign a JWT
- */
-export function createSessionToken(userId: string, email: string, role: 'user' | 'admin', verified: boolean): string {
-  const expiresAt = Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
-  const session: Session = {
-    userId,
-    email,
-    role,
-    verified,
-    expiresAt,
-  }
-
-  // In production, implement JWT creation here
-  // For now, create a simple JSON token (NOTE: NOT SECURE - use JWT in production)
-  return JSON.stringify(session)
-}
-
-/**
- * Parse and validate session token
- */
-function parseSessionToken(token: string): Session | null {
-  try {
-    const session = JSON.parse(token) as Session
-
-    // Validate required fields
-    if (!session.userId || !session.email || !session.role) {
-      return null
-    }
-
-    return session
-  } catch (error) {
-    console.error('Error parsing session token:', error)
-    return null
-  }
-}
-
-/**
- * Verify user ID matches current session
- * Prevents users from accessing other users' data
- */
+// Verify user ID matches current session
 export async function verifyOwnResource(requestedUserId: string): Promise<boolean> {
   const auth = await authenticateRequest()
 
-  if (!auth.success) {
-    return false
-  }
+  if (!auth.success) return false
 
-  // Allow admins to access any user's data
-  if (auth.session.role === 'admin') {
-    return true
-  }
+  if (auth.session.role === 'admin') return true
 
-  // Users can only access their own data
   return auth.session.userId === requestedUserId
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Error Responses for API Routes
-// ─────────────────────────────────────────────────────────────────────────────
-
+// Error responses for API routes
 export function unauthorizedResponse(message: string, statusCode = 401) {
   return Response.json(
     { error: message, code: 'UNAUTHORIZED' },

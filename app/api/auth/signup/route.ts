@@ -2,10 +2,17 @@ import { NextResponse } from "next/server"
 import { v4 as uuidv4 } from "uuid"
 import { getUserByEmail, createUser } from "@/lib/db"
 import { hashPassword, sendVerificationCode, sendAdminNotification } from "@/lib/auth"
+import { rateLimitedResponse, rateLimitConfigs, getClientIp } from "@/lib/rate-limiting"
 
 export async function POST(request: Request) {
   try {
     const { name, email, password } = await request.json()
+    const clientIp = await getClientIp(request)
+
+    return await rateLimitedResponse(
+      `signup_${clientIp}_${email ?? 'unknown'}`,
+      rateLimitConfigs.register,
+      async () => {
     if (!name || !email || !password) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 })
     }
@@ -61,6 +68,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true })
+      }
+    )
   } catch (error) {
     console.error("Signup error:", error)
     const message = error instanceof Error ? error.message : "Internal server error"

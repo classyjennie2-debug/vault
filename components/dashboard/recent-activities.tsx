@@ -34,6 +34,8 @@ const activityBgColors = {
 export function RecentActivities({ userId }: { userId: string }) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(0)
+  const pageSize = 6
 
   useEffect(() => {
     async function fetchActivities() {
@@ -94,7 +96,7 @@ export function RecentActivities({ userId }: { userId: string }) {
             No recent activities
           </div>
         ) : (
-          activities.map((tx, idx) => {
+          activities.slice(page * pageSize, page * pageSize + pageSize).map((tx, idx) => {
             const Icon = activityIcons[tx.type as keyof typeof activityIcons] || TrendingUp
             const bgColor = activityBgColors[tx.type as keyof typeof activityBgColors] || "bg-gray-200"
             return (
@@ -122,6 +124,27 @@ export function RecentActivities({ userId }: { userId: string }) {
               </div>
             )
           })
+        )}
+        {!loading && activities.length > pageSize && (
+          <div className="flex items-center justify-between pt-2">
+            <button
+              className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              Previous
+            </button>
+            <p className="text-[11px] text-muted-foreground">
+              Page {page + 1} / {Math.ceil(activities.length / pageSize)}
+            </p>
+            <button
+              className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+              onClick={() => setPage((p) => (p + 1 < Math.ceil(activities.length / pageSize) ? p + 1 : p))}
+              disabled={page + 1 >= Math.ceil(activities.length / pageSize)}
+            >
+              Next
+            </button>
+          </div>
         )}
       </CardContent>
     </Card>
