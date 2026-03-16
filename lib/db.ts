@@ -1163,8 +1163,9 @@ export async function createNotification(notification: {
   message: string
   type: "success" | "info" | "warning" | "error"
   actionUrl?: string
-}) {
-  const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}): Promise<string> {
+  const { v4: uuidv4 } = await import('uuid')
+  const notificationId = uuidv4()
   await run(
     "INSERT INTO notifications (id, userId, title, message, type, isRead, timestamp, actionUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     [
@@ -1178,6 +1179,7 @@ export async function createNotification(notification: {
       notification.actionUrl || null,
     ]
   )
+  return notificationId
   return notificationId
 }
 

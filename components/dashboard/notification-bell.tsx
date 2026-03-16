@@ -102,17 +102,41 @@ export function NotificationBell() {
   }
 
   const deleteNotification = async (id: string) => {
-    // For now, just remove from local state
-    // In a full implementation, this would call a DELETE endpoint
-    setNotifications(prev => prev.filter(n => n.id !== id))
+    try {
+      const response = await fetch(`/api/notifications/${id}/delete`, {
+        method: "DELETE",
+      })
+      
+      if (response.ok) {
+        // Remove from local state
+        setNotifications(prev => prev.filter(n => n.id !== id))
+      } else {
+        setErrorMessage("Failed to delete notification")
+      }
+    } catch (error) {
+      console.error("Error deleting notification:", error)
+      setErrorMessage("Error deleting notification")
+    }
   }
 
   const clearRead = async () => {
     if (readNotifications.length === 0) return
     
-    // Delete all read notifications (remove from local state)
-    // In a full implementation, this would call a bulk DELETE endpoint
-    setNotifications(unreadNotifications)
+    try {
+      const response = await fetch("/api/notifications/delete-read", {
+        method: "DELETE",
+      })
+      
+      if (response.ok) {
+        // Remove read notifications from local state
+        setNotifications(unreadNotifications)
+      } else {
+        setErrorMessage("Failed to clear read notifications")
+      }
+    } catch (error) {
+      console.error("Error clearing read notifications:", error)
+      setErrorMessage("Error clearing read notifications")
+    }
   }
 
   const groupedNotifications = (items: Notification[]) => {
@@ -160,12 +184,14 @@ export function NotificationBell() {
           n.id === id ? { ...n, isRead: false } : n
         ))
       } else {
-        // On success, refetch to confirm server state and catch any missed updates
-        await fetchNotifications()
-        // Use the provided actionUrl (avoid reading stale state)
+        // On success, navigate if actionUrl is provided
         if (actionUrl) {
-          // small delay to allow UI to update
-          setTimeout(() => { window.location.href = actionUrl }, 150)
+          // Close the sheet first
+          setIsOpen(false)
+          // Then navigate after a small delay
+          setTimeout(() => { 
+            window.location.href = actionUrl 
+          }, 300)
         }
       }
     } catch (error) {
