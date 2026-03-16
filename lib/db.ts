@@ -181,6 +181,26 @@ async function initializePostgres() {
         }
       }
 
+      // Update existing plans with correct planType based on ID
+      try {
+        const planMappings = [
+          { id: 'cbf', planType: 'Conservative Bond Fund' },
+          { id: 'gp', planType: 'Growth Portfolio' },
+          { id: 'hyef', planType: 'High Yield Equity Fund' },
+          { id: 'ret', planType: 'Real Estate Trust' },
+        ]
+        
+        for (const mapping of planMappings) {
+          await pgPool.query(
+            'UPDATE investment_plans SET planType = $1 WHERE id = $2',
+            [mapping.planType, mapping.id]
+          )
+        }
+        console.log('[Migration] Updated existing plans with correct planType')
+      } catch (err) {
+        console.warn('[Migration] Warning updating plan types:', err)
+      }
+
       // Check if already seeded
       try {
         const res = await pgPool.query("SELECT value FROM _meta WHERE key = 'seeded'")
@@ -385,15 +405,27 @@ async function seedDatabasePostgres() {
 
   // Seed plan templates with fixed duration and return rates
   for (const tpl of planTemplates) {
+    // Use UPSERT to ensure planType is always set correctly
     await pool.query(
-      "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description, planType) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (id) DO NOTHING",
+      `INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description, planType) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+       ON CONFLICT (id) DO UPDATE SET 
+         name = $2,
+         minAmount = $3,
+         maxAmount = $4,
+         returnRate = $5,
+         duration = $6,
+         durationUnit = $7,
+         risk = $8,
+         description = $9,
+         planType = $10`,
       [
         tpl.id,
         tpl.name,
         tpl.minAmount,
         tpl.maxAmount,
-        tpl.returnRate, // Fixed return rate
-        tpl.duration, // Fixed duration
+        tpl.returnRate,
+        tpl.duration,
         tpl.durationUnit,
         tpl.risk,
         tpl.description,

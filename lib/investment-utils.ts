@@ -47,6 +47,21 @@ export function getPlanAnnualRate(planType: string = "Conservative Bond Fund"): 
 }
 
 /**
+ * Get rates for common investment durations
+ */
+export function getPlanRatesByDuration(planType: string = "Conservative Bond Fund") {
+  return {
+    "7d": calculateReturnRate(7, planType),
+    "14d": calculateReturnRate(14, planType),
+    "30d": calculateReturnRate(30, planType),
+    "60d": calculateReturnRate(60, planType),
+    "90d": calculateReturnRate(90, planType),
+    "180d": calculateReturnRate(180, planType),
+    "365d": calculateReturnRate(365, planType),
+  }
+}
+
+/**
  * Calculate dynamic return rate based on duration (days) - DEPRECATED
  * Use calculateReturnRate instead
  */
