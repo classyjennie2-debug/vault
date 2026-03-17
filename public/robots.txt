@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /admin
+Disallow: /api
+Disallow: /dashboard
+
+# Allow crawling of public pages
+Allow: /
+
+# Sitemap
+Sitemap: https://vault.example.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
