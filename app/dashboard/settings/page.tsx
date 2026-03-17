@@ -41,12 +41,62 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
-import { ActivityLog } from "@/components/dashboard/activity-log"
+import { ActivityLog, type Activity } from "@/components/dashboard/activity-log"
 
 export default function SettingsPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [saved, setSaved] = useState(false)
+  
+  // Activities state
+  const [activities, setActivities] = useState<Activity[]>([
+    {
+      id: "1",
+      type: "login",
+      description: "Signed in from Chrome on Windows",
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      location: "New York, USA",
+      device: "Windows 10 - Chrome",
+      status: "success",
+    },
+    {
+      id: "2",
+      type: "deposit",
+      description: "Deposited $1,000.00 to investment account",
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      location: "New York, USA",
+      device: "Windows 10 - Chrome",
+      status: "success",
+    },
+    {
+      id: "3",
+      type: "investment",
+      description: "Invested in Growth Plan - $500.00",
+      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "New York, USA",
+      device: "Windows 10 - Chrome",
+      status: "success",
+    },
+    {
+      id: "4",
+      type: "password_change",
+      description: "Changed password",
+      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "New York, USA",
+      device: "Windows 10 - Chrome",
+      status: "success",
+    },
+    {
+      id: "5",
+      type: "login",
+      description: "Signed in from Safari on iPhone",
+      timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "San Francisco, USA",
+      device: "iPhone 15 Pro - Safari",
+      status: "success",
+    },
+  ])
+  
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
@@ -711,7 +761,7 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <ActivityLog />
+          <ActivityLog activities={activities} limit={10} />
         </CardContent>
       </Card>
     </div>

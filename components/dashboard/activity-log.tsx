@@ -59,12 +59,12 @@ function formatTimeAgo(timestamp: string): string {
 }
 
 interface ActivityLogProps {
-  activities: Activity[]
+  activities?: Activity[]
   limit?: number
 }
 
-export function ActivityLog({ activities, limit = 10 }: ActivityLogProps) {
-  const displayActivities = activities.slice(0, limit)
+export function ActivityLog({ activities = [], limit = 10 }: ActivityLogProps) {
+  const displayActivities = (activities || []).slice(0, limit)
 
   return (
     <div className="space-y-3">
