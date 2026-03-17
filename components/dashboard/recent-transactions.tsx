@@ -11,6 +11,7 @@ import { ArrowUpRight, ArrowDownRight, TrendingUp, RefreshCw, Clock, Eye } from 
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import type { Transaction } from "@/lib/types"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 const typeIcons = {
   deposit: ArrowUpRight,
@@ -36,6 +37,7 @@ export function RecentTransactions() {
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
   const pageSize = 5
 
   useEffect(() => {
@@ -95,9 +97,12 @@ export function RecentTransactions() {
             }
             
             return (
+              <Dialog key={tx.id} open={selectedTransaction?.id === tx.id} onOpenChange={(open) => {
+                if (!open) setSelectedTransaction(null)
+              }}>
               <div
-                key={tx.id}
-                className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-l-2 hover:border-l-primary transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
+                onClick={() => setSelectedTransaction(tx)}
+                className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-l-2 hover:border-l-primary transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500 cursor-pointer"
                 style={{ animationDelay: `${idx * 75}ms` }}
               >
                 <div className={`flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 font-bold`}>
@@ -125,6 +130,42 @@ export function RecentTransactions() {
                   </Badge>
                 </div>
               </div>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Transaction Details</DialogTitle>
+                </DialogHeader>
+                {selectedTransaction && (
+                  <div className="space-y-4">
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Type:</span>
+                        <span className="font-semibold text-card-foreground capitalize">{selectedTransaction.type}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Amount:</span>
+                        <span className="font-bold text-card-foreground">
+                          ${(selectedTransaction.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Status:</span>
+                        <Badge className={statusColors[selectedTransaction.status as keyof typeof statusColors] || statusColors.approved}>
+                          {selectedTransaction.status === "pending" && selectedTransaction.type === "deposit" ? "initiated" : selectedTransaction.status}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date:</span>
+                        <span className="font-semibold text-card-foreground">{selectedTransaction.date}</span>
+                      </div>
+                      <div className="border-t border-border pt-3">
+                        <span className="text-muted-foreground block mb-2">Description:</span>
+                        <p className="text-sm text-card-foreground">{selectedTransaction.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+              </Dialog>
             )
           })
         )}

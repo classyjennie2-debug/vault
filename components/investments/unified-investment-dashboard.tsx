@@ -232,8 +232,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                     Choose Your Investment Plan
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-                    Select from our carefully curated investment options tailored to your goals
+                    Select from our carefully curated investment options tailored to your risk tolerance and financial goals. All plans support flexible durations from 7 days to 12 months with higher returns on longer commitments.
                   </p>
+                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+                    <p className="text-sm text-blue-900 dark:text-blue-100">
+                      <strong>💡 Pro Tip:</strong> Each plan shows minimum and maximum investment limits. Select your desired investment amount and choose how long you want to invest (7 days to 12 months). Longer durations offer significantly higher returns!
+                    </p>
+                  </div>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

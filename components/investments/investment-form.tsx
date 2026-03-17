@@ -22,7 +22,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
   const initialAmount = Math.max(minAmount, 100)
 
   const [amount, setAmount] = useState<string>(initialAmount.toString())
-  const [duration, setDuration] = useState<number>(7) // min 7 days
+  const [duration, setDuration] = useState<number>(365) // default 1 year
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -158,16 +158,16 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
           onChange={e => setDuration(Number(e.target.value))}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-slate-800 text-foreground"
         >
-          <option value={7}>7 Days</option>
-          <option value={14}>14 Days (2 weeks)</option>
-          <option value={30}>30 Days (1 month)</option>
-          <option value={60}>60 Days (2 months)</option>
-          <option value={90}>90 Days (3 months)</option>
+          <option value={365}>365 Days (12 Months) - Recommended</option>
           <option value={180}>180 Days (6 months)</option>
-          <option value={365}>365 Days (1 year)</option>
+          <option value={90}>90 Days (3 months)</option>
+          <option value={60}>60 Days (2 months)</option>
+          <option value={30}>30 Days (1 month)</option>
+          <option value={14}>14 Days (2 weeks)</option>
+          <option value={7}>7 Days</option>
         </select>
         <p className="text-xs text-muted-foreground">
-          Longer duration = higher profit!
+          Longer duration = higher profit! 12 months gives maximum returns.
         </p>
       </div>
 
