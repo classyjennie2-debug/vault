@@ -25,15 +25,15 @@ if (DATABASE_URL) {
       if (err) {
         const msg = errMessage(err)
         console.error('[DB INIT] PostgreSQL connection failed:', msg)
-        throw new Error('[DB INIT] PostgreSQL connection failed: ' + msg)
+        if (isProduction) throw new Error('[DB INIT] PostgreSQL not available: ' + msg)
       }
     })
   } catch (err: unknown) {
     const msg = errMessage(err)
-    if (isProduction) throw new Error('[DB INIT] PostgreSQL not available: ' + msg)
+    if (isProduction) {
+      console.error('[DB INIT] Warning: PostgreSQL not available, falling back to SQLite:', msg)
+    }
   }
-} else if (isProduction) {
-  throw new Error('[DB INIT] DATABASE_URL not set. PostgreSQL is required in production.')
 }
 
 const DB_PATH = path.join(process.cwd(), "vault.db")
