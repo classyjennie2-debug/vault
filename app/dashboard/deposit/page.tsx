@@ -184,6 +184,7 @@ export default function DepositPage() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong"
       setError(message)
+      throw err
     } finally {
       setIsSubmitting(false)
     }

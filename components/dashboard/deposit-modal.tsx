@@ -40,6 +40,7 @@ export function DepositModal({
   const [copiedAddress, setCopiedAddress] = useState(false)
   const [copiedAmount, setCopiedAmount] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleCopyAddress = async () => {
     if (!wallet) return
@@ -56,8 +57,12 @@ export function DepositModal({
 
   const handleConfirm = async () => {
     setIsSubmitting(true)
+    setSubmitError(null)
     try {
       await onConfirm()
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to submit deposit"
+      setSubmitError(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -191,6 +196,12 @@ export function DepositModal({
               )}
             </Button>
           </div>
+
+          {submitError && (
+            <div className="text-sm text-destructive mt-2 sm:mt-3" role="alert">
+              {submitError}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

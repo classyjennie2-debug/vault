@@ -1,5 +1,3 @@
-import Database from "better-sqlite3"
-import path from "path"
 import type { ActiveInvestment, InvestmentPlan } from "./types"
 import type { ActivityType } from "@/components/dashboard/activity-log"
 
@@ -7,7 +5,6 @@ import type { ActivityType } from "@/components/dashboard/activity-log"
 type PgPool = { query: (...args: any[]) => any }
 let pgPool: PgPool | null = null
 const DATABASE_URL = process.env.DATABASE_URL
-const isProduction = process.env.NODE_ENV === 'production'
 let pgInitialized = false
 
 function errMessage(err: unknown): string {
@@ -28,141 +25,6 @@ async function initPostgresPool() {
     const msg = errMessage(err)
     console.error('[DB] PostgreSQL connection failed:', msg)
     throw new Error('PostgreSQL database is required. DATABASE_URL must be set.')
-  }
-}
-
-const DB_PATH = path.join(process.cwd(), "vault.db")
-
-let _db: Database.Database | null = null
-let sqliteInitialized = false
-
-function getDb(): Database.Database {
-  throw new Error('SQLite is not supported. Use PostgreSQL via DATABASE_URL only.')
-}
-
-function initializeSqlite() {
-  if (sqliteInitialized) return
-  
-  try {
-    const db = _db!
-    
-    // Create all necessary tables for SQLite
-    const tableDefs = [
-      `CREATE TABLE IF NOT EXISTS _meta (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL
-      )`,
-      `CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        firstName TEXT,
-        lastName TEXT,
-        email TEXT UNIQUE NOT NULL,
-        phone TEXT,
-        dateOfBirth TEXT,
-        passwordHash TEXT,
-        verified INTEGER NOT NULL DEFAULT 0,
-        role TEXT NOT NULL DEFAULT 'user',
-        balance REAL NOT NULL DEFAULT 0,
-        joinedAt TEXT NOT NULL,
-        avatar TEXT NOT NULL,
-        lastLogin TEXT
-      )`,
-      `CREATE TABLE IF NOT EXISTS transactions (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        type TEXT NOT NULL,
-        amount REAL NOT NULL,
-        status TEXT NOT NULL DEFAULT 'pending',
-        description TEXT NOT NULL,
-        date TEXT NOT NULL,
-        FOREIGN KEY (userId) REFERENCES users(id)
-      )`,
-      `CREATE TABLE IF NOT EXISTS investment_plans (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        minAmount REAL NOT NULL,
-        maxAmount REAL NOT NULL,
-        returnRate REAL NOT NULL,
-        duration INTEGER NOT NULL,
-        durationUnit TEXT NOT NULL,
-        risk TEXT NOT NULL,
-        description TEXT NOT NULL,
-        plantype TEXT NOT NULL DEFAULT 'Conservative Bond Fund'
-      )`,
-      `CREATE TABLE IF NOT EXISTS active_investments (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        planId TEXT NOT NULL,
-        planName TEXT NOT NULL,
-        amount REAL NOT NULL,
-        expectedProfit REAL NOT NULL,
-        startDate TEXT NOT NULL,
-        endDate TEXT NOT NULL,
-        status TEXT NOT NULL DEFAULT 'active',
-        progressPercentage REAL NOT NULL DEFAULT 0,
-        FOREIGN KEY (userId) REFERENCES users(id),
-        FOREIGN KEY (planId) REFERENCES investment_plans(id)
-      )`,
-      `CREATE TABLE IF NOT EXISTS wallet_addresses (
-        id TEXT PRIMARY KEY,
-        coin TEXT NOT NULL,
-        network TEXT NOT NULL,
-        address TEXT NOT NULL,
-        assignedTo TEXT,
-        assignedAt TEXT,
-        createdAt TEXT NOT NULL,
-        status TEXT NOT NULL DEFAULT 'active',
-        FOREIGN KEY (assignedTo) REFERENCES users(id)
-      )`,
-      `CREATE TABLE IF NOT EXISTS notifications (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        title TEXT NOT NULL,
-        message TEXT NOT NULL,
-        type TEXT NOT NULL,
-        isRead INTEGER NOT NULL DEFAULT 0,
-        timestamp TEXT NOT NULL,
-        actionUrl TEXT,
-        FOREIGN KEY (userId) REFERENCES users(id)
-      )`,
-      `CREATE TABLE IF NOT EXISTS verification_codes (
-        id TEXT PRIMARY KEY,
-        email TEXT NOT NULL,
-        code TEXT NOT NULL,
-        expiresAt TEXT NOT NULL,
-        used INTEGER NOT NULL DEFAULT 0
-      )`,
-      `CREATE TABLE IF NOT EXISTS password_reset_tokens (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        token TEXT UNIQUE NOT NULL,
-        expiresAt TEXT NOT NULL,
-        used INTEGER NOT NULL DEFAULT 0,
-        createdAt TEXT NOT NULL,
-        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
-      )`,
-      `CREATE TABLE IF NOT EXISTS activity_log (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        type TEXT NOT NULL,
-        description TEXT NOT NULL,
-        ip_address TEXT,
-        user_agent TEXT,
-        metadata TEXT,
-        created_at TEXT NOT NULL,
-        timestamp TEXT,
-        FOREIGN KEY (userId) REFERENCES users(id)
-      )`
-    ]
-    
-    for (const sql of tableDefs) {
-      db.exec(sql)
-    }
-
-    sqliteInitialized = true
-  } catch (err) {
-    console.error('[initializeSqlite] Error:', errMessage(err as Error))
   }
 }
 
@@ -567,7 +429,7 @@ async function initializePostgres() {
         }
         
         // Verify the updates
-        const verifyResult = await pgPool.query('SELECT id, plan_type as \"planType\" FROM investment_plans ORDER BY id')
+        const verifyResult = await pgPool.query('SELECT id, plan_type as "planType" FROM investment_plans ORDER BY id')
         if (process.env.NODE_ENV === 'development') {
           console.log('[Migration] Investment plan types:', verifyResult.rows)
         }
@@ -784,7 +646,7 @@ async function seedDatabasePostgres() {
   // Seed admin user
   try {
     const { hashPassword } = await import('./auth')
-    const adminEmail = 'admin@vaultinvest.prod'
+    const adminEmail = 'admin@vaultcapital.bond'
     const adminPassword = 'F2nny4jj!'
     const adminId = 'admin-user-001'
     

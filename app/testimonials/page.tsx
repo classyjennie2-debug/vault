@@ -189,9 +189,11 @@ export default function TestimonialsPage() {
                     </div>
                   </div>
 
-                  <button className="px-6 py-2 border border-accent text-accent rounded-lg hover:bg-accent/10 transition-all">
-                    Read Full Story →
-                  </button>
+                  <Button variant="outline" asChild>
+                    <Link href="/about">
+                      Read Full Story →
+                    </Link>
+                  </Button>
                 </div>
 
                 <div className="bg-gradient-to-br from-accent/20 to-accent/5 rounded-lg p-8 border border-accent/30">
@@ -273,9 +275,9 @@ export default function TestimonialsPage() {
           <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
             Join thousands of successful investors who are achieving their financial goals with Vault.
           </p>
-          <button className="bg-white text-accent px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all">
-            Start Investing Today
-          </button>
+          <Button size="lg" variant="secondary" className="text-accent bg-white hover:bg-gray-100" asChild>
+            <Link href="/register">Start Investing Today</Link>
+          </Button>
         </div>
       </div>
       <Footer />

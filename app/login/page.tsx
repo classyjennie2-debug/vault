@@ -48,7 +48,7 @@ export default function LoginPage() {
       } else {
         router.push("/dashboard")
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An error occurred. Please try again.")
       setLoading(false)
     }

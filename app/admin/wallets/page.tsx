@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import type { CoinType, NetworkType, WalletAddress } from "@/lib/types"
-import type { UserRow } from "@/lib/db"
 import { coinNetworks, coinDetails } from "@/lib/crypto-config"
 import { CoinIcon } from "@/components/crypto/coin-icon"
 import {
@@ -50,7 +49,6 @@ const allCoins: CoinType[] = ["USDT", "BTC", "ETH", "BNB", "TRX", "SOL"]
 
 export default function AdminWalletsPage() {
   const [walletPool, setWalletPool] = useState<WalletAddress[]>([])
-  const [users, setUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -256,9 +254,6 @@ export default function AdminWalletsPage() {
 
   const availableWallets = walletPool.filter((w) => !w.assignedTo)
   const assignedWallets = walletPool.filter((w) => w.assignedTo)
-  const activeWallets = walletPool.filter((w) => w.status === "active")
-  const inactiveWallets = walletPool.filter((w) => w.status === "inactive")
-  const suspendedWallets = walletPool.filter((w) => w.status === "suspended")
 
   const statsByMCoin = allCoins.map((coin) => {
     const all = walletPool.filter((w) => w.coin === coin)

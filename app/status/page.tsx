@@ -90,8 +90,6 @@ function getStatusText(status: string) {
 
 export default function StatusPage() {
   const operationalCount = services.filter(s => s.status === "operational").length
-  const degradedCount = services.filter(s => s.status === "degraded").length
-  const maintenanceCount = services.filter(s => s.status === "maintenance").length
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
@@ -189,12 +187,20 @@ export default function StatusPage() {
               Subscribe to get real-time notifications about service status changes and scheduled maintenance.
             </p>
             <div className="flex gap-2 flex-wrap">
-              <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium">
+              <a
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium"
+                href="mailto:support@vaultcapital.bond?subject=Status%20Updates"
+              >
                 Subscribe via Email
-              </button>
-              <button className="px-4 py-2 border rounded hover:bg-accent/5 transition-colors text-sm font-medium">
+              </a>
+              <a
+                className="px-4 py-2 border rounded hover:bg-accent/5 transition-colors text-sm font-medium"
+                href="https://status.vaultcapital.bond/rss"
+                target="_blank"
+                rel="noreferrer"
+              >
                 Subscribe via RSS
-              </button>
+              </a>
             </div>
           </div>
         </div>

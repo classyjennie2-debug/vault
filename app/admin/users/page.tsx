@@ -32,12 +32,11 @@ type AdminUser = User & {
   totalInvested?: number
   totalDeposits?: number
 }
-import { Search, DollarSign, Edit3, X, Check, Users, Trash2, AlertCircle, Bell } from "lucide-react"
+import { Search, DollarSign, Edit3, Users, Trash2, AlertCircle, Bell } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([])
-  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [newBalance, setNewBalance] = useState("")
@@ -74,8 +73,6 @@ export default function AdminUsersPage() {
     } catch (err) {
       console.error("Error fetching users:", err)
       setErrorMessage("Failed to fetch users")
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -261,13 +258,7 @@ export default function AdminUsersPage() {
 
   const totalAUM = users.reduce((sum, u) => sum + (u.totalBalance ?? u.balance), 0)
 
-  type AdminUser = User & {
-    totalBalance?: number
-    verified?: boolean
-    activeInvestmentsCount?: number
-    totalInvested?: number
-    totalDeposits?: number
-  }
+  // AdminUser type already declared above
 
   return (
     <div className="flex flex-col gap-6">

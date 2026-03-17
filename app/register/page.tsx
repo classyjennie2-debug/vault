@@ -102,7 +102,7 @@ export default function RegisterPage() {
       // user is logged in automatically by backend
       // Don't disable loading - keep button locked during redirect
       router.push("/dashboard")
-    } catch (err) {
+    } catch (_err) {
       setError("An error occurred. Please try again.")
       setLoading(false)
     }

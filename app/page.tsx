@@ -1,6 +1,5 @@
 import Link from "next/link"
 import {
-  ArrowRight,
   Shield,
   TrendingUp,
   BarChart3,
@@ -10,7 +9,6 @@ import {
   Zap,
   CheckCircle2,
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { TrustBadges } from "@/components/ui/trust-badges"
 import { Logo } from "@/components/ui/logo"
 import { LandingCTA } from "@/components/landing-cta"
