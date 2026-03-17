@@ -1010,6 +1010,12 @@ export async function getInvestmentPlansFromDb() {
         category: (rp.category as string) || "",
       }
       
+      // Normalize duration to avoid plans showing 24+ months in the UI
+      // (Some DB seeds may have longer durations, but we want to keep sessions capped at 12 months)
+      if (mapped.durationUnit === "months" && mapped.duration > 12) {
+        mapped.duration = 12
+      }
+
       // Log each plan to verify planType is correct (dev only)
       if (process.env.NODE_ENV === 'development' && idx < 4) {
         console.log(`[getInvestmentPlansFromDb] Plan ${(rp.id ?? '') as string}: planType="${mapped.planType}"`)
@@ -1116,13 +1122,20 @@ export async function getInvestmentPlanById(planId: string) {
     console.log(`[getInvestmentPlanById] Found plan ${planId}`)
   }
   
-  return {
+  const mapped: InvestmentPlan = {
     ...p,
     // CRITICAL: Ensure planType is set with fallback to ID-based mapping
     planType: planTypeValue && String(planTypeValue).trim() ? String(planTypeValue).trim() : getPlanTypeById((rp.id ?? '') as string),
     fees: typeof rp.fees === 'object' && rp.fees !== null ? (rp.fees as Record<string, number>) : { management: 0, performance: 0, withdrawal: 0 },
     category: (rp.category as string) || "",
   } as InvestmentPlan
+
+  // Normalize duration to avoid showing 24+ months on the investment page
+  if (mapped.durationUnit === "months" && mapped.duration > 12) {
+    mapped.duration = 12
+  }
+
+  return mapped
 }
 
 export async function getUserTransactions(userId: string) {
