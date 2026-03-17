@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Footer from "@/components/layout/footer"
 
 interface FAQItem {
   question: string
@@ -108,7 +109,7 @@ const faqs: FAQItem[] = [
   {
     category: "support",
     question: "How can I contact support?",
-    answer: "You can reach our support team 24/7 via email (support@vaultinvest.com), live chat on our website, or phone (+1 800-123-4567). Response time is typically under 2 hours.",
+    answer: "You can reach our support team 24/7 via email (support@vaultcapital.bond), live chat on our website, or phone (+1 800-123-4567). Response time is typically under 2 hours.",
   },
   {
     category: "support",
@@ -215,6 +216,7 @@ export default function FAQPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

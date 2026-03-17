@@ -35,17 +35,18 @@ export default function RegisterPage() {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || "Something went wrong")
+        setLoading(false)
         console.error("Signup error response:", { status: res.status, data })
         return
       }
       setInfo("Verification code sent to your email")
+      setLoading(false)
       setStep(1)
     } catch (err) {
       const message = err instanceof Error ? err.message : "Network error"
       setError(`Failed to create account: ${message}`)
-      console.error("Signup fetch error:", err)
-    } finally {
       setLoading(false)
+      console.error("Signup fetch error:", err)
     }
   }
 
@@ -62,11 +63,14 @@ export default function RegisterPage() {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || "Invalid code")
+        setLoading(false)
         return
       }
       // user is logged in automatically by backend
+      // Don't disable loading - keep button locked during redirect
       router.push("/dashboard")
-    } finally {
+    } catch (err) {
+      setError("An error occurred. Please try again.")
       setLoading(false)
     }
   }

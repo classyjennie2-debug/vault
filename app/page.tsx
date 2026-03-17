@@ -458,14 +458,14 @@ export default async function LandingPage() {
               © 2026 Vault Invest. All rights reserved.
             </p>
             <div className="flex gap-4">
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a href="https://twitter.com/vaultcapital" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                 <span className="sr-only">Twitter</span>
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 19H5V8h3v11zm-1.5-12.5c-1 0-1.8-.8-1.8-1.8 0-1 .8-1.8 1.8-1.8 1 0 1.8.8 1.8 1.8 0 1-.8 1.8-1.8 1.8zm12.5 12.5h-3v-6c0-1.4-.5-2.4-1.7-2.4-1 0-1.5.7-1.8 1.3-.1.2-.1.5-.1.7v6.4h-3V8h3v1.5c.4-.7 1.3-1.7 3.2-1.7 2.4 0 4.2 1.6 4.2 5v7.2z" /></svg>
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              </a>
+              <a href="https://linkedin.com/company/vaultcapital" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                 <span className="sr-only">LinkedIn</span>
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.475-2.236-1.986-2.236-1.081 0-1.722.722-2.004 1.418-.103.249-.129.597-.129.946v5.441h-3.554s.047-8.842 0-9.769h3.554v1.383c.433-.667 1.208-1.615 2.938-1.615 2.146 0 3.75 1.404 3.75 4.42v5.581zM5.337 9.433c-1.144 0-1.915-.758-1.915-1.704 0-.951.768-1.704 1.959-1.704 1.188 0 1.913.753 1.932 1.704 0 .946-.744 1.704-1.976 1.704zm1.946 10.019H3.39V9.684h3.893v9.768zM22.224 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.224 0z" /></svg>
-              </Link>
+              </a>
             </div>
           </div>
         </div>

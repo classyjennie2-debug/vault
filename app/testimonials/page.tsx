@@ -1,4 +1,5 @@
 import { Star, TrendingUp } from "lucide-react"
+import Footer from "@/components/layout/footer"
 
 const testimonials = [
   {
@@ -277,6 +278,7 @@ export default function TestimonialsPage() {
           </button>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

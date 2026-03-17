@@ -1,4 +1,5 @@
 import { CheckCircle2, AlertCircle, Clock } from "lucide-react"
+import Footer from "@/components/layout/footer"
 
 interface ServiceStatus {
   name: string
@@ -198,6 +199,7 @@ export default function StatusPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

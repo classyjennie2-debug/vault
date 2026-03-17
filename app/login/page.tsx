@@ -33,20 +33,23 @@ export default function LoginPage() {
         if (data.requiresVerification) {
           // Redirect to verification page with email
           router.push(`/verify?email=${encodeURIComponent(data.email)}&from=login`)
+          // Don't disable loading - keep button locked during redirect
           return
         }
         setError(data.error || "Invalid credentials")
+        setLoading(false)
         return
       }
       // successful login - token cookie set by server
-      // fetch session or decode role? for now assume backend returned role in token
+      // Don't disable loading here - keep button locked during navigation
       // redirect to dashboard; admin users need to be detected by email
       if (email.includes("admin")) {
         router.push("/admin")
       } else {
         router.push("/dashboard")
       }
-    } finally {
+    } catch (err) {
+      setError("An error occurred. Please try again.")
       setLoading(false)
     }
   }

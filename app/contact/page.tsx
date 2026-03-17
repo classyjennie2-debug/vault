@@ -1,3 +1,5 @@
+import Footer from "@/components/layout/footer"
+
 export default function ContactPage() {
   return (
     <div className="container mx-auto px-4 py-16">
@@ -13,7 +15,7 @@ export default function ContactPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="font-semibold">Email</h3>
-                <p className="text-muted-foreground">support@vaultinvest.com</p>
+                <p className="text-muted-foreground">support@vaultcapital.bond</p>
               </div>
               <div>
                 <h3 className="font-semibold">Phone</h3>
@@ -49,6 +51,7 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

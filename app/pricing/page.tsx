@@ -1,4 +1,5 @@
 import { Check } from "lucide-react"
+import Footer from "@/components/layout/footer"
 
 const plans = [
   {
@@ -256,6 +257,7 @@ export default function PricingPage() {
           </button>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

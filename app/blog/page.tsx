@@ -1,3 +1,5 @@
+import Footer from "@/components/layout/footer"
+
 const articles = [
   {
     title: "2026 Investment Outlook: Market Trends to Watch",
@@ -99,6 +101,7 @@ export default function BlogPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { Shield, Lock, Zap, Eye, Server, Smartphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Footer from "@/components/layout/footer"
 
 const securityFeatures = [
   {
@@ -197,6 +198,7 @@ export default function SecurityPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

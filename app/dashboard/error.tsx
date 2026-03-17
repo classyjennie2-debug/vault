@@ -62,7 +62,7 @@ export default function Error({
         </div>
 
         <p className="text-xs text-gray-500 text-center mt-6">
-          If this problem persists, please contact support at support@vaultinvest.com
+          If this problem persists, please contact support at support@vaultcapital.bond
         </p>
       </div>
     </div>

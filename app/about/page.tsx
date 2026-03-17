@@ -1,4 +1,5 @@
 import { Users, Target, Award, TrendingUp } from "lucide-react"
+import Footer from "@/components/layout/footer"
 
 const values = [
   {
@@ -212,6 +213,7 @@ export default function AboutPage() {
           </button>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { BookOpen, Video, Users, Zap, Mail, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Footer from "@/components/layout/footer"
 
 const resources = [
   {
@@ -192,6 +193,7 @@ export default function HelpPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

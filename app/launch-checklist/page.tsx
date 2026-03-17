@@ -1,4 +1,5 @@
 import { Check, X, AlertCircle } from "lucide-react"
+import Footer from "@/components/layout/footer"
 
 const checklistItems = [
   // Content
@@ -104,9 +105,10 @@ const getStatusIcon = (status: string) => {
   }
 }
 
+
 export default function LaunchChecklistPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-secondary/10">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
@@ -214,6 +216,7 @@ export default function LaunchChecklistPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }
