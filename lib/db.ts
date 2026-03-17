@@ -1210,9 +1210,9 @@ export async function getInvestmentPlanById(planId: string) {
       performance_fee as performanceFee,
       withdrawal_fee as withdrawalFee
     FROM investment_plans 
-    WHERE id = ?
+    WHERE id = $1
   `
-    : "SELECT * FROM investment_plans WHERE id = ?"
+    : "SELECT * FROM investment_plans WHERE id = $1"
   
   const p: InvestmentPlan | undefined = await get(query, [planId])
   if (!p) {
@@ -1437,9 +1437,9 @@ export async function getUserActiveInvestments(userId: string): Promise<ActiveIn
         COALESCE(progress_percentage, 0) as "progressPercentage",
         (EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - start_date)) / EXTRACT(EPOCH FROM (maturity_date - start_date)) * 100) as "calculatedProgress"
       FROM investments 
-      WHERE user_id = ? AND status = ?`
+      WHERE user_id = $1 AND status = $2`
     : `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage 
-       FROM active_investments WHERE userId = ? AND status = ?`
+       FROM active_investments WHERE userId = $1 AND status = $2`
   
   const results = (await all(query, [userId, 'active'])) as unknown[]
   
@@ -1642,8 +1642,8 @@ export async function processMaturedInvestments(userId: string) {
     // mark complete and set full progress - update both tables for compatibility
     try {
       const updateQuery = usePostgres
-        ? "UPDATE investments SET status = ?, progress_percentage = ? WHERE id = ?"
-        : "UPDATE active_investments SET status = ?, progressPercentage = ? WHERE id = ?"
+        ? "UPDATE investments SET status = $1, progress_percentage = $2 WHERE id = $3"
+        : "UPDATE active_investments SET status = $1, progressPercentage = $2 WHERE id = $3"
       
       const updateParams = usePostgres
         ? ['completed', 100, inv.id]
@@ -1765,8 +1765,8 @@ export async function getUserActivity(userId: string, limit: number = 20) {
   const usePostgres = pgPool !== null
   
   const query = usePostgres
-    ? "SELECT id, user_id as \"userId\", type, description, created_at as timestamp, 'success' as status FROM activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT ?"
-    : "SELECT id, userId, type, description, timestamp, status FROM activity_log WHERE userId = ? ORDER BY timestamp DESC LIMIT ?"
+    ? "SELECT id, user_id as \"userId\", type, description, created_at as timestamp, 'success' as status FROM activity_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2"
+    : "SELECT id, userId, type, description, timestamp, status FROM activity_log WHERE userId = $1 ORDER BY timestamp DESC LIMIT $2"
   
   const activities = await all(query, [userId, limit])
   
@@ -1787,19 +1787,19 @@ export async function deleteUser(userId: string): Promise<void> {
     // IMPORTANT: Must handle foreign key constraints in correct order
     
     // 1. Unassign any wallet addresses assigned to this user (FOREIGN KEY constraint)
-    await run("UPDATE wallet_addresses SET assignedTo = NULL, assignedAt = NULL WHERE assignedTo = ?", [userId])
+    await run("UPDATE wallet_addresses SET assignedTo = NULL, assignedAt = NULL WHERE assignedTo = $1", [userId])
     
     // 2. Delete notifications linked to this user
-    await run("DELETE FROM notifications WHERE userId = ?", [userId])
+    await run("DELETE FROM notifications WHERE userId = $1", [userId])
     
     // 3. Delete transactions for this user
-    await run("DELETE FROM transactions WHERE userId = ?", [userId])
+    await run("DELETE FROM transactions WHERE userId = $1", [userId])
     
     // 4. Delete active investments for this user
-    await run("DELETE FROM active_investments WHERE userId = ?", [userId])
+    await run("DELETE FROM active_investments WHERE userId = $1", [userId])
     
     // 5. Finally delete the user (now safe - no foreign key violations)
-    await run("DELETE FROM users WHERE id = ?", [userId])
+    await run("DELETE FROM users WHERE id = $1", [userId])
   } catch (error) {
     console.error(`Error deleting user ${userId}:`, error)
     throw error
