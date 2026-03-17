@@ -1,6 +1,5 @@
 import Database from "better-sqlite3"
 import path from "path"
-import bcrypt from "bcrypt"
 import type { ActiveInvestment, InvestmentPlan } from "./types"
 
 // support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)
@@ -17,22 +16,19 @@ function errMessage(err: unknown): string {
   try { return JSON.stringify(err) } catch { return String(err) }
 }
 
-if (DATABASE_URL) {
+async function initPostgresPool() {
+  if (!DATABASE_URL || pgPool) return
+
   try {
-    const { Pool } = require('pg')
+    const { Pool } = await import('pg')
     pgPool = new Pool({ connectionString: DATABASE_URL, max: 1 })
-    if (pgPool) pgPool.query('SELECT 1', (err: unknown) => {
-      if (err) {
-        const msg = errMessage(err)
-        console.error('[DB INIT] PostgreSQL connection failed:', msg)
-        if (isProduction) throw new Error('[DB INIT] PostgreSQL not available: ' + msg)
-      }
-    })
+    await pgPool.query('SELECT 1')
   } catch (err: unknown) {
     const msg = errMessage(err)
     if (isProduction) {
       console.error('[DB INIT] Warning: PostgreSQL not available, falling back to SQLite:', msg)
     }
+    pgPool = null
   }
 }
 
@@ -168,6 +164,9 @@ function initializeSqlite() {
     for (const sql of tableDefs) {
       db.exec(sql)
     }
+
+    // Seed default data (tables + plans) for local development
+    seedDatabaseSync(db)
     
     sqliteInitialized = true
   } catch (err: unknown) {
@@ -474,11 +473,13 @@ async function initializePostgres() {
         
         // Verify the updates
         const verifyResult = await pgPool.query('SELECT id, plantype FROM investment_plans ORDER BY id')
-        for (const row of verifyResult.rows) {
-          // Plan type verified
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[Migration] Investment plan types:', verifyResult.rows)
         }
-      } catch (err: unknown) {
-        // Migration error logged
+      } catch (_err: unknown) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[Migration] Failed to sync plan types', _err)
+        }
       }
 
       // Ensure plans exist in database - insert or update based on our template data
@@ -517,30 +518,22 @@ interface DatabaseRow {
 export async function run(sql: string, params: unknown[] = []): Promise<number> {
   // In production, only minimal logging. Development logging disabled to prevent SQL parameter leakage.
   
+  await initPostgresPool()
+
   if (pgPool) {
     await initializePostgres()
-    try {
-      const result = await pgPool.query(adaptSql(sql), params)
+    const result = await pgPool.query(adaptSql(sql), params)
     if (process.env.NODE_ENV === 'development') {
       // PostgreSQL query executed
     }
-      return result.rowCount || 0
-    } catch (err: unknown) {
-      // PostgreSQL query error logged
-      throw err
-    }
+    return result.rowCount || 0
   } else {
-    try {
-      const db = getDb()
-      const result = db.prepare(sql).run(...params)
+    const db = getDb()
+    const result = db.prepare(sql).run(...params)
     if (process.env.NODE_ENV === 'development') {
       // SQLite query executed
     }
-      return result.changes || 0
-    } catch (err: unknown) {
-      // SQLite query error logged
-      throw err
-    }
+    return result.changes || 0
   }
 }
 
@@ -548,6 +541,8 @@ export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []):
   if (process.env.NODE_ENV === 'development') {
     console.log(`[GET] Executing SQL: ${sql}`, 'Backend:', pgPool ? 'PostgreSQL' : 'SQLite')
   }
+
+  await initPostgresPool()
   
   if (pgPool) {
     await initializePostgres()
@@ -580,6 +575,8 @@ export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []):
   if (process.env.NODE_ENV === 'development') {
     console.log(`[ALL] Executing SQL: ${sql}`)
   }
+
+  await initPostgresPool()
   
   if (pgPool) {
     await initializePostgres()
@@ -688,9 +685,6 @@ function seedDatabaseSync(db: Database.Database) {
 }
 
 async function seedDatabasePostgres() {
-  // Hash password synchronously using bcrypt
-  const passwordHash = bcrypt.hashSync("password123", 10)
-
   if (!pgPool) return
 
   const pool = pgPool
@@ -1513,9 +1507,10 @@ export async function updateTransactionStatus(transactionId: string, status: "ap
   `, [status, transactionId])
 }
 
-export function updateUserSettings(userId: string, settings: Record<string, unknown>) {
+export function updateUserSettings(userId: string, _settings: Record<string, unknown>) {
   // For now, this is a placeholder since we're using mock data
   // In a real app, this would update user settings in the database
+  void _settings
   if (process.env.NODE_ENV === 'development') {
     console.log(`Updating settings for user ${userId}`)
   }
@@ -1544,7 +1539,6 @@ export async function createNotification(notification: {
       notification.actionUrl || null,
     ]
   )
-  return notificationId
   return notificationId
 }
 
