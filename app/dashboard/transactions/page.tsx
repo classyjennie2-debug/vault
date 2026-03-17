@@ -16,6 +16,12 @@ import {
   TrendingUp,
   RefreshCw,
   Filter,
+  X,
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  Clock,
+  AlertCircle,
 } from "lucide-react"
 
 const typeIcons = {
@@ -45,6 +51,7 @@ export default function TransactionsPage() {
   const [filter, setFilter] = useState<FilterType>("all")
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
 
   useEffect(() => {
     async function fetchTransactions() {
@@ -216,14 +223,15 @@ export default function TransactionsPage() {
                 return (
                   <div
                     key={tx.id}
-                    className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-3 rounded-lg border border-border p-3 sm:p-4 transition-colors hover:bg-secondary/50"
+                    onClick={() => setSelectedTransaction(tx)}
+                    className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-3 rounded-lg border border-border p-3 sm:p-4 transition-all hover:bg-secondary/50 hover:border-accent/50 cursor-pointer group"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-secondary">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-secondary group-hover:bg-secondary/80 transition-colors">
                         <Icon className={`h-4 w-4 ${color}`} />
                       </div>
                       <div className="flex-1 overflow-hidden">
-                        <p className="truncate text-xs sm:text-sm font-medium text-card-foreground">
+                        <p className="truncate text-xs sm:text-sm font-medium text-card-foreground group-hover:text-accent transition-colors">
                           {tx.description}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
@@ -260,6 +268,121 @@ export default function TransactionsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Transaction Details Modal */}
+      {selectedTransaction && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 sm:p-6"
+          onClick={() => setSelectedTransaction(null)}
+        >
+          <div 
+            className="bg-card rounded-lg max-w-md w-full shadow-2xl border border-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+              <h2 className="text-lg sm:text-xl font-bold">Transaction Details</h2>
+              <button
+                onClick={() => setSelectedTransaction(null)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-4 sm:p-6 space-y-6">
+              {/* Transaction Type and Icon */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {(() => {
+                    const Icon = typeIcons[selectedTransaction.type as keyof typeof typeIcons]
+                    const color = typeColors[selectedTransaction.type as keyof typeof typeColors]
+                    return (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary">
+                        <Icon className={`h-6 w-6 ${color}`} />
+                      </div>
+                    )
+                  })()}
+                  <div>
+                    <p className="text-sm text-muted-foreground">Type</p>
+                    <p className="font-semibold capitalize">{typeLabels[selectedTransaction.type as keyof typeof typeLabels]}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Amount */}
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Amount
+                </p>
+                <p className={`text-2xl font-bold ${selectedTransaction.type === "deposit" || selectedTransaction.type === "return" ? "text-accent" : "text-card-foreground"}`}>
+                  {selectedTransaction.type === "deposit" || selectedTransaction.type === "return" ? "+" : "-"}
+                  ${selectedTransaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                </p>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Description</p>
+                <p className="font-medium">{selectedTransaction.description}</p>
+              </div>
+
+              {/* Date */}
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Date
+                </p>
+                <p className="font-medium">{selectedTransaction.date}</p>
+              </div>
+
+              {/* Status */}
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  {selectedTransaction.status === "approved" ? (
+                    <CheckCircle className="h-4 w-4 text-success" />
+                  ) : selectedTransaction.status === "pending" ? (
+                    <Clock className="h-4 w-4 text-yellow-500" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
+                  Status
+                </p>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={
+                      selectedTransaction.status === "approved"
+                        ? "secondary"
+                        : selectedTransaction.status === "pending"
+                          ? "outline"
+                          : "destructive"
+                    }
+                  >
+                    {selectedTransaction.status.charAt(0).toUpperCase() + selectedTransaction.status.slice(1)}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Transaction ID */}
+              <div className="space-y-1 pt-4 border-t border-border/50">
+                <p className="text-sm text-muted-foreground">Transaction ID</p>
+                <p className="font-mono text-xs text-card-foreground break-all">{selectedTransaction.id}</p>
+              </div>
+
+              {/* Close Button */}
+              <Button
+                onClick={() => setSelectedTransaction(null)}
+                className="w-full mt-4"
+                variant="outline"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
