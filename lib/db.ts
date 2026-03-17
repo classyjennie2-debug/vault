@@ -287,14 +287,18 @@ export async function run(sql: string, params: unknown[] = []): Promise<number> 
 }
 
 export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T | undefined> {
-  console.log(`[GET] Executing SQL: ${sql} with params:`, params, 'Backend:', pgPool ? 'PostgreSQL' : 'SQLite')
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[GET] Executing SQL: ${sql}`, 'Backend:', pgPool ? 'PostgreSQL' : 'SQLite')
+  }
   
   if (pgPool) {
     await initializePostgres()
     try {
       const res = await pgPool.query(adaptSql(sql), params)
       const result = res.rows[0] as T
-      console.log(`[GET] PostgreSQL success - result:`, result)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[GET] PostgreSQL success`)
+      }
       return result
     } catch (err: unknown) {
       console.error(`[GET] PostgreSQL error:`, errMessage(err))
@@ -304,7 +308,9 @@ export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []):
   
   try {
     const result = getDb().prepare(sql).get(...params) as T
-    console.log(`[GET] SQLite success - result:`, result)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[GET] SQLite success`)
+    }
     return result
   } catch (err: unknown) {
     console.error(`[GET] SQLite error:`, errMessage(err))
@@ -313,17 +319,23 @@ export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []):
 }
 
 export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T[]> {
-  console.log(`[ALL] Executing SQL: ${sql} with params:`, params)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[ALL] Executing SQL: ${sql}`)
+  }
   
   if (pgPool) {
     await initializePostgres()
     const res = await pgPool.query(adaptSql(sql), params)
-    console.log(`[ALL] PostgreSQL result rows:`, res.rows.length)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ALL] PostgreSQL result rows:`, res.rows.length)
+    }
     return res.rows as T[]
   }
   
   const result = getDb().prepare(sql).all(...params) as T[]
-  console.log(`[ALL] SQLite result rows:`, result.length)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[ALL] SQLite result rows:`, result.length)
+  }
   return result
 }
 
@@ -646,11 +658,11 @@ export async function getInvestmentPlansFromDb() {
   try {
     const rows: InvestmentPlan[] = await all("SELECT * FROM investment_plans")
     
-    console.log("[getInvestmentPlansFromDb] Raw DB rows count:", rows.length)
-    
-    // Log for debugging - show first row to verify planType is present
-    if (rows.length > 0) {
-      console.log("[getInvestmentPlansFromDb] First row raw:", JSON.stringify(rows[0], null, 2))
+    if (process.env.NODE_ENV === 'development') {
+      console.log("[getInvestmentPlansFromDb] Raw DB rows count:", rows.length)
+      if (rows.length > 0) {
+        console.log("[getInvestmentPlansFromDb] First row raw:", JSON.stringify(rows[0], null, 2))
+      }
     }
     
     // Map to include optional fields and ensure correct defaults
@@ -676,15 +688,17 @@ export async function getInvestmentPlansFromDb() {
         category: (rp.category as string) || "",
       }
       
-      // Log each plan to verify planType is correct
-      if (idx < 4) {  // Only log first 4 plans to avoid spam
-        console.log(`[getInvestmentPlansFromDb] Plan ${(rp.id ?? '') as string}: raw.plantype="${String(rp.plantype ?? '')}", mapped.planType="${mapped.planType}"`)
+      // Log each plan to verify planType is correct (dev only)
+      if (process.env.NODE_ENV === 'development' && idx < 4) {
+        console.log(`[getInvestmentPlansFromDb] Plan ${(rp.id ?? '') as string}: planType="${mapped.planType}"`)
       }
       
       return mapped
     })
     
-    console.log("[getInvestmentPlansFromDb] Mapped plans count:", mappedPlans.length)
+    if (process.env.NODE_ENV === 'development') {
+      console.log("[getInvestmentPlansFromDb] Mapped plans count:", mappedPlans.length)
+    }
     return mappedPlans
   } catch (error: unknown) {
     console.error("[getInvestmentPlansFromDb] Error fetching plans:", errMessage(error))
@@ -775,8 +789,10 @@ export async function getInvestmentPlanById(planId: string) {
   const rp = p as Record<string, unknown>
   const planTypeValue = rp.planType ?? rp.plantype
   
-  // Log for debugging
-  console.log(`[getInvestmentPlanById] Found plan ${planId}, raw.plantype="${String(rp.plantype ?? '')}", planType="${String(planTypeValue ?? '')}"`)
+  // Log for debugging (dev only)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[getInvestmentPlanById] Found plan ${planId}`)
+  }
   
   return {
     ...p,
@@ -1165,7 +1181,9 @@ export async function updateTransactionStatus(transactionId: string, status: "ap
 export function updateUserSettings(userId: string, settings: Record<string, unknown>) {
   // For now, this is a placeholder since we're using mock data
   // In a real app, this would update user settings in the database
-  console.log(`Updating settings for user ${userId}:`, settings)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Updating settings for user ${userId}`)
+  }
   return true
 }
 
