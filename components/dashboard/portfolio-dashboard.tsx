@@ -29,6 +29,9 @@ export function PortfolioDashboard({
   portfolioData,
   allocations,
 }: PortfolioDashboardProps) {
+  const safePortfolioData = Array.isArray(portfolioData) ? portfolioData : []
+  const safeAllocations = Array.isArray(allocations) ? allocations : []
+
   const roi = totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(2) : "0"
   const roiPositive = parseFloat(roi) >= 0
   const netBalance = totalBalance - totalFees
@@ -128,7 +131,7 @@ export function PortfolioDashboard({
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={portfolioData}>
+              <LineChart data={safePortfolioData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis
                   dataKey="date"
@@ -175,7 +178,7 @@ export function PortfolioDashboard({
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={allocations}
+                  data={safeAllocations}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -186,7 +189,7 @@ export function PortfolioDashboard({
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {allocations.map((entry, index) => (
+                  {safeAllocations.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -212,7 +215,7 @@ export function PortfolioDashboard({
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={portfolioData}>
+            <BarChart data={safePortfolioData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis
                 dataKey="date"

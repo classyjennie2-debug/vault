@@ -124,7 +124,7 @@ export default function PortfolioPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {portfolioData.portfolioData.reverse().map((item, index) => (
+                {(portfolioData.portfolioData ?? []).slice().reverse().map((item, index) => (
                   <div key={index} className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
                     <div>
                       <p className="font-medium">{item.date}</p>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { setUserBalance, getUserById, all, deleteUser, run } from "@/lib/db"
+import { getAllUsers, getUserById, deleteUser, run, isPostgres } from "@/lib/db"
 import { apiLogger } from "@/lib/logging"
 
 export async function GET() {
@@ -13,9 +13,9 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    // Fetch basic users
-    const users = await all("SELECT id, name, email, balance, role, joinedAt, avatar, verified FROM users")
-    
+    // Fetch full user records for admin (exclude password hash)
+    const users = await getAllUsers()
+
     // Enrich with investment and deposit data
     const enrichedUsers = users.map((u: any) => {
       return {
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    const { userId, balance, name, email, role } = await request.json()
+    const { userId, balance, name, firstName, lastName, email, phone, dateOfBirth, role, verified } = await request.json()
 
     if (!userId) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 })
@@ -112,13 +112,34 @@ export async function POST(request: NextRequest) {
     const updates: any[] = []
     const params: any[] = []
 
-    if (balance !== undefined && balance >= 0) {
+    // Normalize values
+    const canUpdateVerified = typeof verified === "boolean"
+
+    if (balance !== undefined && !Number.isNaN(Number(balance)) && Number(balance) >= 0) {
       updates.push("balance = ?")
-      params.push(balance)
+      params.push(Number(balance))
     }
     if (name) {
       updates.push("name = ?")
       params.push(name)
+    }
+    const usingPostgres = isPostgres()
+
+    if (firstName) {
+      updates.push(`${usingPostgres ? "first_name" : "firstName"} = ?`)
+      params.push(firstName)
+    }
+    if (lastName) {
+      updates.push(`${usingPostgres ? "last_name" : "lastName"} = ?`)
+      params.push(lastName)
+    }
+    if (phone) {
+      updates.push("phone = ?")
+      params.push(phone)
+    }
+    if (dateOfBirth) {
+      updates.push(`${usingPostgres ? "date_of_birth" : "dateOfBirth"} = ?`)
+      params.push(dateOfBirth)
     }
     if (email) {
       updates.push("email = ?")
@@ -127,6 +148,10 @@ export async function POST(request: NextRequest) {
     if (role && (role === "user" || role === "admin")) {
       updates.push("role = ?")
       params.push(role)
+    }
+    if (canUpdateVerified) {
+      updates.push("verified = ?")
+      params.push(verified)
     }
 
     if (updates.length === 0) {

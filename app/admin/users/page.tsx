@@ -41,6 +41,13 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("")
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [newBalance, setNewBalance] = useState("")
+  const [editFirstName, setEditFirstName] = useState("")
+  const [editLastName, setEditLastName] = useState("")
+  const [editEmail, setEditEmail] = useState("")
+  const [editPhone, setEditPhone] = useState("")
+  const [editDateOfBirth, setEditDateOfBirth] = useState("")
+  const [editRole, setEditRole] = useState<"user" | "admin">("user")
+  const [editVerified, setEditVerified] = useState(false)
   const [bonusUser, setBonusUser] = useState<string | null>(null)
   const [bonusAmount, setBonusAmount] = useState("")
   const [notificationUser, setNotificationUser] = useState<string | null>(null)
@@ -83,25 +90,65 @@ export default function AdminUsersPage() {
       u.email.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleUpdateBalance = async (userId: string) => {
+  const resetEditState = () => {
+    setEditingUser(null)
+    setNewBalance("")
+    setEditFirstName("")
+    setEditLastName("")
+    setEditEmail("")
+    setEditPhone("")
+    setEditDateOfBirth("")
+    setEditRole("user")
+    setEditVerified(false)
+  }
+
+  const openEditUser = (user: AdminUser) => {
+    setEditingUser(user.id)
+    setNewBalance(user.balance.toString())
+    setEditFirstName(user.firstName || "")
+    setEditLastName(user.lastName || "")
+    setEditEmail(user.email)
+    setEditPhone(user.phone || "")
+    setEditDateOfBirth(user.dateOfBirth || "")
+    setEditRole(user.role || "user")
+    setEditVerified(Boolean(user.verified))
+  }
+
+  const handleSaveUser = async () => {
+    if (!editingUser) return
+
     const amount = parseFloat(newBalance)
-    if (isNaN(amount) || amount < 0) return
+    if (isNaN(amount) || amount < 0) {
+      setErrorMessage("Please enter a valid balance")
+      setTimeout(() => setErrorMessage(""), 3000)
+      return
+    }
 
     const res = await fetch("/api/admin/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, balance: amount }),
+      body: JSON.stringify({
+        userId: editingUser,
+        balance: amount,
+        name: `${editFirstName} ${editLastName}`.trim(),
+        firstName: editFirstName,
+        lastName: editLastName,
+        email: editEmail,
+        phone: editPhone,
+        dateOfBirth: editDateOfBirth,
+        role: editRole,
+        verified: editVerified,
+      }),
     })
 
     if (res.ok) {
-      setEditingUser(null)
-      setNewBalance("")
-      setSuccessMessage("User balance updated successfully")
+      resetEditState()
+      setSuccessMessage("User updated successfully")
       setTimeout(() => setSuccessMessage(""), 3000)
-      // Refetch all user data to update totalInvested, totalDeposits, etc.
       await fetchUsers()
     } else {
-      setErrorMessage("Failed to update user balance")
+      const data = await res.json().catch(() => null)
+      setErrorMessage(data?.error || "Failed to update user")
       setTimeout(() => setErrorMessage(""), 3000)
     }
   }
@@ -341,87 +388,155 @@ export default function AdminUsersPage() {
 
                     {/* Balance, Investments, and Stats */}
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-                      {editingUser === user.id ? (
-                        <div className="flex items-center gap-2">
-                          <div className="flex flex-col gap-1.5">
-                            <Label
-                              htmlFor={`balance-${user.id}`}
-                              className="sr-only"
-                            >
-                              New balance
-                            </Label>
-                            <Input
-                              id={`balance-${user.id}`}
-                              type="number"
-                              placeholder="New balance"
-                              value={newBalance}
-                              onChange={(e) => setNewBalance(e.target.value)}
-                              className="h-9 w-36"
-                              min={0}
-                              step={0.01}
-                            />
-                          </div>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-9 w-9 text-accent hover:text-accent"
-                            onClick={() => handleUpdateBalance(user.id)}
-                          >
-                            <Check className="h-4 w-4" />
-                            <span className="sr-only">Confirm</span>
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-9 w-9 text-muted-foreground"
-                            onClick={() => {
-                              setEditingUser(null)
-                              setNewBalance("")
-                            }}
-                          >
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Cancel</span>
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="text-right">
-                            <p className="text-xs text-muted-foreground">
-                              Balance
-                            </p>
-                            <p className="text-lg font-bold text-card-foreground">
-                              ${user.balance.toLocaleString()}
-                            </p>
-                          </div>
-                          <div className="hidden text-right sm:block">
-                            <p className="text-xs text-muted-foreground">
-                              Total Invested
-                            </p>
-                            <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                              ${(user.totalInvested || 0).toLocaleString()}
-                            </p>
-                          </div>
-                          <div className="hidden text-right sm:block">
-                            <p className="text-xs text-muted-foreground">
-                              Total Deposits
-                            </p>
-                            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                              ${(user.totalDeposits || 0).toLocaleString()}
-                            </p>
-                          </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">Balance</p>
+                        <p className="text-lg font-bold text-card-foreground">
+                          ${user.balance.toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="hidden text-right sm:block">
+                        <p className="text-xs text-muted-foreground">Total Invested</p>
+                        <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                          ${(user.totalInvested || 0).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="hidden text-right sm:block">
+                        <p className="text-xs text-muted-foreground">Total Deposits</p>
+                        <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                          ${(user.totalDeposits || 0).toLocaleString()}
+                        </p>
+                      </div>
+
+                      <Dialog
+                        open={editingUser === user.id}
+                        onOpenChange={(open) => {
+                          if (!open) {
+                            resetEditState()
+                          }
+                        }}
+                      >
+                        <DialogTrigger asChild>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              setEditingUser(user.id)
-                              setNewBalance(user.balance.toString())
-                            }}
+                            onClick={() => openEditUser(user)}
                           >
                             <Edit3 className="mr-1.5 h-3.5 w-3.5" />
-                            Edit Balance
+                            Edit
                           </Button>
-                        </>
-                      )}
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Edit User</DialogTitle>
+                            <DialogDescription>
+                              Update user details, account status, and balance.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div className="flex flex-col gap-2">
+                                <Label htmlFor="edit-first-name">First Name</Label>
+                                <Input
+                                  id="edit-first-name"
+                                  value={editFirstName}
+                                  onChange={(e) => setEditFirstName(e.target.value)}
+                                />
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <Label htmlFor="edit-last-name">Last Name</Label>
+                                <Input
+                                  id="edit-last-name"
+                                  value={editLastName}
+                                  onChange={(e) => setEditLastName(e.target.value)}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div className="flex flex-col gap-2">
+                                <Label htmlFor="edit-email">Email</Label>
+                                <Input
+                                  id="edit-email"
+                                  type="email"
+                                  value={editEmail}
+                                  onChange={(e) => setEditEmail(e.target.value)}
+                                />
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <Label htmlFor="edit-phone">Phone</Label>
+                                <Input
+                                  id="edit-phone"
+                                  value={editPhone}
+                                  onChange={(e) => setEditPhone(e.target.value)}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div className="flex flex-col gap-2">
+                                <Label htmlFor="edit-dob">Date of Birth</Label>
+                                <Input
+                                  id="edit-dob"
+                                  type="date"
+                                  value={editDateOfBirth}
+                                  onChange={(e) => setEditDateOfBirth(e.target.value)}
+                                />
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <Label htmlFor="edit-role">Role</Label>
+                                <Select value={editRole} onValueChange={(value) => setEditRole(value as "user" | "admin") }>
+                                  <SelectTrigger id="edit-role">
+                                    <SelectValue placeholder="Role" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="user">User</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  id="edit-verified"
+                                  type="checkbox"
+                                  checked={editVerified}
+                                  onChange={(e) => setEditVerified(e.target.checked)}
+                                  className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+                                />
+                                <Label htmlFor="edit-verified" className="mb-0">
+                                  Verified
+                                </Label>
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <Label htmlFor="edit-balance">Balance</Label>
+                                <Input
+                                  id="edit-balance"
+                                  type="number"
+                                  value={newBalance}
+                                  onChange={(e) => setNewBalance(e.target.value)}
+                                  min={0}
+                                  step={0.01}
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Button onClick={handleSaveUser} className="w-full md:w-auto">
+                                Save Changes
+                              </Button>
+                              <Button
+                                variant="outline"
+                                className="w-full md:w-auto"
+                                onClick={() => resetEditState()}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
 

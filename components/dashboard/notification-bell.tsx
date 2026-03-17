@@ -130,7 +130,7 @@ export function NotificationBell() {
       const response = await fetch(`/api/notifications/${id}/delete`, {
         method: "DELETE",
       })
-      
+
       if (response.ok) {
         // Remove from local state
         setNotifications(prev => prev.filter(n => n.id !== id))
@@ -141,6 +141,14 @@ export function NotificationBell() {
       console.error("Error deleting notification:", error)
       setErrorMessage("Error deleting notification")
     }
+  }
+
+  const handleDialogClose = async () => {
+    if (selectedNotification) {
+      await deleteNotification(selectedNotification.id)
+    }
+    setDialogOpen(false)
+    setSelectedNotification(null)
   }
 
   const clearRead = async () => {
@@ -469,7 +477,16 @@ export function NotificationBell() {
         </div>
 
         {/* Notification detail modal */}
-        <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) { setSelectedNotification(null) } setDialogOpen(v) }}>
+        <Dialog
+          open={dialogOpen}
+          onOpenChange={(v) => {
+            if (!v) {
+              void handleDialogClose()
+            } else {
+              setDialogOpen(true)
+            }
+          }}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{selectedNotification?.title || "Notification"}</DialogTitle>

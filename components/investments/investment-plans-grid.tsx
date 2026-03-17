@@ -98,7 +98,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan, index) => {
-          const minAmount = safeNumber(plan.minAmount, 1000)
+          const minAmount = safeNumber(plan.minAmount, 100)
           const annualRate = getPlanAnnualRate(plan.planType || "Conservative Bond Fund")
           const risk = plan.risk || "Medium"
 

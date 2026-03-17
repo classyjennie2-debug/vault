@@ -8,6 +8,7 @@ export type User = {
   email: string
   phone?: string
   dateOfBirth?: string
+  verified?: boolean
   role: "user" | "admin"
   balance: number
   joinedAt: string

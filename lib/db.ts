@@ -182,30 +182,90 @@ async function migratePostgresUsers(pool: any) {
   // Check which columns exist in the users table
   try {
     const existingColumns = await pool.query(`
-      SELECT column_name FROM information_schema.columns 
+      SELECT column_name, data_type FROM information_schema.columns 
       WHERE table_name = 'users'
     `)
     const existingColNames = new Set(existingColumns.rows.map((r: any) => r.column_name))
-    
-    // Define required columns with their SQL definitions
+    const existingColTypes = new Map<string, string>(
+      existingColumns.rows.map((r: any) => [r.column_name, r.data_type])
+    )
+
+    // If `verified` is stored as an integer, migrate it to a proper boolean column.
+    if (existingColTypes.get('verified') === 'integer') {
+      try {
+        await pool.query(
+          "ALTER TABLE users ALTER COLUMN verified TYPE BOOLEAN USING (verified::BOOLEAN)"
+        )
+        console.log('[Migration] Converted verified column to BOOLEAN')
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        console.warn('[Migration] Failed to convert verified column to BOOLEAN:', msg)
+      }
+    }
+
+    // If joined_at is stored as text, convert it to TIMESTAMP to avoid casting issues.
+    if (existingColTypes.get('joined_at') === 'text') {
+      try {
+        await pool.query(
+          "ALTER TABLE users ALTER COLUMN joined_at TYPE TIMESTAMP USING (joined_at::TIMESTAMP)"
+        )
+        console.log('[Migration] Converted joined_at column to TIMESTAMP')
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        console.warn('[Migration] Failed to convert joined_at column to TIMESTAMP:', msg)
+      }
+    }
+
+    // Rename old camelCase columns to snake_case to match current app expectations
+    // This helps avoid issues where older deployments created columns like `joinedAt` / `passwordHash`.
+    const legacyColumnMap: Record<string, string> = {
+      joinedat: 'joined_at',
+      firstname: 'first_name',
+      lastname: 'last_name',
+      passwordhash: 'password_hash',
+      dateofbirth: 'date_of_birth',
+      lastlogin: 'last_login',
+      createdat: 'created_at',
+      updatedat: 'updated_at',
+      emailverified: 'email_verified',
+      twofactorenabled: 'two_factor_enabled',
+      twofactorsecret: 'two_factor_secret',
+      backupcodes: 'backup_codes',
+    }
+
+    for (const [legacy, canonical] of Object.entries(legacyColumnMap)) {
+      if (existingColNames.has(legacy) && !existingColNames.has(canonical)) {
+        try {
+          await pool.query(`ALTER TABLE users RENAME COLUMN "${legacy}" TO "${canonical}"`)
+          console.log(`[Migration] Renamed column: ${legacy} -> ${canonical}`)
+          existingColNames.add(canonical)
+        } catch (err: unknown) {
+          const msg = errMessage(err)
+          console.warn(`[Migration] Failed to rename column ${legacy} -> ${canonical}: ${msg}`)
+        }
+      }
+    }
+
+    // Define required columns with their SQL definitions (safe defaults for existing rows)
     const requiredColumns: Record<string, string> = {
-      'password_hash': 'ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)',
+      'name': 'ALTER TABLE users ADD COLUMN name VARCHAR(255) NOT NULL DEFAULT \'\'',
       'first_name': 'ALTER TABLE users ADD COLUMN first_name VARCHAR(100)',
       'last_name': 'ALTER TABLE users ADD COLUMN last_name VARCHAR(100)',
-      'name': 'ALTER TABLE users ADD COLUMN name VARCHAR(255) NOT NULL DEFAULT \'\'',
+      'email': 'ALTER TABLE users ADD COLUMN email VARCHAR(255) UNIQUE NOT NULL',
+      'password_hash': 'ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)',
       'phone': 'ALTER TABLE users ADD COLUMN phone VARCHAR(20)',
-      'date_of_birth': 'ALTER TABLE users ADD COLUMN date_of_birth TEXT',
+      'date_of_birth': 'ALTER TABLE users ADD COLUMN date_of_birth DATE',
       'avatar': 'ALTER TABLE users ADD COLUMN avatar VARCHAR(500)',
       'role': 'ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT \'user\'',
       'balance': 'ALTER TABLE users ADD COLUMN balance NUMERIC(15,2) NOT NULL DEFAULT 0',
-      'verified': 'ALTER TABLE users ADD COLUMN verified INTEGER NOT NULL DEFAULT 0',
-      'joined_at': 'ALTER TABLE users ADD COLUMN joined_at TEXT',
-      'last_login': 'ALTER TABLE users ADD COLUMN last_login TEXT',
-      'email_verified': 'ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE',
-      'created_at': 'ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
-      'updated_at': 'ALTER TABLE users ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+      'verified': 'ALTER TABLE users ADD COLUMN verified BOOLEAN NOT NULL DEFAULT FALSE',
+      'joined_at': 'ALTER TABLE users ADD COLUMN joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP',
+      'last_login': 'ALTER TABLE users ADD COLUMN last_login TIMESTAMP',
+      'email_verified': 'ALTER TABLE users ADD COLUMN email_verified BOOLEAN NOT NULL DEFAULT FALSE',
+      'created_at': 'ALTER TABLE users ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP',
+      'updated_at': 'ALTER TABLE users ADD COLUMN updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP',
     }
-    
+
     // Add missing columns
     for (const [colName, colSql] of Object.entries(requiredColumns)) {
       if (!existingColNames.has(colName)) {
@@ -217,6 +277,16 @@ async function migratePostgresUsers(pool: any) {
           console.warn(`[Migration] Failed to create column ${colName}: ${msg}`)
         }
       }
+    }
+
+    // Ensure important timestamp fields are populated for existing rows
+    try {
+      await pool.query(`UPDATE users SET joined_at = CURRENT_TIMESTAMP WHERE joined_at IS NULL`)
+      await pool.query(`UPDATE users SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL`)
+      await pool.query(`UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE updated_at IS NULL`)
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      console.warn('[Migration] Failed to populate missing timestamp values:', msg)
     }
   } catch (err: unknown) {
     const msg = errMessage(err)
@@ -249,14 +319,16 @@ async function initializePostgres() {
           last_name VARCHAR(100),
           email VARCHAR(255) UNIQUE NOT NULL,
           phone VARCHAR(20),
-          date_of_birth TEXT,
-          password_hash VARCHAR(255),
-          verified INTEGER NOT NULL DEFAULT 0,
+          date_of_birth DATE,
+          password_hash VARCHAR(255) NOT NULL,
+          verified BOOLEAN NOT NULL DEFAULT FALSE,
           role VARCHAR(20) NOT NULL DEFAULT 'user',
           balance NUMERIC(15,2) NOT NULL DEFAULT 0,
-          joined_at TEXT NOT NULL,
+          joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
           avatar VARCHAR(500),
-          last_login TEXT
+          last_login TIMESTAMP,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         )`,
         `CREATE TABLE IF NOT EXISTS transactions (
           id TEXT PRIMARY KEY,
@@ -409,10 +481,9 @@ async function initializePostgres() {
         // Migration error logged
       }
 
-      // Ensure plans exist in database - insert if not present
+      // Ensure plans exist in database - insert or update based on our template data
       try {
-        const existingPlans = await pgPool.query('SELECT COUNT(*) as count FROM investment_plans')
-        const planCount = parseInt(existingPlans.rows[0].count || '0')
+        await seedDatabasePostgres()
       } catch (seedError: unknown) {
         console.error('Seeding error:', errMessage(seedError as Error))
         // Continue even if seeding fails
@@ -584,7 +655,7 @@ const planTemplates = [
   {
     id: "ret",
     name: "Real Estate Trust",
-    minAmount: 5000,
+    minAmount: 10000,
     maxAmount: 500000,
     returnRate: 0,  // Dynamic based on duration
     duration: 0,  // Duration selector available
@@ -663,13 +734,21 @@ async function seedDatabasePostgres() {
 export interface UserRow {
   id: string
   name: string
+  firstName?: string
+  lastName?: string
   email: string
+  phone?: string
+  dateOfBirth?: string
   passwordHash?: string
-  verified: number
+  verified: boolean
   role: string
   balance: number
   joinedAt: string
+  lastLogin?: string
   avatar: string
+  createdAt?: string
+  updatedAt?: string
+  emailVerified?: boolean
 }
 
 export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
@@ -683,19 +762,37 @@ export async function getUserByEmail(email: string): Promise<UserRow | undefined
   }
   
   const row = (await get(query, [email])) as UserRow | undefined
+  if (row) {
+    row.verified = !!row.verified
+  }
   return row
 }
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
   let query: string
   if (pgPool) {
-    query = "SELECT id, name, email, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, avatar, first_name as firstName, last_name as lastName, phone, date_of_birth as dateOfBirth FROM users WHERE id = ?"
+    query = "SELECT id, name, first_name as firstName, last_name as lastName, email, phone, date_of_birth as dateOfBirth, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, last_login as lastLogin, avatar, created_at as createdAt, updated_at as updatedAt FROM users WHERE id = ?"
   } else {
-    query = "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar, firstName, lastName, phone, dateOfBirth FROM users WHERE id = ?"
+    query = "SELECT id, name, firstName, lastName, email, phone, dateOfBirth, passwordHash, verified, role, balance, joinedAt, lastLogin, avatar, createdAt, updatedAt FROM users WHERE id = ?"
   }
   
   const row = (await get(query, [id])) as UserRow | undefined
+  if (row) {
+    row.verified = !!row.verified
+  }
   return row
+}
+
+export async function getAllUsers(): Promise<UserRow[]> {
+  if (pgPool) {
+    return all<UserRow>(
+      "SELECT id, name, first_name AS firstName, last_name AS lastName, email, phone, date_of_birth AS dateOfBirth, verified, role, balance, joined_at AS joinedAt, last_login AS lastLogin, avatar, created_at AS createdAt, updated_at AS updatedAt FROM users"
+    )
+  }
+
+  return all<UserRow>(
+    "SELECT id, name, firstName, lastName, email, phone, dateOfBirth, verified, role, balance, joinedAt, lastLogin, avatar, createdAt, updatedAt FROM users"
+  )
 }
 
 export async function createUser(user: {
@@ -711,12 +808,13 @@ export async function createUser(user: {
   verified?: boolean
 }): Promise<void> {
   if (pgPool) {
-    // PostgreSQL
+    // Ensure the Postgres schema is initialized/migrated before creating users
+    await initializePostgres()
+
     try {
-      const now = new Date().toISOString()
       await pgPool.query(
-        `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, role, balance, verified, joined_at, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+        `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, role, balance, verified)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
         [
           user.id,
           user.name,
@@ -729,10 +827,7 @@ export async function createUser(user: {
           user.avatar,
           'user', // role - default to 'user'
           0, // balance - default to 0
-          user.verified ? 1 : 0, // Convert boolean to integer (0 or 1)
-          now, // joined_at
-          now, // created_at
-          now, // updated_at
+          !!user.verified, // ensure boolean
         ]
       )
     } catch (err: unknown) {
@@ -765,7 +860,7 @@ export async function createUser(user: {
 }
 
 export async function verifyUserEmail(email: string): Promise<void> {
-  await run("UPDATE users SET verified = 1 WHERE email = ?", [email])
+  await run("UPDATE users SET verified = ? WHERE email = ?", [true, email])
 }
 
 export async function setUserBalance(
@@ -901,7 +996,7 @@ export async function getInvestmentPlansFromDb() {
       const mapped: InvestmentPlan = {
         ...p,
         // Ensure numeric fields have proper values
-        minAmount: (Number.isFinite(Number(rp.minAmount)) && Number(rp.minAmount) > 0) ? Number(rp.minAmount) : 1000,
+        minAmount: (Number.isFinite(Number(rp.minAmount)) && Number(rp.minAmount) > 0) ? Number(rp.minAmount) : 100,
         maxAmount: (Number.isFinite(Number(rp.maxAmount)) && Number(rp.maxAmount) > 0) ? Number(rp.maxAmount) : 500000,
         returnRate: (Number.isFinite(Number(rp.returnRate)) && Number(rp.returnRate) > 0) ? Number(rp.returnRate) : 8,
         duration: (Number.isFinite(Number(rp.duration)) && Number(rp.duration) > 0) ? Number(rp.duration) : 6,
@@ -1500,6 +1595,10 @@ export async function deleteUser(userId: string): Promise<void> {
     console.error(`Error deleting user ${userId}:`, error)
     throw error
   }
+}
+
+export function isPostgres(): boolean {
+  return !!pgPool
 }
 
 export default getDb
