@@ -72,7 +72,7 @@ export async function authenticateRequest(): Promise<AuthResponse> {
   }
 
   try {
-    const user = await queryDb<UserRow>('SELECT * FROM users WHERE id = ?', [session.userId])
+    const user = await queryDb<UserRow>('SELECT * FROM users WHERE id = $1', [session.userId])
 
     if (!user) {
       return {

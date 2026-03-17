@@ -21,10 +21,10 @@ export async function calculateMonthlyMetrics(userId: string) {
     }>(
       usePostgres
         ? `SELECT id, type, amount, status, created_at as date FROM transactions 
-           WHERE user_id = ? AND created_at >= ? AND created_at <= ?
+           WHERE user_id = $1 AND created_at >= $2 AND created_at <= $3
            ORDER BY created_at ASC`
         : `SELECT id, type, amount, status, date FROM transactions 
-           WHERE userId = ? AND date >= ? AND date <= ?
+           WHERE userId = $1 AND date >= $2 AND date <= $3
            ORDER BY date ASC`,
       [userId, monthStart, monthEnd]
     )

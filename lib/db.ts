@@ -853,7 +853,7 @@ export interface UserRow {
 
 export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
   // Map PostgreSQL snake_case to camelCase for code consistency
-  const query = "SELECT id, name, email, password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", avatar, first_name as \"firstName\", last_name as \"lastName\", phone, date_of_birth as \"dateOfBirth\" FROM users WHERE email = ?"
+  const query = "SELECT id, name, email, password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", avatar, first_name as \"firstName\", last_name as \"lastName\", phone, date_of_birth as \"dateOfBirth\" FROM users WHERE email = $1"
   
   const row = (await get(query, [email])) as UserRow | undefined
   if (row) {
@@ -863,7 +863,7 @@ export async function getUserByEmail(email: string): Promise<UserRow | undefined
 }
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
-  const query = "SELECT id, name, first_name as \"firstName\", last_name as \"lastName\", email, phone, date_of_birth as \"dateOfBirth\", password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", last_login as \"lastLogin\", avatar, created_at as \"createdAt\", updated_at as \"updatedAt\" FROM users WHERE id = ?"
+  const query = "SELECT id, name, first_name as \"firstName\", last_name as \"lastName\", email, phone, date_of_birth as \"dateOfBirth\", password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", last_login as \"lastLogin\", avatar, created_at as \"createdAt\", updated_at as \"updatedAt\" FROM users WHERE id = $1"
   
   const row = (await get(query, [id])) as UserRow | undefined
   if (row) {
@@ -927,21 +927,21 @@ export async function createUser(user: {
 
 
 export async function verifyUserEmail(email: string): Promise<void> {
-  await run("UPDATE users SET verified = ? WHERE email = ?", [true, email])
+  await run("UPDATE users SET verified = $1 WHERE email = $2", [true, email])
 }
 
 export async function setUserBalance(
   userId: string,
   balance: number
 ): Promise<void> {
-  await run("UPDATE users SET balance = ? WHERE id = ?", [balance, userId])
+  await run("UPDATE users SET balance = $1 WHERE id = $2", [balance, userId])
 }
 
 export async function setUserPassword(
   userId: string,
   passwordHash: string
 ): Promise<void> {
-  await run("UPDATE users SET password_hash = ? WHERE id = ?", [
+  await run("UPDATE users SET password_hash = $1 WHERE id = $2", [
     passwordHash,
     userId,
   ])
@@ -954,25 +954,25 @@ export async function insertVerificationCode(codeObj: {
   expiresAt: string
 }): Promise<void> {
   await run(
-    "INSERT INTO verification_codes (id, email, code, expiresAt) VALUES (?, ?, ?, ?)",
+    "INSERT INTO verification_codes (id, email, code, expiresAt) VALUES ($1, $2, $3, $4)",
     [codeObj.id, codeObj.email, codeObj.code, codeObj.expiresAt]
   )
 }
 
 export async function consumeVerificationCode(code: string): Promise<boolean> {
   const row = await get(
-    "SELECT * FROM verification_codes WHERE code = ? AND used = 0 AND expiresAt > ?",
+    "SELECT * FROM verification_codes WHERE code = $1 AND used = 0 AND expiresAt > $2",
     [code, new Date().toISOString()]
   )
   if (!row) return false
-  await run("UPDATE verification_codes SET used = 1 WHERE code = ?", [code])
+  await run("UPDATE verification_codes SET used = 1 WHERE code = $1", [code])
   return true
 }
 
 export async function canResendVerificationCode(email: string): Promise<{ canResend: boolean; nextRetryAt?: string }> {
   // Check for the most recent unused verification code for this email
   const row = await get<{ expiresAt: string }>(
-    "SELECT expiresAt FROM verification_codes WHERE email = ? AND used = 0 ORDER BY expiresAt DESC LIMIT 1",
+    "SELECT expiresAt FROM verification_codes WHERE email = $1 AND used = 0 ORDER BY expiresAt DESC LIMIT 1",
     [email]
   )
   
@@ -1008,7 +1008,7 @@ export async function createPasswordResetToken(userId: string, tokenString: stri
   const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000).toISOString()
   
   await run(
-    "INSERT INTO password_reset_tokens (id, userId, token, expiresAt, used, createdAt) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO password_reset_tokens (id, userId, token, expiresAt, used, createdAt) VALUES ($1, $2, $3, $4, $5, $6)",
     [tokenId, userId, tokenString, expiresAt, 0, new Date().toISOString()]
   )
   
@@ -1017,7 +1017,7 @@ export async function createPasswordResetToken(userId: string, tokenString: stri
 
 export async function validatePasswordResetToken(token: string): Promise<{ userId: string } | null> {
   const row = await get<{ userId: string; used: number }>(
-    "SELECT userId, used FROM password_reset_tokens WHERE token = ? AND used = 0 AND expiresAt > ?",
+    "SELECT userId, used FROM password_reset_tokens WHERE token = $1 AND used = 0 AND expiresAt > $2",
     [token, new Date().toISOString()]
   )
   
@@ -1029,7 +1029,7 @@ export async function validatePasswordResetToken(token: string): Promise<{ userI
 
 export async function markResetTokenAsUsed(token: string): Promise<boolean> {
   const changes = await run(
-    "UPDATE password_reset_tokens SET used = 1 WHERE token = ?",
+    "UPDATE password_reset_tokens SET used = 1 WHERE token = $1",
     [token]
   )
   
@@ -1250,16 +1250,16 @@ export async function getInvestmentPlanById(planId: string) {
 export async function getUserTransactions(userId: string) {
   const usePostgres = pgPool !== null
   const query = usePostgres
-    ? "SELECT id, user_id as \"userId\", type, amount, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC"
-    : "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC"
+    ? "SELECT id, user_id as \"userId\", type, amount, status, description, created_at as date FROM transactions WHERE user_id = $1 ORDER BY created_at DESC"
+    : "SELECT * FROM transactions WHERE userId = $1 ORDER BY date DESC"
   return all(query, [userId])
 }
 
 export async function getUserNotifications(userId: string) {
   const usePostgres = pgPool !== null
   const query = usePostgres
-    ? "SELECT id, user_id as \"userId\", title, message, type, read as \"isRead\", created_at as timestamp, action_url as \"actionUrl\" FROM notifications WHERE user_id = ? ORDER BY created_at DESC"
-    : "SELECT id, userId, title, message, type, isRead, timestamp, actionUrl FROM notifications WHERE userId = ? ORDER BY timestamp DESC"
+    ? "SELECT id, user_id as \"userId\", title, message, type, read as \"isRead\", created_at as timestamp, action_url as \"actionUrl\" FROM notifications WHERE user_id = $1 ORDER BY created_at DESC"
+    : "SELECT id, userId, title, message, type, isRead, timestamp, actionUrl FROM notifications WHERE userId = $1 ORDER BY timestamp DESC"
   const notifications = await all(query, [userId])
   // Ensure isRead is properly cast to boolean for consistency
   return notifications.map((n: any) => {
@@ -1282,8 +1282,8 @@ export async function markNotificationAsRead(notificationId: string): Promise<bo
     // Use parameterized query to mark notification as read
     const usePostgres = pgPool !== null
     const query = usePostgres
-      ? "UPDATE notifications SET read = ? WHERE id = ?"
-      : "UPDATE notifications SET isRead = ? WHERE id = ?"
+      ? "UPDATE notifications SET read = $1 WHERE id = $2"
+      : "UPDATE notifications SET isRead = $1 WHERE id = $2"
     const changes = await run(query, [1, notificationId])
     
     if (changes === 0) {
@@ -1303,16 +1303,16 @@ export async function getRecentActivities(userId: string) {
   
   // Get transactions - newest first
   const txQuery = usePostgres
-    ? "SELECT id, user_id as \"userId\", type, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
-    : "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 10"
+    ? "SELECT id, user_id as \"userId\", type, status, description, created_at as date FROM transactions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10"
+    : "SELECT * FROM transactions WHERE userId = $1 ORDER BY date DESC LIMIT 10"
   const transactions = await all(txQuery, [userId])
   
   // Get activity log entries (if table exists)
   let activityLogs: any[] = []
   try {
     const logQuery = usePostgres
-      ? "SELECT id, user_id as \"userId\", type, description, created_at as timestamp FROM activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
-      : "SELECT * FROM activity_log WHERE userId = ? ORDER BY timestamp DESC LIMIT 10"
+      ? "SELECT id, user_id as \"userId\", type, description, created_at as timestamp FROM activity_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10"
+      : "SELECT * FROM activity_log WHERE userId = $1 ORDER BY timestamp DESC LIMIT 10"
     activityLogs = await all(logQuery, [userId])
   } catch (err) {
     // activity_logs table might not exist, continue without it
@@ -1354,36 +1354,36 @@ export async function getUserStats(userId: string) {
     
     const totalInvestedRow: { sum: number } | undefined = await get(
       usePostgres 
-        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
-        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = $1 AND type = $2 AND status = $3"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = $1 AND type = $2 AND status = $3",
       [userId, 'investment', 'approved']
     )
     const totalProfitRow: { sum: number } | undefined = await get(
       usePostgres
-        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
-        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = $1 AND type = $2 AND status = $3"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = $1 AND type = $2 AND status = $3",
       [userId, 'return', 'approved']
     )
     const pendingDepositsRow: { cnt: number } | undefined = await get(
       usePostgres
-        ? "SELECT COUNT(*) as cnt FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
-        : "SELECT COUNT(*) as cnt FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+        ? "SELECT COUNT(*) as cnt FROM transactions WHERE user_id = $1 AND type = $2 AND status = $3"
+        : "SELECT COUNT(*) as cnt FROM transactions WHERE userId = $1 AND type = $2 AND status = $3",
       [userId, 'deposit', 'pending']
     )
     const totalWithdrawnRow: { sum: number } | undefined = await get(
       usePostgres
-        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
-        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = $1 AND type = $2 AND status = $3"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = $1 AND type = $2 AND status = $3",
       [userId, 'withdrawal', 'approved']
     )
     const activeCountRow: { cnt: number } | undefined = await get(
       usePostgres
-        ? "SELECT COUNT(*) as cnt FROM investments WHERE user_id = ? AND status = ?"
-        : "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = ?",
+        ? "SELECT COUNT(*) as cnt FROM investments WHERE user_id = $1 AND status = $2"
+        : "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = $1 AND status = $2",
       [userId, 'active']
     )
     const userRow: { balance: number } | undefined = await get(
-      "SELECT balance FROM users WHERE id = ?",
+      "SELECT balance FROM users WHERE id = $1",
       [userId]
     )
     
@@ -1527,8 +1527,8 @@ export async function generatePortfolioData(userId: string) {
       amount: number
     }>(
       usePostgres
-        ? `SELECT created_at as date, type, amount FROM transactions WHERE user_id = ? ORDER BY created_at ASC`
-        : `SELECT date, type, amount FROM transactions WHERE userId = ? ORDER BY date ASC`,
+        ? `SELECT created_at as date, type, amount FROM transactions WHERE user_id = $1 ORDER BY created_at ASC`
+        : `SELECT date, type, amount FROM transactions WHERE userId = $1 ORDER BY date ASC`,
       [userId]
     )
 
@@ -1588,7 +1588,7 @@ export async function createTransaction(transaction: {
   await run(
     usePostgres
       ? `INSERT INTO transactions (id, user_id, type, amount, status, description, date) VALUES ($1, $2, $3, $4, $5, $6, $7)`
-      : `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      : `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
     [
       id,
       transaction.userId,
@@ -1629,8 +1629,8 @@ export async function processMaturedInvestments(userId: string) {
         maturity_date as "endDate", 
         status
       FROM investments 
-      WHERE user_id = ? AND status = ? AND maturity_date <= ?`
-    : "SELECT * FROM active_investments WHERE userId = ? AND status = 'active' AND endDate <= ?"
+      WHERE user_id = $1 AND status = $2 AND maturity_date <= $3`
+    : "SELECT * FROM active_investments WHERE userId = $1 AND status = 'active' AND endDate <= $2"
   
   const params = usePostgres 
     ? [userId, 'active', now]
@@ -1657,7 +1657,7 @@ export async function processMaturedInvestments(userId: string) {
     // Also update active_investments for backward compatibility
     try {
       await run(
-        "UPDATE active_investments SET status = ?, progressPercentage = ? WHERE id = ?",
+        "UPDATE active_investments SET status = $1, progressPercentage = $2 WHERE id = $3",
         ['completed', 100, inv.id]
       )
     } catch (_activeErr) {
@@ -1669,7 +1669,7 @@ export async function processMaturedInvestments(userId: string) {
     const principal = inv.amount || 0
     const totalCredit = profit + principal
     await run(
-      "UPDATE users SET balance = balance + ? WHERE id = ?",
+      "UPDATE users SET balance = balance + $1 WHERE id = $2",
       [totalCredit, userId]
     )
 
@@ -1699,7 +1699,7 @@ export async function processMaturedInvestments(userId: string) {
 
 export async function updateTransactionStatus(transactionId: string, status: "approved" | "rejected") {
   await run(`
-    UPDATE transactions SET status = ? WHERE id = ?
+    UPDATE transactions SET status = $1 WHERE id = $2
   `, [status, transactionId])
 }
 
@@ -1723,7 +1723,7 @@ export async function createNotification(notification: {
   const { v4: uuidv4 } = await import('uuid')
   const notificationId = uuidv4()
   await run(
-    "INSERT INTO notifications (id, user_id, title, message, type, read, created_at, action_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO notifications (id, user_id, title, message, type, read, created_at, action_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
     [
       notificationId,
       notification.userId,
@@ -1741,7 +1741,7 @@ export async function createNotification(notification: {
 export async function logActivity(userId: string, type: string, description: string, metadata?: any) {
   const activityId = `act_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   await run(
-    "INSERT INTO activity_log (id, userId, type, description, metadata, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO activity_log (id, userId, type, description, metadata, timestamp) VALUES ($1, $2, $3, $4, $5, $6)",
     [
       activityId,
       userId,
@@ -1755,7 +1755,7 @@ export async function logActivity(userId: string, type: string, description: str
 }
 
 export async function updateLastLogin(userId: string) {
-  await run("UPDATE users SET last_login = ? WHERE id = ?", [
+  await run("UPDATE users SET last_login = $1 WHERE id = $2", [
     new Date().toISOString(),
     userId,
   ])
