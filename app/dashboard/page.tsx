@@ -2,7 +2,7 @@ import { DashboardHero } from "@/components/dashboard/dashboard-hero"
 import { DashboardCards } from "@/components/dashboard/dashboard-cards"
 import { PortfolioChart } from "@/components/dashboard/portfolio-chart"
 import { RecentTransactions } from "@/components/dashboard/recent-transactions"
-import { RecentActivities } from "@/components/dashboard/recent-activities"
+import { EducationTips } from "@/components/dashboard/education-tips"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
 import LiveChatButton from "@/components/live-chat-button"
@@ -76,7 +76,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <RecentActivities userId={user.id} />
+      <EducationTips />
 
       <div className="pb-4 sm:pb-0">
         <LiveChatButton />

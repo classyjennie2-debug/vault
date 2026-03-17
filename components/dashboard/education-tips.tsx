@@ -1,0 +1,185 @@
+"use client"
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import {
+  Lightbulb,
+  ChevronRight,
+  Zap,
+  TrendingUp,
+  Shield,
+  BookOpen,
+} from "lucide-react"
+import { useState, useEffect } from "react"
+
+const educationTips = [
+  {
+    id: 1,
+    icon: TrendingUp,
+    category: "Investment Strategy",
+    title: "Power of Diversification",
+    description: "Spreading investments across different asset classes can reduce risk by up to 40%. Consider balancing high-yield and conservative plans.",
+    color: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+  },
+  {
+    id: 2,
+    icon: Zap,
+    category: "Market Insight",
+    title: "Compound Interest Magic",
+    description: "Einstein called it the 8th wonder of the world. Reinvesting returns can double your portfolio every 7-10 years at 10% annual growth.",
+    color: "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400",
+  },
+  {
+    id: 3,
+    icon: Shield,
+    category: "Risk Management",
+    title: "Don't Put All Eggs in One Basket",
+    description: "Diversify across different investment plans and durations. Mix short-term and long-term investments for steady growth.",
+    color: "bg-green-500/20 text-green-600 dark:text-green-400",
+  },
+  {
+    id: 4,
+    icon: BookOpen,
+    category: "Product Feature",
+    title: "Auto-Reinvestment Benefits",
+    description: "Enable auto-reinvestment to automatically deploy your returns. Passive compound growth without manual intervention.",
+    color: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
+  },
+  {
+    id: 5,
+    icon: TrendingUp,
+    category: "Investment Strategy",
+    title: "Dollar-Cost Averaging",
+    description: "Invest fixed amounts regularly (monthly/weekly) regardless of market conditions. Reduces timing risk and builds discipline.",
+    color: "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400",
+  },
+  {
+    id: 6,
+    icon: Zap,
+    category: "Market Insight",
+    title: "Start Early, Benefit Greatly",
+    description: "Starting investments at age 25 vs 35 can result in 2-3x more wealth at retirement. Time in market beats timing the market.",
+    color: "bg-rose-500/20 text-rose-600 dark:text-rose-400",
+  },
+]
+
+export function EducationTips() {
+  const [currentTip, setCurrentTip] = useState(0)
+  const [autoRotate, setAutoRotate] = useState(true)
+
+  useEffect(() => {
+    if (!autoRotate) return
+
+    const interval = setInterval(() => {
+      setCurrentTip((prev) => (prev + 1) % educationTips.length)
+    }, 6000)
+
+    return () => clearInterval(interval)
+  }, [autoRotate])
+
+  const tip = educationTips[currentTip]
+  const Icon = tip.icon
+
+  const handleNext = () => {
+    setCurrentTip((prev) => (prev + 1) % educationTips.length)
+    setAutoRotate(false)
+    setTimeout(() => setAutoRotate(true), 10000)
+  }
+
+  const handlePrev = () => {
+    setCurrentTip((prev) => (prev - 1 + educationTips.length) % educationTips.length)
+    setAutoRotate(false)
+    setTimeout(() => setAutoRotate(true), 10000)
+  }
+
+  return (
+    <Card className="border backdrop-blur-lg bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-950/50 dark:to-slate-900/30 animate-in fade-in slide-in-from-bottom duration-700">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-3 sm:pb-4">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-normal text-muted-foreground">
+          <Lightbulb className="h-4 w-4 text-amber-500 flex-shrink-0" />
+          <span className="truncate">Daily Learning Tip</span>
+        </CardTitle>
+        <div className="text-xs text-muted-foreground">
+          {currentTip + 1} / {educationTips.length}
+        </div>
+      </CardHeader>
+
+      <CardContent className="pt-4 sm:pt-6">
+        <div className="space-y-4">
+          {/* Tip Card */}
+          <div className={`p-4 rounded-lg ${tip.color} border border-current/10`}>
+            <div className="flex items-start gap-3">
+              <div className={`p-2 rounded-lg ${tip.color} flex-shrink-0`}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-semibold uppercase tracking-wide opacity-75">
+                    {tip.category}
+                  </span>
+                </div>
+                <h3 className="text-sm sm:text-base font-semibold mb-2">{tip.title}</h3>
+                <p className="text-xs sm:text-sm opacity-90 leading-relaxed">
+                  {tip.description}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={handlePrev}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border/50 hover:bg-accent transition-colors"
+              aria-label="Previous tip"
+            >
+              <ChevronRight className="h-4 w-4 rotate-180" />
+            </button>
+
+            {/* Dot Indicators */}
+            <div className="flex justify-center gap-1.5 flex-wrap">
+              {educationTips.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setCurrentTip(idx)
+                    setAutoRotate(false)
+                    setTimeout(() => setAutoRotate(true), 10000)
+                  }}
+                  className={`h-2 rounded-full transition-all ${
+                    idx === currentTip
+                      ? "w-6 bg-primary"
+                      : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                  }`}
+                  aria-label={`Go to tip ${idx + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={handleNext}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border/50 hover:bg-accent transition-colors"
+              aria-label="Next tip"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* CTA */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full text-xs sm:text-sm"
+          >
+            Learn More <ChevronRight className="h-3.5 w-3.5 ml-1.5" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
