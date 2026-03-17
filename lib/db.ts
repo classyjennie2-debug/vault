@@ -417,6 +417,7 @@ async function initializePostgres() {
       }
 
       // Migration: Add missing columns to investments table if they don't exist
+      // Migration: Ensure all required columns exist in investments table
       try {
         const investmentColumns = await pgPool.query(`
           SELECT column_name FROM information_schema.columns 
@@ -442,6 +443,115 @@ async function initializePostgres() {
         if (!msg.includes('already exists') && !msg.includes('duplicate')) {
           console.warn('[Migration] Error updating investments table columns:', msg)
         }
+      }
+
+      // Migration: Add missing columns to transactions table
+      try {
+        const txColumns = await pgPool.query(`
+          SELECT column_name FROM information_schema.columns 
+          WHERE table_name = 'transactions'
+        `)
+        const txColNames = new Set(txColumns.rows.map((r: any) => r.column_name))
+        
+        const requiredTxColumns = [
+          { name: 'method', sql: 'ALTER TABLE transactions ADD COLUMN method VARCHAR(50)' },
+          { name: 'bank_account', sql: 'ALTER TABLE transactions ADD COLUMN bank_account VARCHAR(255)' },
+          { name: 'crypto_address', sql: 'ALTER TABLE transactions ADD COLUMN crypto_address VARCHAR(255)' },
+        ]
+        
+        for (const col of requiredTxColumns) {
+          if (!txColNames.has(col.name)) {
+            await pgPool.query(col.sql)
+            console.log(`[Migration] Added ${col.name} column to transactions table`)
+          }
+        }
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        if (!msg.includes('already exists') && !msg.includes('duplicate')) {
+          console.warn('[Migration] Error updating transactions table columns:', msg)
+        }
+      }
+
+      // Migration: Add missing columns to investment_plans table
+      try {
+        const planColumns = await pgPool.query(`
+          SELECT column_name FROM information_schema.columns 
+          WHERE table_name = 'investment_plans'
+        `)
+        const planColNames = new Set(planColumns.rows.map((r: any) => r.column_name))
+        
+        const requiredPlanColumns = [
+          { name: 'category', sql: 'ALTER TABLE investment_plans ADD COLUMN category VARCHAR(100)' },
+          { name: 'management_fee', sql: 'ALTER TABLE investment_plans ADD COLUMN management_fee NUMERIC(5,2) DEFAULT 0' },
+          { name: 'performance_fee', sql: 'ALTER TABLE investment_plans ADD COLUMN performance_fee NUMERIC(5,2) DEFAULT 0' },
+          { name: 'withdrawal_fee', sql: 'ALTER TABLE investment_plans ADD COLUMN withdrawal_fee NUMERIC(5,2) DEFAULT 0' },
+        ]
+        
+        for (const col of requiredPlanColumns) {
+          if (!planColNames.has(col.name)) {
+            await pgPool.query(col.sql)
+            console.log(`[Migration] Added ${col.name} column to investment_plans table`)
+          }
+        }
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        if (!msg.includes('already exists') && !msg.includes('duplicate')) {
+          console.warn('[Migration] Error updating investment_plans table columns:', msg)
+        }
+      }
+
+      // Migration: Add security columns to users table
+      try {
+        const userColumns = await pgPool.query(`
+          SELECT column_name FROM information_schema.columns 
+          WHERE table_name = 'users'
+        `)
+        const userColNames = new Set(userColumns.rows.map((r: any) => r.column_name))
+        
+        const securityColumns = [
+          { name: 'email_verified', sql: 'ALTER TABLE users ADD COLUMN email_verified BOOLEAN NOT NULL DEFAULT FALSE' },
+          { name: 'two_factor_enabled', sql: 'ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN NOT NULL DEFAULT FALSE' },
+          { name: 'two_factor_secret', sql: 'ALTER TABLE users ADD COLUMN two_factor_secret VARCHAR(255)' },
+          { name: 'backup_codes', sql: 'ALTER TABLE users ADD COLUMN backup_codes TEXT' },
+        ]
+        
+        for (const col of securityColumns) {
+          if (!userColNames.has(col.name)) {
+            await pgPool.query(col.sql)
+            console.log(`[Migration] Added ${col.name} column to users table`)
+          }
+        }
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        if (!msg.includes('already exists') && !msg.includes('duplicate')) {
+          console.warn('[Migration] Error updating users security columns:', msg)
+        }
+      }
+
+      // Migration: Create indexes for better query performance
+      try {
+        const indexDefinitions = [
+          `CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id)`,
+          `CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status)`,
+          `CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date)`,
+          `CREATE INDEX IF NOT EXISTS idx_investments_user_id ON investments(user_id)`,
+          `CREATE INDEX IF NOT EXISTS idx_investments_status ON investments(status)`,
+          `CREATE INDEX IF NOT EXISTS idx_investments_maturity ON investments(maturity_date)`,
+          `CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id)`,
+          `CREATE INDEX IF NOT EXISTS idx_activity_logs_user_id ON activity_logs(user_id)`,
+        ]
+        
+        for (const indexSql of indexDefinitions) {
+          try {
+            await pgPool.query(indexSql)
+          } catch (_e) {
+            // Index might already exist, that's fine
+          }
+        }
+        console.log('[Migration] Database indexes verified/created')
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        console.warn('[Migration] Error creating indexes:', msg)
       }
 
       // CRITICAL: Always update existing plans with correct planType
@@ -637,7 +747,7 @@ const planTemplates = [
   }
 ]
 
-function seedDatabaseSync(db: Database.Database) {
+function seedDatabaseSync(_db: any) {
   throw new Error('SQLite is not supported. Use PostgreSQL only.')
 }
 
