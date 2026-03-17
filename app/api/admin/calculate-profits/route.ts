@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { all, run, getUserById } from "@/lib/db"
+import { all, run, getUserById, pgPool } from "@/lib/db"
 import type { ActiveInvestment } from "@/lib/types"
 import { apiLogger } from "@/lib/logging"
 
@@ -19,12 +19,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
+    const usePostgres = pgPool !== null
+
     // Get all active investments with calculations
     const investments = await all<ActiveInvestment>(
-      `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status
-       FROM active_investments 
-       WHERE status = 'active'
-       ORDER BY userId`
+      usePostgres
+        ? `SELECT id, user_id as "userId", plan_id as "planId", plan_name as "planName", amount, expected_profit as "expectedProfit", start_date as "startDate", end_date as "endDate", status
+           FROM active_investments 
+           WHERE status = 'active'
+           ORDER BY user_id`
+        : `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status
+           FROM active_investments 
+           WHERE status = 'active'
+           ORDER BY userId`
     )
 
     let profitsUpdated = 0
@@ -47,7 +54,9 @@ export async function POST(req: NextRequest) {
       // FIX: Persist progress percentage to database
       // This allows historical tracking and avoids recalculating every time
       await run(
-        `UPDATE active_investments SET progressPercentage = ? WHERE id = ?`,
+        usePostgres
+          ? `UPDATE active_investments SET progress_percentage = ? WHERE id = ?`
+          : `UPDATE active_investments SET progressPercentage = ? WHERE id = ?`,
         [Math.round(progressPercentage * 100) / 100, inv.id]
       )
 
@@ -72,15 +81,19 @@ export async function POST(req: NextRequest) {
         // Each call to this endpoint creates new transactions
         // We need to clear the old ones before creating new ones
         await run(
-          `DELETE FROM transactions WHERE userId = ? AND type = 'return' AND description = 'Accumulated profit from active investments'`,
+          usePostgres
+            ? `DELETE FROM transactions WHERE user_id = ? AND type = 'return' AND description = 'Accumulated profit from active investments'`
+            : `DELETE FROM transactions WHERE userId = ? AND type = 'return' AND description = 'Accumulated profit from active investments'`,
           [userId]
         )
 
         // Now insert the fresh calculated profit
         await run(
-          `INSERT INTO transactions 
-           (id, userId, type, amount, status, description, date) 
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          usePostgres
+            ? `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at) 
+               VALUES (?, ?, ?, ?, ?, ?, ?)`
+            : `INSERT INTO transactions (id, userId, type, amount, status, description, date) 
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
             `profit-${userId}-${Date.now()}`,
             userId,
@@ -118,12 +131,19 @@ export async function GET(req: NextRequest) {
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user
 
+    const usePostgres = pgPool !== null
+
     // Get user's active investments
     const investments = await all<ActiveInvestment>(
-      `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status
-       FROM active_investments 
-       WHERE userId = ? AND status = 'active'
-       ORDER BY startDate DESC`,
+      usePostgres
+        ? `SELECT id, user_id as "userId", plan_id as "planId", plan_name as "planName", amount, expected_profit as "expectedProfit", start_date as "startDate", end_date as "endDate", status
+           FROM active_investments 
+           WHERE user_id = ? AND status = 'active'
+           ORDER BY start_date DESC`
+        : `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status
+           FROM active_investments 
+           WHERE userId = ? AND status = 'active'
+           ORDER BY startDate DESC`,
       [user.id]
     )
 

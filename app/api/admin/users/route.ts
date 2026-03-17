@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { all, getAllUsers, getUserById, deleteUser, run, isPostgres } from "@/lib/db"
+import { all, getAllUsers, getUserById, deleteUser, run, isPostgres, pgPool } from "@/lib/db"
 import { apiLogger } from "@/lib/logging"
 
 export async function GET() {
@@ -12,6 +12,8 @@ export async function GET() {
     if (user.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
+
+    const usePostgres = pgPool !== null
 
     // Fetch full user records for admin (exclude password hash)
     const users = await getAllUsers()
@@ -34,7 +36,9 @@ export async function GET() {
       try {
         // Get total invested
         const investmentResult = await all(
-          "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",
+          usePostgres
+            ? "SELECT SUM(amount) as totalInvested FROM active_investments WHERE user_id = ?"
+            : "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",
           [enrichedUser.id]
         )
         if (investmentResult && investmentResult.length > 0) {
@@ -43,7 +47,9 @@ export async function GET() {
 
         // Get active investment count
         const countResult = await all(
-          "SELECT COUNT(*) as count FROM active_investments WHERE userId = ? AND status = 'active'",
+          usePostgres
+            ? "SELECT COUNT(*) as count FROM active_investments WHERE user_id = ? AND status = 'active'"
+            : "SELECT COUNT(*) as count FROM active_investments WHERE userId = ? AND status = 'active'",
           [enrichedUser.id]
         )
         if (countResult && countResult.length > 0) {
@@ -52,7 +58,9 @@ export async function GET() {
 
         // Get total deposits
         const depositsResult = await all(
-          "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'approved'",
+          usePostgres
+            ? "SELECT SUM(amount) as totalDeposits FROM transactions WHERE user_id = ? AND type = 'deposit' AND status = 'approved'"
+            : "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'approved'",
           [enrichedUser.id]
         )
         if (depositsResult && depositsResult.length > 0) {
@@ -61,7 +69,9 @@ export async function GET() {
 
         // Get accumulated profit
         const profitResult = await all(
-          "SELECT SUM(CAST(expectedProfit AS REAL) * CAST(progressPercentage AS REAL) / 100) as totalProfit FROM active_investments WHERE userId = ?",
+          usePostgres
+            ? "SELECT SUM(CAST(expected_profit AS DECIMAL) * CAST(progress_percentage AS DECIMAL) / 100) as totalProfit FROM active_investments WHERE user_id = ?"
+            : "SELECT SUM(CAST(expectedProfit AS REAL) * CAST(progressPercentage AS REAL) / 100) as totalProfit FROM active_investments WHERE userId = ?",
           [enrichedUser.id]
         )
         if (profitResult && profitResult.length > 0) {

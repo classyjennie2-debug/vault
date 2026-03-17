@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { getUserById, get } from "@/lib/db"
+import { getUserById, get, pgPool } from "@/lib/db"
 
 export async function GET(req: NextRequest) {
   try {
@@ -12,13 +12,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
+    const usePostgres = pgPool !== null
+    
     // Calculate available balance (total balance - invested amount + profits)
     const investedResult = await get(
-      "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'",
+      usePostgres
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = 'investment' AND status = 'approved'"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'",
       [user.id]
     )
     const profitResult = await get(
-      "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'",
+      usePostgres
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = 'return' AND status = 'approved'"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'",
       [user.id]
     )
 
