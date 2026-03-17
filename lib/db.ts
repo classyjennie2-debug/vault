@@ -753,9 +753,10 @@ export async function createUser(user: {
   const verifiedValue = user.verified ? 1 : 0
 
   try {
+    const now = new Date().toISOString()
     await pgPool!.query(
-      `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, role, balance, verified)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, role, balance, verified, joined_at, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
       [
         user.id,
         user.name,
@@ -769,6 +770,9 @@ export async function createUser(user: {
         'user', // role - default to 'user'
         0, // balance - default to 0
         verifiedValue,
+        now, // joined_at
+        now, // created_at
+        now, // updated_at
       ]
     )
   } catch (err: unknown) {
