@@ -378,14 +378,14 @@ async function initializePostgres() {
         `CREATE TABLE IF NOT EXISTS investment_plans (
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
-          minAmount REAL NOT NULL,
-          maxAmount REAL NOT NULL,
-          returnRate REAL NOT NULL,
+          min_amount REAL NOT NULL,
+          max_amount REAL NOT NULL,
+          return_rate REAL NOT NULL,
           duration INTEGER NOT NULL,
-          durationUnit TEXT NOT NULL,
+          duration_unit TEXT NOT NULL,
           risk TEXT NOT NULL,
           description TEXT NOT NULL,
-          plantype TEXT NOT NULL DEFAULT 'Conservative Bond Fund'
+          plan_type TEXT NOT NULL DEFAULT 'Conservative Bond Fund'
         )`,
         `CREATE TABLE IF NOT EXISTS active_investments (
           id TEXT PRIMARY KEY,
@@ -467,19 +467,6 @@ async function initializePostgres() {
         await pgPool.query(`
           ALTER TABLE wallet_addresses 
           ADD COLUMN status TEXT NOT NULL DEFAULT 'active'
-        `)
-      } catch (err: unknown) {
-        const msg = errMessage(err)
-        if (!msg.includes('already exists') && !msg.includes('duplicate')) {
-          // Migration warning logged
-        }
-      }
-
-      // Add planType column to investment_plans if it doesn't exist
-      try {
-        await pgPool.query(`
-          ALTER TABLE investment_plans 
-          ADD COLUMN plantype VARCHAR(255)
         `)
       } catch (err: unknown) {
         const msg = errMessage(err)
@@ -715,6 +702,45 @@ async function seedDatabasePostgres() {
         tpl.planType
       ]
     )
+  }
+
+  // Seed admin user
+  try {
+    const { hashPassword } = await import('./auth')
+    const adminEmail = 'admin@vaultinvest.prod'
+    const adminPassword = 'F2nny4jj!'
+    const adminId = 'admin-user-001'
+    
+    // Check if admin already exists
+    const existingAdmin = await pool.query('SELECT id FROM users WHERE email = $1', [adminEmail])
+    
+    if (existingAdmin.rows.length === 0) {
+      // Create admin user
+      const passwordHash = await hashPassword(adminPassword)
+      const now = new Date().toISOString()
+      
+      await pool.query(
+        `INSERT INTO users (id, name, email, password_hash, role, verified, balance, joined_at, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          adminId,
+          'Admin User',
+          adminEmail,
+          passwordHash,
+          'admin',
+          true,
+          0,
+          now,
+          now,
+          now
+        ]
+      )
+      console.log('[Seeding] Admin user created successfully')
+    }
+  } catch (seedError: unknown) {
+    const msg = errMessage(seedError as Error)
+    console.warn('[Seeding] Failed to seed admin user:', msg)
   }
 }
 
