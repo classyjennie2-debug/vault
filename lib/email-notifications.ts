@@ -12,8 +12,8 @@ const transporter = nodemailer.createTransport({
 
 export interface EmailNotification {
   to: string
-  subject: string
-  template: 'signin' | 'deposit' | 'withdrawal' | 'return' | 'welcome'
+  subject?: string
+  template: 'signin' | 'deposit' | 'withdrawal' | 'return' | 'welcome' | 'recovery'
   data: Record<string, string | number | boolean>
 }
 
@@ -123,6 +123,23 @@ const emailTemplates = {
           <li>Start earning returns</li>
         </ol>
         <p><a href="${data.dashboardLink}" style="background-color: #3b82f6; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none;">Go to Dashboard</a></p>
+      </div>
+    `,
+  }),
+  recovery: (data: Record<string, string | number | boolean>) => ({
+    subject: 'Account Recovery Code',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #3b82f6;">Password Recovery Request</h2>
+        <p>Hi ${data.userName},</p>
+        <p>We received a request to reset your Vault account password.</p>
+        <p style="background-color: #f3f4f6; padding: 15px; border-radius: 4px; text-align: center; margin: 20px 0;">
+          <strong style="font-size: 24px; color: #1f2937;">${data.code}</strong><br/>
+          <span style="color: #6b7280; font-size: 12px;">Use this code to reset your password. It expires in 15 minutes.</span>
+        </p>
+        <p style="color: #6b7280; font-size: 14px;">If you didn't request this, you can safely ignore this email.</p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+        <p style="font-size: 12px; color: #6b7280;">This is an automated message. Please do not reply to this email.</p>
       </div>
     `,
   }),

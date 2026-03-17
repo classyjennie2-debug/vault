@@ -35,9 +35,12 @@ export async function POST(req: NextRequest) {
 
     // Send recovery code to email
     await sendNotificationEmail({
-      email,
-      userName: email.split("@")[0],
-      code,
+      to: email,
+      template: 'recovery',
+      data: {
+        userName: email.split("@")[0],
+        code
+      }
     }).catch(err => console.error("Failed to send email:", err))
 
     // Clear old codes after 15 minutes
