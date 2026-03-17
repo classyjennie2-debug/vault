@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { getUserById, createTransaction, get, run, createNotification } from "@/lib/db"
+import { getUserById, createTransaction, get, run, createNotification, logActivity } from "@/lib/db"
 import { apiLogger } from "@/lib/logging"
 
 export async function POST(request: NextRequest) {
@@ -77,6 +77,19 @@ export async function POST(request: NextRequest) {
         bankAccount: method === "bank" ? bankAccount : undefined,
         cryptoAddress: method === "crypto" ? cryptoAddress : undefined,
       })
+
+      // Log activity for this withdrawal
+      try {
+        const methodLabel = method === "bank" ? "Bank Transfer" : "Crypto Wallet"
+        await logActivity(
+          user.id,
+          "withdrawal_submitted",
+          `Withdrawal request: $${amount.toLocaleString()} via ${methodLabel}`
+        )
+      } catch (err) {
+        console.error("Failed to log withdrawal activity:", err)
+        // Continue even if activity logging fails
+      }
 
       // Create notification for pending withdrawal
       await createNotification({

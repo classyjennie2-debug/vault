@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Settings, HelpCircle, LogOut, ChevronDown } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -23,6 +24,43 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user }: UserMenuProps) {
+  const router = useRouter()
+
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+
+      if (response.ok) {
+        // Clear client-side state
+        localStorage.removeItem("user")
+        localStorage.removeItem("token")
+        localStorage.removeItem("auth_data")
+        sessionStorage.clear()
+        
+        // Redirect to home
+        router.push("/")
+        
+        // Force page refresh to ensure clean state
+        setTimeout(() => {
+          window.location.href = "/"
+        }, 100)
+      } else {
+        console.error("Logout failed")
+        // Force redirect even if logout fails
+        window.location.href = "/"
+      }
+    } catch (error) {
+      console.error("Logout error:", error)
+      // Force redirect even if logout fails
+      window.location.href = "/"
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -78,14 +116,9 @@ export function UserMenu({ user }: UserMenuProps) {
         <DropdownMenuSeparator />
 
         {/* Sign Out */}
-        <DropdownMenuItem asChild>
-          <Link
-            href="/"
-            className="flex items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 font-medium"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>Sign out</span>
-          </Link>
+        <DropdownMenuItem onClick={handleSignOut}>
+          <LogOut className="h-4 w-4 text-muted-foreground" />
+          <span className="text-red-600 dark:text-red-400 font-medium">Sign out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

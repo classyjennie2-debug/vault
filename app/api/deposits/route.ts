@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { sendAdminNotification } from "@/lib/auth"
-import { createTransaction, run } from "@/lib/db"
-import { getUserById } from "@/lib/db"
+import { createTransaction, run, logActivity, getUserById } from "@/lib/db"
 import { apiLogger } from "@/lib/logging"
 
 export async function POST(req: NextRequest) {
@@ -36,6 +35,18 @@ export async function POST(req: NextRequest) {
       status: "pending",
       description: `${coin} deposit via ${network}${coinAmount ? ` (${coinAmount} ${coin})` : ''}`,
     })
+
+    // Log activity for this deposit
+    try {
+      await logActivity(
+        user.id,
+        "deposit_submitted",
+        `Deposit submitted: $${amount.toLocaleString()} via ${coin} (${network})`
+      )
+    } catch (err) {
+      console.error("Failed to log deposit activity:", err)
+      // Continue even if activity logging fails
+    }
 
     // Create notification for pending deposit
     const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`

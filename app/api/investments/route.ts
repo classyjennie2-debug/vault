@@ -7,6 +7,7 @@ import {
   createTransaction,
   getUserById,
   getUserActiveInvestmentsWithProfit,
+  logActivity,
 } from "@/lib/db"
 import { safeNumber, validateInvestmentAmount, calculateExpectedProfit, calculateReturnRate } from "@/lib/investment-utils"
 import { validate, investmentSchema } from "@/lib/validation"
@@ -186,6 +187,18 @@ export async function POST(req: NextRequest) {
         { investmentId, planId, amount: safeAmount, expectedProfit },
         user.id
       )
+
+      // Log activity for this investment
+      try {
+        await logActivity(
+          user.id,
+          "investment",
+          `Investment created: $${safeAmount.toLocaleString()} in ${plan.name || "Investment Plan"} for ${durationDays} days`
+        )
+      } catch (err) {
+        console.error("Failed to log investment activity:", err)
+        // Continue even if activity logging fails
+      }
 
       return NextResponse.json({ 
         success: true, 
