@@ -367,13 +367,13 @@ async function initializePostgres() {
         )`,
         `CREATE TABLE IF NOT EXISTS transactions (
           id TEXT PRIMARY KEY,
-          userId TEXT NOT NULL,
+          user_id TEXT NOT NULL,
           type TEXT NOT NULL,
           amount REAL NOT NULL,
           status TEXT NOT NULL DEFAULT 'pending',
           description TEXT NOT NULL,
           date TEXT NOT NULL,
-          FOREIGN KEY (userId) REFERENCES users(id)
+          FOREIGN KEY (user_id) REFERENCES users(id)
         )`,
         `CREATE TABLE IF NOT EXISTS investment_plans (
           id TEXT PRIMARY KEY,
@@ -1457,13 +1457,17 @@ export async function generatePortfolioData(userId: string) {
 
   if (!user) return []
 
+  const usePostgres = pgPool !== null
+  
   // Get all transactions for the user
   const transactions = await all<{
     date: string
     type: string
     amount: number
   }>(
-    `SELECT date, type, amount FROM transactions WHERE userId = ? ORDER BY date ASC`,
+    usePostgres
+      ? `SELECT date, type, amount FROM transactions WHERE user_id = ? ORDER BY date ASC`
+      : `SELECT date, type, amount FROM transactions WHERE userId = ? ORDER BY date ASC`,
     [userId]
   )
 
@@ -1509,9 +1513,12 @@ export async function createTransaction(transaction: {
 }) {
   const id = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   const description = transaction.description || `${transaction.type} of $${transaction.amount.toLocaleString()}`
+  const usePostgres = pgPool !== null
 
   await run(
-    `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    usePostgres
+      ? `INSERT INTO transactions (id, user_id, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`
+      : `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       transaction.userId,
