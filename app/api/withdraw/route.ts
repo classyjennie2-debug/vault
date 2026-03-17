@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { getUserById, createTransaction, get, run, createNotification } from "@/lib/db"
+import { apiLogger } from "@/lib/logging"
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Check if the update was successful (rows affected > 0)
     const changesResult = await get(
       `SELECT changes() as changedRows`
-    ) as any
+    ) as { changedRows?: number } | undefined
     
     if (!changesResult || changesResult.changedRows === 0) {
       return NextResponse.json({ error: "Insufficient available balance" }, { status: 400 })
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
       // Check if the update was successful (rows affected > 0)
       const changesResult = await get(
         `SELECT changes() as changedRows`
-      ) as any
+      ) as { changedRows?: number } | undefined
       
       if (!changesResult || changesResult.changedRows === 0) {
         await run(`ROLLBACK`)
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
       throw txError
     }
   } catch (error) {
-    console.error("Withdraw error:", error)
+    apiLogger.error("Withdraw error", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

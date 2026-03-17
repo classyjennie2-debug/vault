@@ -3,6 +3,7 @@ import { requireAuthAPI } from "@/lib/auth"
 import { sendAdminNotification } from "@/lib/auth"
 import { createTransaction, run } from "@/lib/db"
 import { getUserById } from "@/lib/db"
+import { apiLogger } from "@/lib/logging"
 
 export async function POST(req: NextRequest) {
   try {
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Deposit API error:", error)
+    apiLogger.error("Deposit API error", error)
     return NextResponse.json({ error: "Failed to process deposit" }, { status: 500 })
   }
 }

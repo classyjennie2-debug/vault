@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
+import { apiLogger } from "@/lib/logging"
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // In a real app, this would send an email or create a support ticket
-    console.log(`Support request from ${user.email}:`, { email, subject, message })
+    apiLogger.info("Support request received", { userId: user.id, subject })
 
     return NextResponse.json({ message: "Support request submitted successfully" })
   } catch (error) {

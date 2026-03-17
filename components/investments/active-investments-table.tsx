@@ -150,11 +150,11 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
                           <div className="text-sm font-semibold text-green-700 dark:text-green-300">
                             +${(investment.expectedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                           </div>
-                          {(investment as any).accumulatedProfit != null && (investment as any).accumulatedProfit !== investment.expectedProfit && (
+                          {investment.accumulatedProfit != null && investment.accumulatedProfit !== investment.expectedProfit && (
                             <div>
                               <div className="text-xs text-muted-foreground mt-1 mb-0.5">Accumulated:</div>
                               <div className="text-sm font-bold text-accent">
-                                +${((investment as any).accumulatedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                +${(investment.accumulatedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                               </div>
                             </div>
                           )}
@@ -246,11 +246,11 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
                     <p className="text-base font-semibold text-green-700 dark:text-green-300">
                       +${(investment.expectedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                     </p>
-                    {(investment as any).accumulatedProfit != null && (investment as any).accumulatedProfit !== investment.expectedProfit && (
+                    {investment.accumulatedProfit != null && investment.accumulatedProfit !== investment.expectedProfit && (
                       <div className="mt-2 pt-2 border-t border-border/10">
                         <p className="text-xs text-muted-foreground mb-1">Accumulated Profit</p>
                         <p className="text-base font-bold text-accent">
-                          +${((investment as any).accumulatedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          +${(investment.accumulatedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </p>
                       </div>
                     )}

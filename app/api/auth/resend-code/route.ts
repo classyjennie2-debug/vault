@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { sendVerificationCode } from "@/lib/auth"
 import { getUserByEmail, canResendVerificationCode } from "@/lib/db"
+import { apiLogger } from "@/lib/logging"
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
       success: true 
     })
   } catch (error) {
-    console.error("Resend code error:", error)
+    apiLogger.error("Resend code error", error)
     const message = error instanceof Error ? error.message : "Internal server error"
     return NextResponse.json({ error: message }, { status: 500 })
   }

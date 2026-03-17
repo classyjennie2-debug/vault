@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { all } from "@/lib/db"
+import { apiLogger } from "@/lib/logging"
 
 export async function GET() {
   try {
-    console.log("=== Simple admin users test ===")
+    apiLogger.debug("=== Simple admin users test ===")
     
     const user = await requireAuthAPI()
     if (user instanceof NextResponse) return user
@@ -13,9 +14,9 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 })
     }
 
-    console.log("Fetching base users...")
+    apiLogger.debug("Fetching base users sample")
     const users = await all("SELECT id, name, email, balance FROM users LIMIT 5")
-    console.log("Success! Users:", users)
+    apiLogger.debug("Fetched users sample", { count: users.length })
     
     return NextResponse.json({
       success: true,
@@ -23,7 +24,7 @@ export async function GET() {
       sample: users
     })
   } catch (error) {
-    console.error("Test error:", error)
+    apiLogger.error("Test error", error)
     return NextResponse.json({ 
       error: String(error),
       stack: error instanceof Error ? error.stack : undefined

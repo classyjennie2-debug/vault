@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getInvestmentPlansFromDb } from "@/lib/db"
 import { calculateReturnRate, getPlanDisplayRate } from "@/lib/investment-utils"
+import { investmentLogger } from "@/lib/logging"
 
 /**
  * DEBUG ENDPOINT: Shows what plans are being returned and their calculated rates
@@ -8,11 +9,11 @@ import { calculateReturnRate, getPlanDisplayRate } from "@/lib/investment-utils"
  */
 export async function GET() {
   try {
-    console.log("[DEBUG] === INVESTMENT PLANS DEBUG ===")
-    
+    investmentLogger.debug("[DEBUG] === INVESTMENT PLANS DEBUG ===")
+
     const plans = await getInvestmentPlansFromDb()
-    
-    console.log(`[DEBUG] Total plans returned: ${plans.length}`)
+
+    investmentLogger.info("debug/investment-plans: total", { count: plans.length })
     
     const debugPlans = plans.map((plan) => {
       const displayRate = getPlanDisplayRate(plan.planType || "Conservative Bond Fund")
@@ -55,9 +56,9 @@ export async function GET() {
       }
     })
     
-    console.log("[DEBUG] Plans Debug Info:")
+    investmentLogger.debug("[DEBUG] Plans Debug Info:")
     debugPlans.forEach((p) => {
-      console.log(`  ${p.id}: ${p.name} (${p.planType}) - 7day: ${p.calculatedRates["7day"].toFixed(2)}%`)
+      investmentLogger.debug("plan-debug", { id: p.id, name: p.name, planType: p.planType, rate7d: p.calculatedRates["7day"] })
     })
     
     return NextResponse.json({
@@ -72,7 +73,7 @@ export async function GET() {
       }
     })
   } catch (error) {
-    console.error("[DEBUG] Error in debug endpoint:", error)
+    investmentLogger.error("[DEBUG] Error in debug endpoint:", error)
     return NextResponse.json(
       { 
         success: false, 

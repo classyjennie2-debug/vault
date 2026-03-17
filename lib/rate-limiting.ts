@@ -34,6 +34,11 @@ class RateLimitStore {
     }
   }
 
+  // Expose a readonly getter for internal entries when needed
+  public getEntry(key: string): RateLimitEntry | undefined {
+    return this.store.get(key)
+  }
+
   get(key: string): number {
     const entry = this.store.get(key)
     if (!entry) return 0
@@ -141,7 +146,7 @@ export async function checkRateLimit(
   const now = Date.now()
   const count = rateLimitStore.increment(key, config.windowMs)
 
-  const entry = (rateLimitStore as any).store.get(key)
+  const entry = rateLimitStore.getEntry ? rateLimitStore.getEntry(key) : undefined
   const resetAt = entry?.resetAt || now + config.windowMs
   const remaining = Math.max(0, config.maxRequests - count)
   const limited = count > config.maxRequests

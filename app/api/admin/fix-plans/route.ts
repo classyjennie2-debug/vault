@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { run, all } from "@/lib/db"
+import { apiLogger } from "@/lib/logging"
 
 /**
  * ADMIN ONLY: Manually fix all investment plans with correct planType values
@@ -23,7 +24,7 @@ export async function POST() {
       { id: 'ret', planType: 'Real Estate Trust' },
     ]
 
-    console.log('[FIX_PLANS] Starting plan type fix...')
+    apiLogger.info('[FIX_PLANS] Starting plan type fix...')
     const results = []
 
     // Update each plan using the run() function
@@ -35,7 +36,7 @@ export async function POST() {
           [mapping.planType, mapping.id]
         )
         
-        console.log(`[FIX_PLANS] Plan ${mapping.id} updated to "${mapping.planType}"`)
+        apiLogger.info('Plan updated', { planId: mapping.id, planType: mapping.planType })
         
         results.push({
           id: mapping.id,
@@ -43,7 +44,7 @@ export async function POST() {
           updated: true
         })
       } catch (err) {
-        console.error(`[FIX_PLANS] Error updating plan ${mapping.id}:`, err)
+        apiLogger.error(`[FIX_PLANS] Error updating plan ${mapping.id}`, err)
         results.push({
           id: mapping.id,
           planType: mapping.planType,
@@ -58,10 +59,10 @@ export async function POST() {
       'SELECT id, name, plantype FROM investment_plans ORDER BY id'
     )
 
-    console.log('[FIX_PLANS] Final verification:')
+    apiLogger.info('[FIX_PLANS] Final verification:')
     const verificationData = verification.map(row => {
       const displayType = row.plantype || row.planType
-      console.log(`  ${row.id}: ${row.name} → "${displayType}"`)
+      apiLogger.debug('plan-verification', { id: row.id, name: row.name, plantype: displayType })
       return {
         id: row.id,
         name: row.name,
@@ -77,7 +78,7 @@ export async function POST() {
       timestamp: new Date().toISOString()
     })
   } catch (error) {
-    console.error('[FIX_PLANS] Error:', error)
+    apiLogger.error('[FIX_PLANS] Error:', error)
     return NextResponse.json(
       { 
         error: error instanceof Error ? error.message : "Unknown error",

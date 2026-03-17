@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       investments,
     })
   } catch (err: unknown) {
-    console.error("Get investments API error", err)
+    investmentLogger.error("Get investments API error", err)
     const message = err instanceof Error ? err.message : "Something went wrong"
     return NextResponse.json({ error: message }, { status: 500 })
   }
@@ -199,19 +199,19 @@ export async function POST(req: NextRequest) {
           endDate,
         }
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       // FIX: Rollback transaction if creation fails
       try {
         await run('ROLLBACK')
-      } catch (rollbackError) {
-        console.error('Rollback failed:', rollbackError)
+      } catch (rollbackError: unknown) {
+        investmentLogger.error('Rollback failed', rollbackError)
       }
       investmentLogger.error('Investment creation error', error, { planId, amount: safeAmount }, user.id)
       const appError = mapErrorToResponse(error)
       return createErrorResponse(appError)
     }
   } catch (err: unknown) {
-    investmentLogger.error("Investment API error", err as Error, {})
+    investmentLogger.error("Investment API error", err, {})
     const appError = mapErrorToResponse(err)
     return createErrorResponse(appError)
   }

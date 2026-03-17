@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { getUserById, setUserBalance, createTransaction, createNotification } from "@/lib/db"
 import { validateOrigin } from "@/lib/csrf"
 
 // Admin sends a bonus to a user
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const csrf = validateOrigin(request as any)
+    const csrf = validateOrigin(request)
     if (csrf) return csrf
 
     const authUser = await requireAuthAPI()

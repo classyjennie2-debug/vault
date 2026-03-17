@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { all, run } from "@/lib/db"
 import type { WalletAddress } from "@/lib/types"
+import { apiLogger } from "@/lib/logging"
 
 export async function GET(req: NextRequest) {
   try {
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(wallets)
   } catch (error) {
-    console.error("Error fetching wallets:", error)
+    apiLogger.error("Error fetching wallets", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -153,7 +154,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }
   } catch (error) {
-    console.error("Error managing wallets:", error)
+    apiLogger.error("Error managing wallets", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

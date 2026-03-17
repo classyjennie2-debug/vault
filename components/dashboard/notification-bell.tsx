@@ -2,6 +2,14 @@
 
 import { Bell, Zap, AlertCircle, CheckCircle, Info, X, RefreshCw, Check } from "lucide-react"
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -15,6 +23,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Notification } from "@/lib/types"
 
 export function NotificationBell() {
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -29,10 +39,24 @@ export function NotificationBell() {
       const response = await fetch("/api/notifications")
       if (response.ok) {
         const data = await response.json()
-        setNotifications(data.map((notif: any) => ({
-          ...notif,
-          isRead: Boolean(notif.isRead)
-        })))
+        const normalizeNotification = (raw: unknown): Notification => {
+          const r = raw as Record<string, unknown>
+          const type = typeof r.type === "string" && ["success", "info", "warning", "error"].includes(r.type)
+            ? (r.type as Notification["type"]) 
+            : "info"
+          return {
+            id: String(r.id ?? ""),
+            userId: String(r.userId ?? ""),
+            title: String(r.title ?? ""),
+            message: String(r.message ?? ""),
+            type,
+            isRead: Boolean(r.isRead),
+            timestamp: String(r.timestamp ?? new Date().toISOString()),
+            actionUrl: r.actionUrl ? String(r.actionUrl) : undefined,
+          }
+        }
+
+        setNotifications(Array.isArray(data) ? data.map(normalizeNotification) : [])
         setLastUpdated(new Date())
       } else {
         console.error("Failed to fetch notifications")
@@ -247,7 +271,12 @@ export function NotificationBell() {
       className="p-4 border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500"
       style={{ animationDelay: `${idx * 50}ms` }}
       onClick={(e) => {
-        handleMarkAsRead(notification.id, e, notification.actionUrl)
+        e.stopPropagation()
+        // Open modal and mark as read optimistically
+        setSelectedNotification(notification)
+        setDialogOpen(true)
+        // mark read in background (no navigation)
+        handleMarkAsRead(notification.id)
       }}
     >
       <div className="flex items-start gap-3">
@@ -362,10 +391,24 @@ export function NotificationBell() {
                 </TabsTrigger>
               </TabsList>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" disabled={unreadCount === 0 || isLoading} onClick={markAllAsRead} className="text-xs">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={unreadCount === 0 || isLoading}
+                  onClick={markAllAsRead}
+                  className="text-xs h-8 px-2 py-1"
+                  aria-label="Mark all notifications as read"
+                >
                   <Check className="h-3 w-3 mr-1" /> Mark all read
                 </Button>
-                <Button variant="ghost" size="sm" disabled={readNotifications.length === 0} onClick={clearRead} className="text-xs">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={readNotifications.length === 0}
+                  onClick={clearRead}
+                  className="text-xs h-8 px-2 py-1"
+                  aria-label="Clear read notifications"
+                >
                   Clear read
                 </Button>
               </div>
@@ -421,10 +464,79 @@ export function NotificationBell() {
             )}
           </TabsContent>
         </Tabs>
-
         <div className="px-6 py-3 text-xs text-muted-foreground border-t border-border/30">
           {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString()}` : "Waiting for updates..."}
         </div>
+
+        {/* Notification detail modal */}
+        <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) { setSelectedNotification(null) } setDialogOpen(v) }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{selectedNotification?.title || "Notification"}</DialogTitle>
+            </DialogHeader>
+
+            <div className="mt-2 text-sm text-muted-foreground">
+              <p className="whitespace-pre-wrap">{selectedNotification?.message}</p>
+              <p className="text-xs text-muted-foreground/60 mt-3">
+                {selectedNotification?.timestamp ? new Date(selectedNotification.timestamp).toLocaleString() : "Recently"}
+              </p>
+            </div>
+
+            <DialogFooter className="mt-4">
+              <div className="flex gap-2 w-full">
+                {selectedNotification?.actionUrl && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => {
+                      // Close the modal then navigate
+                      setDialogOpen(false)
+                      setTimeout(() => { window.location.href = selectedNotification.actionUrl! }, 250)
+                    }}
+                  >
+                    Open
+                  </Button>
+                )}
+
+                <Button
+                  variant={selectedNotification?.isRead ? "ghost" : "secondary"}
+                  size="sm"
+                  onClick={async () => {
+                    if (!selectedNotification) return
+                    // Toggle unread: if currently read, mark unread locally only (no API). If unread, mark as read via API.
+                    if (selectedNotification.isRead) {
+                      // mark unread locally
+                      setNotifications((prev) => prev.map(n => n.id === selectedNotification.id ? { ...n, isRead: false } : n))
+                      setSelectedNotification((prev) => prev ? { ...prev, isRead: false } : prev)
+                    } else {
+                      await handleMarkAsRead(selectedNotification.id)
+                      setSelectedNotification((prev) => prev ? { ...prev, isRead: true } : prev)
+                    }
+                  }}
+                >
+                  {selectedNotification?.isRead ? 'Mark unread' : 'Mark read'}
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={async () => {
+                    if (!selectedNotification) return
+                    await deleteNotification(selectedNotification.id)
+                    setDialogOpen(false)
+                    setSelectedNotification(null)
+                  }}
+                >
+                  Delete
+                </Button>
+
+                <DialogClose asChild>
+                  <Button variant="ghost" size="sm" className="ml-auto">Close</Button>
+                </DialogClose>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </SheetContent>
     </Sheet>
   )

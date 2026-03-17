@@ -22,7 +22,7 @@ import {
   Clock,
   Star
 } from "lucide-react"
-import { getPlanDisplayRate } from "@/lib/investment-utils"
+import { getPlanAnnualRate } from "@/lib/investment-utils"
 import { TrustBadges, ComplianceFooter } from "@/components/ui/trust-badges"
 
 interface UnifiedInvestmentDashboardProps {
@@ -127,7 +127,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
   const totalInvested = safeInvestments.reduce((sum, inv) => sum + (inv?.amount || 0), 0)
   // Use ONLY accumulated profit (not expected)
   const totalAccumulatedProfit = safeInvestments.reduce((sum, inv) => {
-    const accumulated = (inv as any)?.accumulatedProfit || 0
+    const accumulated = (inv.accumulatedProfit ?? 0)
     return sum + accumulated
   }, 0)
 
@@ -294,9 +294,12 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                                 <Clock className="h-4 w-4" />
                                 <span>{formatDuration(plan.duration, plan.durationUnit)}</span>
                               </div>
-                              <div className="flex items-center gap-1 text-accent font-bold">
-                                <TrendingUp className="h-4 w-4" />
-                                {getPlanDisplayRate(plan.planType || "Conservative Bond Fund").toFixed(2)}%
+                              <div className="flex flex-col items-end text-right">
+                                <div className="flex items-center gap-1 text-muted-foreground text-xs">Estimated annual return</div>
+                                <div className="flex items-center gap-1 text-accent font-bold">
+                                  <TrendingUp className="h-4 w-4" />
+                                  {getPlanAnnualRate(plan.planType || "Conservative Bond Fund").toFixed(1)}%
+                                </div>
                               </div>
                             </div>
 
@@ -394,7 +397,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                                 <div className="bg-black/5 dark:bg-white/5 rounded-lg p-3 border border-black/10 dark:border-white/10">
                                   <p className="text-xs text-muted-foreground mb-1">Accumulated</p>
                                   <p className="text-base font-bold text-green-600 dark:text-green-400">
-                                    +${((inv as any).accumulatedProfit || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                    +${((inv.accumulatedProfit || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                   </p>
                                 </div>
                               </div>

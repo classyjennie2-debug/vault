@@ -24,11 +24,19 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import type { User } from "@/lib/types"
+
+type AdminUser = User & {
+  totalBalance?: number
+  verified?: boolean
+  activeInvestmentsCount?: number
+  totalInvested?: number
+  totalDeposits?: number
+}
 import { Search, DollarSign, Edit3, X, Check, Users, Trash2, AlertCircle, Bell } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [editingUser, setEditingUser] = useState<string | null>(null)
@@ -204,7 +212,15 @@ export default function AdminUsersPage() {
     }
   }
 
-  const totalAUM = users.reduce((sum, u) => sum + ((u as any).totalBalance || u.balance), 0)
+  const totalAUM = users.reduce((sum, u) => sum + (u.totalBalance ?? u.balance), 0)
+
+  type AdminUser = User & {
+    totalBalance?: number
+    verified?: boolean
+    activeInvestmentsCount?: number
+    totalInvested?: number
+    totalDeposits?: number
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -311,12 +327,12 @@ export default function AdminUsersPage() {
                           Joined {user.joinedAt}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          <span className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium ${(user as any).verified ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"}`}>
-                            {(user as any).verified ? "✓ Verified" : "○ Unverified"}
+                          <span className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium ${user.verified ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"}`}>
+                            {user.verified ? "✓ Verified" : "○ Unverified"}
                           </span>
-                          {(user as any).activeInvestmentsCount > 0 && (
+                          {user.activeInvestmentsCount > 0 && (
                             <span className="inline-flex items-center gap-1 rounded bg-blue-100 px-2 py-1 text-[10px] font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                              {(user as any).activeInvestmentsCount} Active
+                              {user.activeInvestmentsCount} Active
                             </span>
                           )}
                         </div>
@@ -382,7 +398,7 @@ export default function AdminUsersPage() {
                               Total Invested
                             </p>
                             <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                              ${((user as any).totalInvested || 0).toLocaleString()}
+                              ${(user.totalInvested || 0).toLocaleString()}
                             </p>
                           </div>
                           <div className="hidden text-right sm:block">
@@ -390,7 +406,7 @@ export default function AdminUsersPage() {
                               Total Deposits
                             </p>
                             <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                              ${((user as any).totalDeposits || 0).toLocaleString()}
+                              ${(user.totalDeposits || 0).toLocaleString()}
                             </p>
                           </div>
                           <Button
@@ -506,7 +522,7 @@ export default function AdminUsersPage() {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="notif-type">Type</Label>
-                            <Select value={notificationType} onValueChange={(val: any) => setNotificationType(val)}>
+                            <Select value={notificationType} onValueChange={(val: string) => setNotificationType(val as "info" | "success" | "warning" | "error")}>
                               <SelectTrigger id="notif-type">
                                 <SelectValue />
                               </SelectTrigger>

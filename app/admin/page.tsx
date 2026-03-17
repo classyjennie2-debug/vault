@@ -40,6 +40,8 @@ export default function AdminOverviewPage() {
   const [userQuery, setUserQuery] = useState("")
   const [txStatus, setTxStatus] = useState<"all" | "pending" | "approved" | "rejected">("all")
 
+  type TxStatusType = "all" | "pending" | "approved" | "rejected"
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -181,7 +183,7 @@ export default function AdminOverviewPage() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <Select value={txStatus} onValueChange={(v) => setTxStatus(v as any)}>
+            <Select value={txStatus} onValueChange={(v) => setTxStatus(v as TxStatusType)}>
               <SelectTrigger className="w-40 h-9">
                 <SelectValue placeholder="Filter status" />
               </SelectTrigger>

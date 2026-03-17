@@ -2,6 +2,13 @@
 
 import { useEffect } from 'react';
 
+declare global {
+  interface Window {
+    startTawkChat?: () => void
+    Tawk_API?: Record<string, any> | undefined
+  }
+}
+
 export default function TawkToWidget() {
   useEffect(() => {
     // Initialize TawkTo only when explicitly called
@@ -37,10 +44,14 @@ export default function TawkToWidget() {
     };
 
     // Make it globally accessible
-    (window as any).startTawkChat = handleStartChat;
+    window.startTawkChat = handleStartChat;
 
     return () => {
-      delete (window as any).startTawkChat;
+      try {
+        delete window.startTawkChat
+      } catch (_) {
+        window.startTawkChat = undefined
+      }
     };
   }, []);
 

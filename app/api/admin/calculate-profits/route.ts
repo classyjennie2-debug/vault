@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { all, run, getUserById } from "@/lib/db"
 import type { ActiveInvestment } from "@/lib/types"
+import { apiLogger } from "@/lib/logging"
 
 /**
  * Calculate and update user profits based on active investments
@@ -91,9 +92,9 @@ export async function POST(req: NextRequest) {
           ]
         )
         profitsUpdated++
-        console.log(`Updated profit for user ${userId}: $${totalProfit.toFixed(2)}`)
+        apiLogger.info(`Updated profit for user`, { userId, totalProfit })
       } catch (error) {
-        console.error(`Error updating profit for user ${userId}:`, error)
+        apiLogger.error(`Error updating profit for user ${userId}`, error)
       }
     }
 
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
       totalUsers: Object.keys(userProfits).length,
     })
   } catch (error) {
-    console.error("Error calculating profits:", error)
+    apiLogger.error("Error calculating profits", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -156,7 +157,7 @@ export async function GET(req: NextRequest) {
       activeInvestments: investments.length,
     })
   } catch (error) {
-    console.error("Error fetching profit:", error)
+    apiLogger.error("Error fetching profit", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

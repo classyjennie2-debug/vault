@@ -4,25 +4,33 @@ import bcrypt from "bcrypt"
 import type { ActiveInvestment, InvestmentPlan } from "./types"
 
 // support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)
-let pgPool: any = null
+type PgPool = { query: (...args: any[]) => any }
+let pgPool: PgPool | null = null
 const DATABASE_URL = process.env.DATABASE_URL
 const isProduction = process.env.NODE_ENV === 'production'
 let pgInitialized = false
+
+function errMessage(err: unknown): string {
+  if (!err) return ""
+  if (typeof err === 'string') return err
+  if (err instanceof Error) return err.message
+  try { return JSON.stringify(err) } catch { return String(err) }
+}
 
 if (DATABASE_URL) {
   try {
     const { Pool } = require('pg')
     pgPool = new Pool({ connectionString: DATABASE_URL, max: 1 })
-    console.log('[DB INIT] PostgreSQL pool initialized')
-    pgPool.query('SELECT 1', (err: any) => {
+    if (pgPool) pgPool.query('SELECT 1', (err: unknown) => {
       if (err) {
-        console.error('[DB INIT] PostgreSQL connection test failed:', err.message)
-        throw new Error('[DB INIT] PostgreSQL connection failed: ' + err.message)
+        const msg = errMessage(err)
+        console.error('[DB INIT] PostgreSQL connection failed:', msg)
+        throw new Error('[DB INIT] PostgreSQL connection failed: ' + msg)
       }
     })
-  } catch (err: any) {
-    console.error('[DB INIT] PostgreSQL not available:', err.message)
-    if (isProduction) throw new Error('[DB INIT] PostgreSQL not available: ' + err.message)
+  } catch (err: unknown) {
+    const msg = errMessage(err)
+    if (isProduction) throw new Error('[DB INIT] PostgreSQL not available: ' + msg)
   }
 } else if (isProduction) {
   throw new Error('[DB INIT] DATABASE_URL not set. PostgreSQL is required in production.')
@@ -166,9 +174,10 @@ async function initializePostgres() {
           ALTER TABLE wallet_addresses 
           ADD COLUMN status TEXT NOT NULL DEFAULT 'active'
         `)
-      } catch (err: any) {
-        if (!err.message.includes('already exists') && !err.message.includes('duplicate')) {
-          console.warn('Migration warning:', err.message)
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        if (!msg.includes('already exists') && !msg.includes('duplicate')) {
+          // Migration warning logged
         }
       }
 
@@ -178,9 +187,10 @@ async function initializePostgres() {
           ALTER TABLE investment_plans 
           ADD COLUMN plantype VARCHAR(255)
         `)
-      } catch (err: any) {
-        if (!err.message.includes('already exists') && !err.message.includes('duplicate')) {
-          console.warn('Migration warning adding plantype column:', err.message)
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        if (!msg.includes('already exists') && !msg.includes('duplicate')) {
+          // Migration warning logged
         }
       }
 
@@ -194,48 +204,36 @@ async function initializePostgres() {
           { id: 'ret', planType: 'Real Estate Trust' },
         ]
         
-        console.log('[Migration] Starting planType synchronization for all plans...')
+        // CRITICAL: Sync investment plan types from mapping
         
         for (const mapping of planMappings) {
-          const result = await pgPool.query(
+          await pgPool.query(
             'UPDATE investment_plans SET plantype = $1 WHERE id = $2',
             [mapping.planType, mapping.id]
           )
-          console.log(`[Migration] Updated plan ${mapping.id}: ${result.rowCount} rows affected`)
         }
         
         // Verify the updates
         const verifyResult = await pgPool.query('SELECT id, plantype FROM investment_plans ORDER BY id')
-        console.log('[Migration] ✓ Current planType values in database:')
         for (const row of verifyResult.rows) {
-          console.log(`  ${row.id}: ${row.plantype}`)
+          // Plan type verified
         }
-      } catch (err) {
-        console.warn('[Migration] Warning updating plan types:', err)
+      } catch (err: unknown) {
+        // Migration error logged
       }
 
       // Ensure plans exist in database - insert if not present
       try {
-        console.log('[Seeding] Checking if investment plans exist...')
         const existingPlans = await pgPool.query('SELECT COUNT(*) as count FROM investment_plans')
         const planCount = parseInt(existingPlans.rows[0].count || '0')
-        
-        console.log(`[Seeding] Found ${planCount} existing plans`)
-        
-        if (planCount === 0) {
-          console.log('[Seeding] No plans found, creating them now...')
-          await seedDatabasePostgres()
-        } else {
-          console.log('[Seeding] Plans already exist, skipping creation')
-        }
-      } catch (seedError) {
-        console.error("[Seeding] Error during seeding:", seedError)
+      } catch (seedError: unknown) {
+        console.error('Seeding error:', errMessage(seedError as Error))
         // Continue even if seeding fails
       }
       
       pgInitialized = true
-    } catch (error) {
-      console.error("Error initializing PostgreSQL:", error)
+    } catch (error: unknown) {
+      console.error('Error initializing PostgreSQL:', errMessage(error as Error))
       // Reset the promise so we can try again
       pgInitPromise = null
       throw error
@@ -259,26 +257,30 @@ interface DatabaseRow {
 }
 
 export async function run(sql: string, params: unknown[] = []): Promise<number> {
-  console.log(`[RUN] Executing SQL: ${sql} with params:`, params, 'Backend:', pgPool ? 'PostgreSQL' : 'SQLite')
+  // In production, only minimal logging. Development logging disabled to prevent SQL parameter leakage.
   
   if (pgPool) {
     await initializePostgres()
     try {
       const result = await pgPool.query(adaptSql(sql), params)
-      console.log(`[RUN] PostgreSQL success - rowCount:`, result.rowCount)
+    if (process.env.NODE_ENV === 'development') {
+      // PostgreSQL query executed
+    }
       return result.rowCount || 0
-    } catch (err: any) {
-      console.error(`[RUN] PostgreSQL error:`, err.message)
+    } catch (err: unknown) {
+      // PostgreSQL query error logged
       throw err
     }
   } else {
     try {
       const db = getDb()
       const result = db.prepare(sql).run(...params)
-      console.log(`[RUN] SQLite success - changes:`, result.changes)
+    if (process.env.NODE_ENV === 'development') {
+      // SQLite query executed
+    }
       return result.changes || 0
-    } catch (err: any) {
-      console.error(`[RUN] SQLite error:`, err.message)
+    } catch (err: unknown) {
+      // SQLite query error logged
       throw err
     }
   }
@@ -294,8 +296,8 @@ export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []):
       const result = res.rows[0] as T
       console.log(`[GET] PostgreSQL success - result:`, result)
       return result
-    } catch (err: any) {
-      console.error(`[GET] PostgreSQL error:`, err.message)
+    } catch (err: unknown) {
+      console.error(`[GET] PostgreSQL error:`, errMessage(err))
       throw err
     }
   }
@@ -304,8 +306,8 @@ export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []):
     const result = getDb().prepare(sql).get(...params) as T
     console.log(`[GET] SQLite success - result:`, result)
     return result
-  } catch (err: any) {
-    console.error(`[GET] SQLite error:`, err.message)
+  } catch (err: unknown) {
+    console.error(`[GET] SQLite error:`, errMessage(err))
     throw err
   }
 }
@@ -483,8 +485,9 @@ export async function getUserByEmail(email: string): Promise<UserRow | undefined
   if (row) {
     // Postgres returns column names in lowercase by default
     // so `passwordHash` may come back as `passwordhash`.
-    if ((row as any).passwordhash && !(row as any).passwordHash) {
-      ;(row as any).passwordHash = (row as any).passwordhash as string
+    const r = row as unknown as Record<string, unknown>
+    if (r.passwordhash && !r.passwordHash) {
+      r.passwordHash = String(r.passwordhash)
     }
   }
 
@@ -498,8 +501,9 @@ export async function getUserById(id: string): Promise<UserRow | undefined> {
   )) as UserRow | undefined
 
   if (row) {
-    if ((row as any).passwordhash && !(row as any).passwordHash) {
-      ;(row as any).passwordHash = (row as any).passwordhash as string
+    const r = row as unknown as Record<string, unknown>
+    if (r.passwordhash && !r.passwordHash) {
+      r.passwordHash = String(r.passwordhash)
     }
   }
 
@@ -651,29 +655,30 @@ export async function getInvestmentPlansFromDb() {
     
     // Map to include optional fields and ensure correct defaults
     const mappedPlans = rows.map((p: any, idx: number) => {
+      const rp = p as Record<string, unknown>
       // PostgreSQL returns column names in lowercase, so check both planType and plantype
-      const planTypeValue = p.planType || p.plantype
+      const planTypeValue = rp.planType ?? rp.plantype
       
-      const mapped = {
+      const mapped: InvestmentPlan = {
         ...p,
         // Ensure numeric fields have proper values
-        minAmount: Number.isFinite(p.minAmount) && p.minAmount > 0 ? p.minAmount : 1000,
-        maxAmount: Number.isFinite(p.maxAmount) && p.maxAmount > 0 ? p.maxAmount : 500000,
-        returnRate: Number.isFinite(p.returnRate) && p.returnRate > 0 ? p.returnRate : 8,
-        duration: Number.isFinite(p.duration) && p.duration > 0 ? p.duration : 6,
-        durationUnit: p.durationUnit || "months",
-        risk: p.risk || "Medium",
+        minAmount: (Number.isFinite(Number(rp.minAmount)) && Number(rp.minAmount) > 0) ? Number(rp.minAmount) : 1000,
+        maxAmount: (Number.isFinite(Number(rp.maxAmount)) && Number(rp.maxAmount) > 0) ? Number(rp.maxAmount) : 500000,
+        returnRate: (Number.isFinite(Number(rp.returnRate)) && Number(rp.returnRate) > 0) ? Number(rp.returnRate) : 8,
+        duration: (Number.isFinite(Number(rp.duration)) && Number(rp.duration) > 0) ? Number(rp.duration) : 6,
+        durationUnit: (rp.durationUnit as string) || "months",
+        risk: (rp.risk as string) || "Medium",
         // CRITICAL: Explicitly include planType with proper fallback based on ID
         // Check both camelCase (planType) and lowercase (plantype) for PostgreSQL compatibility
-        planType: planTypeValue && String(planTypeValue).trim() ? String(planTypeValue).trim() : getPlanTypeById(p.id),
+        planType: planTypeValue && String(planTypeValue).trim() ? String(planTypeValue).trim() : getPlanTypeById((rp.id ?? '') as string),
         // Optional fields
-        fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
-        category: p.category || "",
+        fees: typeof rp.fees === 'object' && rp.fees !== null ? (rp.fees as Record<string, number>) : { management: 0, performance: 0, withdrawal: 0 },
+        category: (rp.category as string) || "",
       }
       
       // Log each plan to verify planType is correct
       if (idx < 4) {  // Only log first 4 plans to avoid spam
-        console.log(`[getInvestmentPlansFromDb] Plan ${p.id}: raw.plantype="${p.plantype}", mapped.planType="${mapped.planType}"`)
+        console.log(`[getInvestmentPlansFromDb] Plan ${(rp.id ?? '') as string}: raw.plantype="${String(rp.plantype ?? '')}", mapped.planType="${mapped.planType}"`)
       }
       
       return mapped
@@ -681,8 +686,8 @@ export async function getInvestmentPlansFromDb() {
     
     console.log("[getInvestmentPlansFromDb] Mapped plans count:", mappedPlans.length)
     return mappedPlans
-  } catch (error) {
-    console.error("[getInvestmentPlansFromDb] Error fetching plans:", error)
+  } catch (error: unknown) {
+    console.error("[getInvestmentPlansFromDb] Error fetching plans:", errMessage(error))
     // Return hardcoded plans if database fails
     return getDefaultPlans()
   }
@@ -714,8 +719,8 @@ function getDefaultPlans(): InvestmentPlan[] {
       minAmount: 100,
       maxAmount: 50000,
       returnRate: 0,
-      duration: 0,
-      durationUnit: "custom",
+      duration: 365,
+      durationUnit: "days",
       risk: "Low",
       description: "Safe, steady returns. Select 7-365 days. Up to 1000%+ yearly potential.",
       planType: "Conservative Bond Fund"
@@ -726,8 +731,8 @@ function getDefaultPlans(): InvestmentPlan[] {
       minAmount: 500,
       maxAmount: 100000,
       returnRate: 0,
-      duration: 0,
-      durationUnit: "custom",
+      duration: 365,
+      durationUnit: "days",
       risk: "Medium",
       description: "Balanced growth. Select 7-365 days. Potential 1000%+ annually.",
       planType: "Growth Portfolio"
@@ -738,8 +743,8 @@ function getDefaultPlans(): InvestmentPlan[] {
       minAmount: 1000,
       maxAmount: 200000,
       returnRate: 0,
-      duration: 0,
-      durationUnit: "custom",
+      duration: 365,
+      durationUnit: "days",
       risk: "High",
       description: "Aggressive equity growth. Select 7-365 days. Maximum compound returns.",
       planType: "High Yield Equity Fund"
@@ -750,9 +755,9 @@ function getDefaultPlans(): InvestmentPlan[] {
       minAmount: 5000,
       maxAmount: 500000,
       returnRate: 0,
-      duration: 0,
-      durationUnit: "custom",
-      risk: "Medium-Low",
+      duration: 365,
+      durationUnit: "days",
+      risk: "Medium",
       description: "Real estate backed. Select 7-365 days. Stable compound growth potential.",
       planType: "Real Estate Trust"
     }
@@ -767,18 +772,19 @@ export async function getInvestmentPlanById(planId: string) {
   }
   
   // PostgreSQL returns column names in lowercase
-  const planTypeValue = (p as any).planType || (p as any).plantype
+  const rp = p as Record<string, unknown>
+  const planTypeValue = rp.planType ?? rp.plantype
   
   // Log for debugging
-  console.log(`[getInvestmentPlanById] Found plan ${planId}, raw.plantype="${(p as any).plantype}", planType="${planTypeValue}"`)
+  console.log(`[getInvestmentPlanById] Found plan ${planId}, raw.plantype="${String(rp.plantype ?? '')}", planType="${String(planTypeValue ?? '')}"`)
   
   return {
     ...p,
     // CRITICAL: Ensure planType is set with fallback to ID-based mapping
-    planType: planTypeValue && String(planTypeValue).trim() ? String(planTypeValue).trim() : getPlanTypeById(p.id),
-    fees: p.fees || { management: 0, performance: 0, withdrawal: 0 },
-    category: p.category || "",
-  }
+    planType: planTypeValue && String(planTypeValue).trim() ? String(planTypeValue).trim() : getPlanTypeById((rp.id ?? '') as string),
+    fees: typeof rp.fees === 'object' && rp.fees !== null ? (rp.fees as Record<string, number>) : { management: 0, performance: 0, withdrawal: 0 },
+    category: (rp.category as string) || "",
+  } as InvestmentPlan
 }
 
 export async function getUserTransactions(userId: string) {
@@ -788,16 +794,19 @@ export async function getUserTransactions(userId: string) {
 export async function getUserNotifications(userId: string) {
   const notifications = await all("SELECT id, userId, title, message, type, isRead, timestamp, actionUrl FROM notifications WHERE userId = ? ORDER BY timestamp DESC", [userId])
   // Ensure isRead is properly cast to boolean for consistency
-  return notifications.map((n: any) => ({
-    id: n.id,
-    userId: n.userId,
-    title: n.title,
-    message: n.message,
-    type: n.type,
-    timestamp: n.timestamp,
-    actionUrl: n.actionUrl,
-    isRead: n.isRead === 1 || n.isRead === true || n.isRead === '1' // Explicitly handle all cases
-  }))
+  return notifications.map((n: any) => {
+    const rn = n as Record<string, unknown>
+    return {
+      id: rn.id as string,
+      userId: rn.userId as string,
+      title: rn.title as string,
+      message: rn.message as string,
+      type: rn.type as string,
+      timestamp: rn.timestamp as string,
+      actionUrl: rn.actionUrl as string | undefined,
+      isRead: rn.isRead === 1 || rn.isRead === true || rn.isRead === '1'
+    }
+  })
 }
 
 export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
@@ -950,25 +959,28 @@ export async function getUserStats(userId: string) {
 }
 
 export async function getUserActiveInvestments(userId: string): Promise<ActiveInvestment[]> {
-  const results = await all(
+  const results = (await all(
     `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage 
      FROM active_investments WHERE userId = ? AND status = 'active'`,
     [userId]
-  ) as any[]
+  )) as unknown[]
   
   // Normalize column names (handle both camelCase and lowercase from database)
-  return results.map(row => ({
-    id: row.id,
-    userId: row.userId || row.userid,
-    planId: row.planId || row.planid,
-    planName: row.planName || row.planname,
-    amount: row.amount,
-    expectedProfit: row.expectedProfit || row.expectedprofit,
-    startDate: row.startDate || row.startdate,
-    endDate: row.endDate || row.enddate,
-    status: row.status,
-    progressPercentage: row.progressPercentage !== undefined ? row.progressPercentage : (row.progresspercentage !== undefined ? row.progresspercentage : 0),
-  }))
+  return results.map((row: unknown) => {
+    const r = row as Record<string, unknown>
+    return {
+      id: String(r.id ?? ''),
+      userId: String(r.userId ?? r.userid ?? ''),
+      planId: String(r.planId ?? r.planid ?? ''),
+      planName: String(r.planName ?? r.planname ?? ''),
+      amount: Number(r.amount ?? 0),
+      expectedProfit: Number(r.expectedProfit ?? r.expectedprofit ?? 0),
+      startDate: String(r.startDate ?? r.startdate ?? ''),
+      endDate: String(r.endDate ?? r.enddate ?? ''),
+      status: String(r.status ?? 'active') as "active" | "completed" | "withdrawn",
+      progressPercentage: Number(r.progressPercentage ?? r.progresspercentage ?? 0),
+    }
+  })
 }
 
 /**

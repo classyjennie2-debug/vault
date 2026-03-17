@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { setUserBalance, getUserById, all, deleteUser, run } from "@/lib/db"
+import { apiLogger } from "@/lib/logging"
 
 export async function GET() {
   try {
@@ -73,14 +74,14 @@ export async function GET() {
           Number(enrichedUser.totalInvested || 0) + 
           Number(enrichedUser.totalProfit || 0)
       } catch (err) {
-        console.warn(`Warning: Failed to enrich user ${enrichedUser.id}:`, err)
+        apiLogger.warn(`Warning: Failed to enrich user ${enrichedUser.id}`, err)
         // Continue with basic data if enrichment fails
       }
     }
     
     return NextResponse.json(enrichedUsers)
   } catch (error) {
-    console.error("Admin get users error:", error)
+    apiLogger.error("Admin get users error", error)
     return NextResponse.json({ error: "Internal server error", details: String(error) }, { status: 500 })
   }
 }
@@ -139,7 +140,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: "User updated successfully" })
   } catch (error) {
-    console.error("Admin update user error:", error)
+    apiLogger.error("Admin update user error", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -175,7 +176,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ message: "User deleted successfully" })
   } catch (error) {
-    console.error("Admin delete user error:", error)
+    apiLogger.error("Admin delete user error", error)
     const message = error instanceof Error ? error.message : "Internal server error"
     return NextResponse.json({ error: message }, { status: 500 })
   }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { sendVerificationCode } from "@/lib/auth"
+import { apiLogger } from "@/lib/logging"
 
 export async function POST(request: Request) {
   // Only available in development
@@ -14,14 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email required" }, { status: 400 })
     }
 
-    console.log(`\n🧪 TEST EMAIL SENDING`)
-    console.log(`📧 Email: ${email}`)
-    console.log(`🔧 Configuration:`)
-    console.log(`   HOST: ${process.env.EMAIL_HOST || "NOT SET ❌"}`)
-    console.log(`   PORT: ${process.env.EMAIL_PORT || "NOT SET ❌"}`)
-    console.log(`   USER: ${process.env.EMAIL_USER ? "SET ✓" : "NOT SET ❌"}`)
-    console.log(`   PASS: ${process.env.EMAIL_PASS ? "SET ✓" : "NOT SET ❌"}`)
-    console.log(``)
+    apiLogger.debug("TEST EMAIL SENDING", { email, host: !!process.env.EMAIL_HOST, port: !!process.env.EMAIL_PORT, userSet: !!process.env.EMAIL_USER, passSet: !!process.env.EMAIL_PASS })
 
     // Send test email
     await sendVerificationCode(email)
@@ -31,7 +25,7 @@ export async function POST(request: Request) {
       success: true 
     })
   } catch (error) {
-    console.error("Test email error:", error)
+    apiLogger.error("Test email error", error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to send test email" },
       { status: 500 }

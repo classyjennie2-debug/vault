@@ -14,19 +14,26 @@
  * NODE_ENV=production
  */
 
-let MongoClient: any = null
-let ObjectId: any = null
+import type { MongoClient as MongoClientType, Db as DbType, ObjectId as ObjectIdType, Collection as CollectionType } from 'mongodb'
+
+let MongoClientClass: unknown = null
+let ObjectIdClass: unknown = null
 
 try {
-  const mongodb = require('mongodb')
-  MongoClient = mongodb.MongoClient
-  ObjectId = mongodb.ObjectId
+  const mongodb = require('mongodb') as { MongoClient: any; ObjectId: any }
+  MongoClientClass = mongodb.MongoClient
+  ObjectIdClass = mongodb.ObjectId
 } catch (err) {
-  // MongoDB not installed, this is optional
+  // MongoDB driver not installed — Mongo functions will throw if used without driver
 }
 
-let cachedClient: any = null
-let cachedDb: any = null
+let cachedClient: MongoClientType | null = null
+let cachedDb: DbType | null = null
+
+function toObjectId(id: string): ObjectIdType | string {
+  if (!ObjectIdClass) return id
+  return new (ObjectIdClass as any)(id)
+}
 
 /**
  * Connect to MongoDB
@@ -43,7 +50,7 @@ export async function connectToMongoDB() {
     )
   }
 
-  const client = new MongoClient(mongoUri)
+  const client = new (MongoClientClass as any)(mongoUri)
   await client.connect()
 
   const db = client.db("vault")
@@ -57,9 +64,9 @@ export async function connectToMongoDB() {
 /**
  * Get a specific collection
  */
-export async function getCollection(collectionName: string) {
+export async function getCollection(collectionName: string): Promise<CollectionType<any>> {
   const { db } = await connectToMongoDB()
-  return db.collection(collectionName)
+  return db.collection(collectionName) as CollectionType<any>
 }
 
 /**
@@ -134,7 +141,7 @@ export async function initializeMongoDB() {
 
 export async function mongoGetUserById(userId: string) {
   const users = await getCollection("users")
-  return users.findOne({ _id: new ObjectId(userId) })
+  return users.findOne({ _id: toObjectId(userId) })
 }
 
 export async function mongoGetUserByEmail(email: string) {
@@ -185,7 +192,7 @@ export async function mongoGetUserActiveInvestments(userId: string) {
   const investments = await getCollection("activeInvestments")
   return investments
     .find({
-      userId: new ObjectId(userId),
+      userId: toObjectId(userId),
       status: { $in: ["active", "completed"] },
     })
     .sort({ startDate: -1 })
@@ -202,7 +209,7 @@ export async function mongoCreateInvestment(investmentData: {
 
 // @ts-expect-error - MongoDB types and usage (this file is for reference only)
   const plan = await getCollection("investmentPlans").findOne({
-    _id: new ObjectId(investmentData.planId),
+    _id: toObjectId(investmentData.planId),
   })
 
   if (!plan) throw new Error("Investment plan not found")
@@ -216,8 +223,8 @@ export async function mongoCreateInvestment(investmentData: {
   )
 
   const result = await investments.insertOne({
-    userId: new ObjectId(investmentData.userId),
-    planId: new ObjectId(investmentData.planId),
+    userId: toObjectId(investmentData.userId),
+    planId: toObjectId(investmentData.planId),
     investmentAmount: investmentData.investmentAmount,
     expectedProfit,
     totalReturn: investmentData.investmentAmount + expectedProfit,
@@ -247,7 +254,7 @@ export async function mongoCreateDeposit(depositData: {
 }) {
   const deposits = await getCollection("deposits")
   const result = await deposits.insertOne({
-    userId: new ObjectId(depositData.userId),
+    userId: toObjectId(depositData.userId),
     amount: depositData.amount,
     currency: "USD",
     paymentMethod: depositData.paymentMethod,
@@ -262,15 +269,15 @@ export async function mongoCreateDeposit(depositData: {
 export async function mongoApproveDeposit(depositId: string, adminId: string) {
   const deposits = await getCollection("deposits")
 
-  const deposit = await deposits.findOne({ _id: new ObjectId(depositId) })
+  const deposit = await deposits.findOne({ _id: toObjectId(depositId) })
   if (!deposit) throw new Error("Deposit not found")
 
   await deposits.updateOne(
-    { _id: new ObjectId(depositId) },
+    { _id: toObjectId(depositId) },
     {
       $set: {
         status: "approved",
-        processedBy: new ObjectId(adminId),
+        processedBy: toObjectId(adminId),
         processedAt: new Date(),
         updatedAt: new Date(),
       },
@@ -280,7 +287,7 @@ export async function mongoApproveDeposit(depositId: string, adminId: string) {
   // Update user balance
   const users = await getCollection("users")
   await users.updateOne(
-    { _id: new ObjectId(deposit.userId) },
+    { _id: toObjectId(String(deposit.userId)) },
     {
       $inc: {
         balance: deposit.amount,
@@ -314,7 +321,7 @@ export async function mongoCreateWithdrawal(withdrawalData: {
   const fee = Math.max(withdrawalData.amount * 0.01, 1)
 
   const result = await withdrawals.insertOne({
-    userId: new ObjectId(withdrawalData.userId),
+    userId: toObjectId(withdrawalData.userId),
     amount: withdrawalData.amount,
     method: withdrawalData.method,
     fee,
@@ -340,7 +347,7 @@ export async function mongoCreateTransaction(transactionData: {
 }) {
   const transactions = await getCollection("transactions")
   const result = await transactions.insertOne({
-    userId: new ObjectId(transactionData.userId),
+    userId: toObjectId(transactionData.userId),
     type: transactionData.type,
     amount: transactionData.amount,
     description: transactionData.description,
@@ -353,7 +360,7 @@ export async function mongoCreateTransaction(transactionData: {
 export async function mongoGetUserTransactions(userId: string, limit = 20) {
   const transactions = await getCollection("transactions")
   return transactions
-    .find({ userId: new ObjectId(userId) })
+    .find({ userId: toObjectId(userId) })
     .sort({ createdAt: -1 })
     .limit(limit)
     .toArray()
@@ -372,7 +379,7 @@ export async function mongoCreateNotification(notificationData: {
 }) {
   const notifications = await getCollection("notifications")
   const result = await notifications.insertOne({
-    userId: new ObjectId(notificationData.userId),
+    userId: toObjectId(notificationData.userId),
     title: notificationData.title,
     message: notificationData.message,
     type: notificationData.type,
@@ -386,7 +393,7 @@ export async function mongoCreateNotification(notificationData: {
 export async function mongoGetUserNotifications(userId: string) {
   const notifications = await getCollection("notifications")
   return notifications
-    .find({ userId: new ObjectId(userId) })
+    .find({ userId: toObjectId(userId) })
     .sort({ createdAt: -1 })
     .toArray()
 }
@@ -394,7 +401,7 @@ export async function mongoGetUserNotifications(userId: string) {
 export async function mongoMarkNotificationAsRead(notificationId: string) {
   const notifications = await getCollection("notifications")
   return notifications.updateOne(
-    { _id: new ObjectId(notificationId) },
+    { _id: toObjectId(notificationId) },
     {
       $set: { isRead: true, readAt: new Date() },
     }

@@ -92,9 +92,7 @@ export default function AdminTransactionsPage() {
         body: JSON.stringify({ transactionId: txId, approved: true }),
       })
       
-      console.log("Response status:", res.status)
       const contentType = res.headers.get("content-type")
-      console.log("Response content-type:", contentType)
       
       let data
       try {
@@ -109,7 +107,6 @@ export default function AdminTransactionsPage() {
       }
       
       if (res.ok) {
-        console.log("✅ Transaction approved successfully:", data)
         const userName = user?.name || "User"
         let message = ""
         
@@ -125,7 +122,6 @@ export default function AdminTransactionsPage() {
         // Refetch all data to get updated balances
         setRefreshTrigger(prev => prev + 1)
       } else {
-        console.error("❌ Approval failed:", res.status, data)
         // Extract error message from nested error object
         let errorMsg = "Unknown error"
         if (data?.error?.message) {
@@ -137,11 +133,9 @@ export default function AdminTransactionsPage() {
         } else {
           errorMsg = JSON.stringify(data)
         }
-        console.error("Detailed error:", errorMsg)
         alert(`Failed to approve (${res.status}): ${errorMsg}`)
       }
     } catch (error) {
-      console.error("Network error approving transaction:", error)
       alert(`Error: ${error instanceof Error ? error.message : 'Network error'}`)
     } finally {
       setProcessingId(null)
@@ -157,17 +151,13 @@ export default function AdminTransactionsPage() {
         body: JSON.stringify({ transactionId: txId, approved: false }),
       })
       
-      console.log("Response status:", res.status)
       const contentType = res.headers.get("content-type")
-      console.log("Response content-type:", contentType)
       
       let data
       try {
         data = await res.json()
       } catch (parseError) {
-        console.error("Failed to parse response as JSON:", parseError)
         const text = await res.text()
-        console.error("Raw response:", text)
         alert(`Error: Invalid server response (${res.status})`)
         setProcessingId(null)
         return
@@ -179,7 +169,6 @@ export default function AdminTransactionsPage() {
         // Refetch all data to update the list
         setRefreshTrigger(prev => prev + 1)
       } else {
-        console.error("❌ Rejection failed:", res.status, data)
         // Extract error message from nested error object
         let errorMsg = "Unknown error"
         if (data?.error?.message) {
@@ -191,11 +180,9 @@ export default function AdminTransactionsPage() {
         } else {
           errorMsg = JSON.stringify(data)
         }
-        console.error("Detailed error:", errorMsg)
         alert(`Failed to reject (${res.status}): ${errorMsg}`)
       }
     } catch (error) {
-      console.error("Network error rejecting transaction:", error)
       alert(`Error: ${error instanceof Error ? error.message : 'Network error'}`)
     } finally {
       setProcessingId(null)

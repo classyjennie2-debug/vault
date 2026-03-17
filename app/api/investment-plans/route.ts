@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server"
 import { getInvestmentPlansFromDb } from "@/lib/db"
 import { calculateReturnRate } from "@/lib/investment-utils"
+import { investmentLogger } from "@/lib/logging"
 
 export async function GET() {
   try {
-    console.log("[API] /investment-plans: Fetching plans from database...")
+    investmentLogger.debug("[API] /investment-plans: Fetching plans from database...")
     const plans = await getInvestmentPlansFromDb()
-    
-    console.log(`[API] /investment-plans: Retrieved ${plans.length} plans`)
+
+    investmentLogger.info(`/investment-plans retrieved`, { count: plans.length })
     
     // Ensure all plans have proper values and planType is set
     const validatedPlans = plans.map((plan, idx) => {
@@ -26,16 +27,16 @@ export async function GET() {
       if (idx < 4) {
         const rate7d = calculateReturnRate(7, validated.planType)
         const rate365d = calculateReturnRate(365, validated.planType)
-        console.log(`[API] Plan ${plan.id} (${validated.planType}): 7d=${rate7d.toFixed(2)}%, 365d=${rate365d.toFixed(2)}%`)
+        investmentLogger.debug(`Plan rate preview`, { planId: plan.id, planType: validated.planType, rate7d, rate365d })
       }
       
       return validated
     })
     
-    console.log(`[API] /investment-plans: Returning ${validatedPlans.length} validated plans`)
+    investmentLogger.info("/investment-plans: Returning validated plans", { count: validatedPlans.length })
     return NextResponse.json(validatedPlans)
   } catch (error) {
-    console.error("Error fetching investment plans:", error)
+    investmentLogger.error("Error fetching investment plans", error)
     return NextResponse.json({ error: "Failed to fetch plans" }, { status: 500 })
   }
 }

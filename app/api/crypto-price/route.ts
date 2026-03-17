@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server"
+import { apiLogger } from "@/lib/logging"
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
@@ -9,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   const cmcKey = process.env.CMC_API_KEY
   if (!cmcKey) {
-    console.error("CMC_API_KEY not set")
+    apiLogger.error("CMC_API_KEY not set")
     return new Response("API key not configured", { status: 500 })
   }
 
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     })
   } catch (err) {
-    console.error("crypto-price proxy error", err)
+    apiLogger.error("crypto-price proxy error", err)
     return new Response("Internal error", { status: 500 })
   }
 }
