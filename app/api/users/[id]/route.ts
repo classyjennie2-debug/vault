@@ -9,7 +9,7 @@ export async function GET(
     const userId = params.id
 
     const users = await all(
-      `SELECT id, name, email, balance FROM users WHERE id = ?`,
+      `SELECT id, name, email, balance FROM users WHERE id = $1`,
       [userId]
     )
 

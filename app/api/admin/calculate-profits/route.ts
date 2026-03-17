@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
         if (usePostgres) {
           // Update investments table for PostgreSQL
           await run(
-            `UPDATE investments SET progress_percentage = ? WHERE id = ?`,
+            `UPDATE investments SET progress_percentage = $1 WHERE id = $2`,
             [Math.round(progressPercentage * 100) / 100, inv.id]
           )
         }
@@ -70,8 +70,8 @@ export async function POST(req: NextRequest) {
         // Also update active_investments for backward compatibility
         await run(
           usePostgres
-            ? `UPDATE active_investments SET "progressPercentage" = ? WHERE id = ?`
-            : `UPDATE active_investments SET progressPercentage = ? WHERE id = ?`,
+            ? `UPDATE active_investments SET "progressPercentage" = $1 WHERE id = $2`
+            : `UPDATE active_investments SET progressPercentage = $1 WHERE id = $2`,
           [Math.round(progressPercentage * 100) / 100, inv.id]
         )
       } catch (activeUpdateErr) {
@@ -100,8 +100,8 @@ export async function POST(req: NextRequest) {
         // We need to clear the old ones before creating new ones
         await run(
           usePostgres
-            ? `DELETE FROM transactions WHERE user_id = ? AND type = 'return' AND description = 'Accumulated profit from active investments'`
-            : `DELETE FROM transactions WHERE userId = ? AND type = 'return' AND description = 'Accumulated profit from active investments'`,
+            ? `DELETE FROM transactions WHERE user_id = $1 AND type = 'return' AND description = 'Accumulated profit from active investments'`
+            : `DELETE FROM transactions WHERE userId = $1 AND type = 'return' AND description = 'Accumulated profit from active investments'`,
           [userId]
         )
 
@@ -109,9 +109,9 @@ export async function POST(req: NextRequest) {
         await run(
           usePostgres
             ? `INSERT INTO transactions (id, user_id, type, amount, status, description, date) 
-               VALUES (?, ?, ?, ?, ?, ?, ?)`
+               VALUES ($1, $2, $3, $4, $5, $6, $7)`
             : `INSERT INTO transactions (id, userId, type, amount, status, description, date) 
-               VALUES (?, ?, ?, ?, ?, ?, ?)`,
+               VALUES ($1, $2, $3, $4, $5, $6, $7)`,
           [
             `profit-${userId}-${Date.now()}`,
             userId,
@@ -156,11 +156,11 @@ export async function GET(req: NextRequest) {
       usePostgres
         ? `SELECT id, user_id as "userId", plan_id as "planId", name as "planName", amount, projected_return as "expectedProfit", start_date as "startDate", maturity_date as "endDate", status
            FROM investments 
-           WHERE user_id = ? AND status = 'active'
+           WHERE user_id = $1 AND status = 'active'
            ORDER BY start_date DESC`
         : `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status
            FROM active_investments 
-           WHERE userId = ? AND status = 'active'
+           WHERE userId = $1 AND status = 'active'
            ORDER BY startDate DESC`,
       [user.id]
     )

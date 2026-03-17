@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       const now = new Date().toISOString().split("T")[0]
 
       await run(
-        "INSERT INTO wallet_addresses (id, coin, network, address, assignedTo, assignedAt, createdAt, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO wallet_addresses (id, coin, network, address, assignedTo, assignedAt, createdAt, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
         [id, wallet.coin, wallet.network, wallet.address, null, null, now, "active"]
       )
 
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
 
       // Cannot delete assigned wallets
       const walletData = await all<WalletAddress>(
-        "SELECT * FROM wallet_addresses WHERE id = ?",
+        "SELECT * FROM wallet_addresses WHERE id = $1",
         [wallet.id]
       )
 
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      await run("DELETE FROM wallet_addresses WHERE id = ?", [wallet.id])
+      await run("DELETE FROM wallet_addresses WHERE id = $1", [wallet.id])
 
       return NextResponse.json({ message: "Wallet deleted successfully" })
     } else if (action === "drop") {
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       }
 
       const walletData = await all<WalletAddress>(
-        "SELECT * FROM wallet_addresses WHERE id = ?",
+        "SELECT * FROM wallet_addresses WHERE id = $1",
         [wallet.id]
       )
 
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 
       // Unassign the wallet
       await run(
-        "UPDATE wallet_addresses SET assignedTo = NULL, assignedAt = NULL WHERE id = ?",
+        "UPDATE wallet_addresses SET assignedto = NULL, assignedat = NULL WHERE id = $1",
         [wallet.id]
       )
 
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
       }
 
       const walletData = await all<WalletAddress>(
-        "SELECT * FROM wallet_addresses WHERE id = ?",
+        "SELECT * FROM wallet_addresses WHERE id = $1",
         [wallet.id]
       )
 
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
 
       // Update status
       await run(
-        "UPDATE wallet_addresses SET status = ? WHERE id = ?",
+        "UPDATE wallet_addresses SET status = $1 WHERE id = $2",
         [wallet.status, wallet.id]
       )
 

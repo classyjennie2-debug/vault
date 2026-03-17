@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
       // Using snake_case column names for PostgreSQL
       await run(
         `INSERT INTO investments (id, user_id, plan_id, name, amount, status, projected_return, start_date, maturity_date) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           investmentId,
           user.id,
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
       try {
         await run(
           `INSERT INTO active_investments (id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
           [
             investmentId,
             user.id,
@@ -187,12 +187,12 @@ export async function POST(req: NextRequest) {
       }
 
       // Deduct from user balance
-      await run(`UPDATE users SET balance = balance - ? WHERE id = ?`, [safeAmount, user.id])
+      await run(`UPDATE users SET balance = balance - $1 WHERE id = $2`, [safeAmount, user.id])
 
       // Create transaction record using correct column names for PostgreSQL
       const transactionId = uuidv4()
       await run(
-        `INSERT INTO transactions (id, user_id, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO transactions (id, user_id, type, amount, status, description, date) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           transactionId,
           user.id,

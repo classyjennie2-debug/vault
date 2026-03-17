@@ -17,14 +17,14 @@ export async function GET(req: NextRequest) {
     // Calculate available balance (total balance - invested amount + profits)
     const investedResult = await get(
       usePostgres
-        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = 'investment' AND status = 'approved'"
-        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'",
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = $1 AND type = 'investment' AND status = 'approved'"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = $1 AND type = 'investment' AND status = 'approved'",
       [user.id]
     )
     const profitResult = await get(
       usePostgres
-        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = 'return' AND status = 'approved'"
-        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'",
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = $1 AND type = 'return' AND status = 'approved'"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = $1 AND type = 'return' AND status = 'approved'",
       [user.id]
     )
 

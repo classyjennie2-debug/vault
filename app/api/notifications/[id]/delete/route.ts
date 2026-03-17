@@ -26,7 +26,7 @@ export async function DELETE(
     }
 
     // Delete the notification
-    await run("DELETE FROM notifications WHERE id = ?", [notificationId])
+    await run("DELETE FROM notifications WHERE id = $1", [notificationId])
 
     return NextResponse.json({ success: true })
   } catch (error) {

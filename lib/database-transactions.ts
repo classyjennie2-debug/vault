@@ -1,14 +1,16 @@
-import Database from 'better-sqlite3'
+// import Database from 'better-sqlite3'
+// NOTE: This file is legacy SQLite-specific code. We use PostgreSQL now.
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Transaction Management for SQLite
+// Transaction Management for SQLite (DEPRECATED)
 // ─────────────────────────────────────────────────────────────────────────────
 
+/*
 export class SqliteTransaction {
-  private db: Database.Database
+  private db: any // Database.Database
   private isActive = false
 
-  constructor(db: Database.Database) {
+  constructor(db: any) {
     this.db = db
   }
 
@@ -39,6 +41,16 @@ export class SqliteTransaction {
   isTransactionActive(): boolean {
     return this.isActive
   }
+}
+*/
+
+// Placeholder export to prevent import errors
+export class SqliteTransaction {
+  constructor(db: any) {}
+  begin(): void {}
+  commit(): void {}
+  rollback(): void {}
+  isTransactionActive(): boolean { return false }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

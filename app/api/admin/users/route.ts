@@ -37,8 +37,8 @@ export async function GET() {
         // Get total invested
         const investmentResult = await all(
           usePostgres
-            ? "SELECT SUM(amount) as totalInvested FROM investments WHERE user_id = ? AND status = 'active'"
-            : "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",
+            ? "SELECT SUM(amount) as totalInvested FROM investments WHERE user_id = $1 AND status = 'active'"
+            : "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = $1",
           [enrichedUser.id]
         )
         if (investmentResult && investmentResult.length > 0) {
@@ -48,8 +48,8 @@ export async function GET() {
         // Get active investment count
         const countResult = await all(
           usePostgres
-            ? "SELECT COUNT(*) as count FROM investments WHERE user_id = ? AND status = 'active'"
-            : "SELECT COUNT(*) as count FROM active_investments WHERE userId = ? AND status = 'active'",
+            ? "SELECT COUNT(*) as count FROM investments WHERE user_id = $1 AND status = 'active'"
+            : "SELECT COUNT(*) as count FROM active_investments WHERE userId = $1 AND status = 'active'",
           [enrichedUser.id]
         )
         if (countResult && countResult.length > 0) {
@@ -59,8 +59,8 @@ export async function GET() {
         // Get total deposits
         const depositsResult = await all(
           usePostgres
-            ? "SELECT SUM(amount) as totalDeposits FROM transactions WHERE user_id = ? AND type = 'deposit' AND status = 'approved'"
-            : "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'approved'",
+            ? "SELECT SUM(amount) as totalDeposits FROM transactions WHERE user_id = $1 AND type = 'deposit' AND status = 'approved'"
+            : "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = $1 AND type = 'deposit' AND status = 'approved'",
           [enrichedUser.id]
         )
         if (depositsResult && depositsResult.length > 0) {
@@ -70,8 +70,8 @@ export async function GET() {
         // Get accumulated profit
         const profitResult = await all(
           usePostgres
-            ? "SELECT SUM(CAST(projected_return AS DECIMAL)) as totalProfit FROM investments WHERE user_id = ? AND status = 'active'"
-            : "SELECT SUM(CAST(expectedProfit AS REAL) * CAST(progressPercentage AS REAL) / 100) as totalProfit FROM active_investments WHERE userId = ?",
+            ? "SELECT SUM(CAST(projected_return AS DECIMAL)) as totalProfit FROM investments WHERE user_id = $1 AND status = 'active'"
+            : "SELECT SUM(CAST(expectedProfit AS REAL) * CAST(progressPercentage AS REAL) / 100) as totalProfit FROM active_investments WHERE userId = $1",
           [enrichedUser.id]
         )
         if (profitResult && profitResult.length > 0) {
@@ -118,49 +118,51 @@ export async function POST(request: NextRequest) {
     }
 
     // Update provided fields
-    let updateQuery = "UPDATE users SET "
-    const updates: any[] = []
+    const updates: { field: string; value: any }[] = []
     const params: any[] = []
+    const usingPostgres = isPostgres()
 
     // Normalize values
     const canUpdateVerified = typeof verified === "boolean"
 
     if (balance !== undefined && !Number.isNaN(Number(balance)) && Number(balance) >= 0) {
-      updates.push("balance = ?")
+      updates.push({ field: "balance", value: Number(balance) })
       params.push(Number(balance))
     }
     if (name) {
-      updates.push("name = ?")
+      updates.push({ field: "name", value: name })
       params.push(name)
     }
-    const usingPostgres = isPostgres()
 
     if (firstName) {
-      updates.push(`${usingPostgres ? "first_name" : "firstName"} = ?`)
+      const field = usingPostgres ? "first_name" : "firstName"
+      updates.push({ field, value: firstName })
       params.push(firstName)
     }
     if (lastName) {
-      updates.push(`${usingPostgres ? "last_name" : "lastName"} = ?`)
+      const field = usingPostgres ? "last_name" : "lastName"
+      updates.push({ field, value: lastName })
       params.push(lastName)
     }
     if (phone) {
-      updates.push("phone = ?")
+      updates.push({ field: "phone", value: phone })
       params.push(phone)
     }
     if (dateOfBirth) {
-      updates.push(`${usingPostgres ? "date_of_birth" : "dateOfBirth"} = ?`)
+      const field = usingPostgres ? "date_of_birth" : "dateOfBirth"
+      updates.push({ field, value: dateOfBirth })
       params.push(dateOfBirth)
     }
     if (email) {
-      updates.push("email = ?")
+      updates.push({ field: "email", value: email })
       params.push(email)
     }
     if (role && (role === "user" || role === "admin")) {
-      updates.push("role = ?")
+      updates.push({ field: "role", value: role })
       params.push(role)
     }
     if (canUpdateVerified) {
-      updates.push("verified = ?")
+      updates.push({ field: "verified", value: verified })
       params.push(verified)
     }
 
@@ -168,7 +170,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No valid fields to update" }, { status: 400 })
     }
 
-    updateQuery += updates.join(", ") + " WHERE id = ?"
+    // Build query with PostgreSQL numbered placeholders ($1, $2, etc)
+    let updateQuery = "UPDATE users SET "
+    const setParts = updates.map((u, i) => `${u.field} = $${i + 1}`)
+    updateQuery += setParts.join(", ") + ` WHERE id = $${params.length + 1}`
     params.push(userId)
 
     await run(updateQuery, params)

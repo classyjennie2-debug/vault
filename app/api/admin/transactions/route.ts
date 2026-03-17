@@ -97,8 +97,8 @@ export async function POST(req: NextRequest) {
     const usePostgres = pgPool !== null
     const txResults: any[] = await all(
       usePostgres
-        ? "SELECT id, user_id as \"userId\", type, amount, status, description, created_at as date FROM transactions WHERE id = ?"
-        : "SELECT id, userId, type, amount, status, description, date FROM transactions WHERE id = ?",
+        ? "SELECT id, user_id as \"userId\", type, amount, status, description, date FROM transactions WHERE id = $1"
+        : "SELECT id, userId, type, amount, status, description, date FROM transactions WHERE id = $1",
       [transactionId]
     )
     const txRaw = txResults[0]
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
         }
 
         const newBalance = userData.balance + transaction.amount
-        await run("UPDATE users SET balance = ? WHERE id = ?", [newBalance, transaction.userId])
+        await run("UPDATE users SET balance = $1 WHERE id = $2", [newBalance, transaction.userId])
 
         responseUserBalance = newBalance
         responseUserName = userData.name
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
         }
 
         const restoredBalance = userData.balance + transaction.amount
-        await run("UPDATE users SET balance = ? WHERE id = ?", [restoredBalance, transaction.userId])
+        await run("UPDATE users SET balance = $1 WHERE id = $2", [restoredBalance, transaction.userId])
 
         responseUserBalance = restoredBalance
         responseUserName = userData.name
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      await run("UPDATE transactions SET status = ? WHERE id = ?", [newStatus, transactionId])
+      await run("UPDATE transactions SET status = $1 WHERE id = $2", [newStatus, transactionId])
 
       const title = approved ? "Transaction Approved" : "Transaction Rejected"
       let message = approved

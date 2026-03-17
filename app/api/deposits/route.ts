@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     // Assign the wallet to the user
     await run(
-      "UPDATE wallet_addresses SET assignedTo = ?, assignedAt = ? WHERE id = ?",
+      "UPDATE wallet_addresses SET assignedto = $1, assignedat = $2 WHERE id = $3",
       [user.id, new Date().toISOString(), walletId]
     )
 
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     // Create notification for pending deposit
     const notificationId = `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     await run(
-      "INSERT INTO notifications (id, user_id, title, message, type, read, created_at, action_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO notifications (id, user_id, title, message, type, read, created_at, action_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
       [
         notificationId,
         user.id,

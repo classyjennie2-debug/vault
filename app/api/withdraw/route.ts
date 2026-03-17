@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     // Use atomic balance update to prevent race condition
     // This ensures no two concurrent withdrawals can both succeed if balance is insufficient
     const updateResult = await run(
-      `UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?`,
+      `UPDATE users SET balance = balance - $1 WHERE id = $2 AND balance >= $3`,
       [amount, user.id, amount]
     )
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       // Use atomic balance update to prevent race condition
       // This ensures no two concurrent withdrawals can both succeed if balance is insufficient
       const updateResult = await run(
-        `UPDATE users SET balance = balance - ? WHERE id = ? AND balance >= ?`,
+        `UPDATE users SET balance = balance - $1 WHERE id = $2 AND balance >= $3`,
         [amount, user.id, amount]
       )
 

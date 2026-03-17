@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     // Manually verify the user
-    await run("UPDATE users SET verified = 1 WHERE id = ?", [user.id])
+    await run("UPDATE users SET verified = 1 WHERE id = $1", [user.id])
 
     return NextResponse.json({
       message: "User email verified successfully",

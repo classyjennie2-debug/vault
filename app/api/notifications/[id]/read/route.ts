@@ -39,7 +39,7 @@ export async function PUT(
     
     // Fetch the updated notification
     const updatedNotification = await get(
-      "SELECT * FROM notifications WHERE id = ?",
+      "SELECT * FROM notifications WHERE id = $1",
       [notificationId]
     )
 

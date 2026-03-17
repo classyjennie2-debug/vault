@@ -9,7 +9,7 @@ export async function DELETE(request: NextRequest) {
 
     // Delete all read notifications for the user
     const result = await run(
-      "DELETE FROM notifications WHERE user_id = ? AND read = TRUE",
+      "DELETE FROM notifications WHERE user_id = $1 AND read = TRUE",
       [user.id]
     )
 
