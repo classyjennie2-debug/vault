@@ -145,31 +145,54 @@ export async function POST(req: NextRequest) {
       // If any operation fails, all will be rolled back
       await run('BEGIN')
 
-      // Insert active investment
+      // Insert investment into investments table (PostgreSQL)
+      // Using snake_case column names for PostgreSQL
       await run(
-        `INSERT INTO active_investments (id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO investments (id, user_id, plan_id, name, amount, status, projected_return, start_date, maturity_date) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           investmentId,
           user.id,
           plan.id,
           plan.name || "Unknown Plan",
           safeAmount,
+          "active",
           expectedProfit,
           startDate,
-          endDate,
-          "active",
-          0
+          endDate
         ]
       )
+
+      // Also insert into active_investments for backward compatibility (if needed by other code)
+      try {
+        await run(
+          `INSERT INTO active_investments (id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            investmentId,
+            user.id,
+            plan.id,
+            plan.name || "Unknown Plan",
+            safeAmount,
+            expectedProfit,
+            startDate,
+            endDate,
+            "active",
+            0
+          ]
+        )
+      } catch (_activeInvError) {
+        // active_investments insert might fail if SQLite - that's okay, we have investments table anyway
+        console.debug('Could not insert into active_investments, continuing with investments table')
+      }
 
       // Deduct from user balance
       await run(`UPDATE users SET balance = balance - ? WHERE id = ?`, [safeAmount, user.id])
 
-      // Create transaction record
+      // Create transaction record using correct column names for PostgreSQL
       const transactionId = uuidv4()
       await run(
-        `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO transactions (id, user_id, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           transactionId,
           user.id,

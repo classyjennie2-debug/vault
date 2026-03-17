@@ -53,12 +53,30 @@ export async function POST(req: NextRequest) {
 
       // FIX: Persist progress percentage to database
       // This allows historical tracking and avoids recalculating every time
-      await run(
-        usePostgres
-          ? `UPDATE active_investments SET progress_percentage = ? WHERE id = ?`
-          : `UPDATE active_investments SET progressPercentage = ? WHERE id = ?`,
-        [Math.round(progressPercentage * 100) / 100, inv.id]
-      )
+      // Update BOTH tables for compatibility
+      try {
+        if (usePostgres) {
+          // Update investments table for PostgreSQL
+          await run(
+            `UPDATE investments SET progress_percentage = ? WHERE id = ?`,
+            [Math.round(progressPercentage * 100) / 100, inv.id]
+          )
+        }
+      } catch (pgUpdateErr) {
+        console.debug('Could not update progress_percentage in investments:', pgUpdateErr)
+      }
+      
+      try {
+        // Also update active_investments for backward compatibility
+        await run(
+          usePostgres
+            ? `UPDATE active_investments SET "progressPercentage" = ? WHERE id = ?`
+            : `UPDATE active_investments SET progressPercentage = ? WHERE id = ?`,
+          [Math.round(progressPercentage * 100) / 100, inv.id]
+        )
+      } catch (activeUpdateErr) {
+        console.debug('Could not update progressPercentage in active_investments:', activeUpdateErr)
+      }
 
       // Calculate accumulated profit based on progress
       const expectedProfit = Number(inv.expectedProfit) || 0
@@ -90,7 +108,7 @@ export async function POST(req: NextRequest) {
         // Now insert the fresh calculated profit
         await run(
           usePostgres
-            ? `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at) 
+            ? `INSERT INTO transactions (id, user_id, type, amount, status, description, date) 
                VALUES (?, ?, ?, ?, ?, ?, ?)`
             : `INSERT INTO transactions (id, userId, type, amount, status, description, date) 
                VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -101,7 +119,7 @@ export async function POST(req: NextRequest) {
             totalProfit,
             "approved",
             "Accumulated profit from active investments",
-            new Date().toISOString().split("T")[0],
+            new Date().toISOString(),
           ]
         )
         profitsUpdated++

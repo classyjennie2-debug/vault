@@ -263,7 +263,8 @@ async function initializePostgres() {
           name TEXT,
           amount REAL NOT NULL,
           status TEXT NOT NULL DEFAULT 'pending',
-          projected_return REAL,
+          projected_return REAL NOT NULL DEFAULT 0,
+          progress_percentage REAL NOT NULL DEFAULT 0,
           start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
           maturity_date TIMESTAMP,
           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -412,6 +413,34 @@ async function initializePostgres() {
         const msg = errMessage(err)
         if (!msg.includes('already exists') && !msg.includes('duplicate')) {
           // Migration warning logged
+        }
+      }
+
+      // Migration: Add missing columns to investments table if they don't exist
+      try {
+        const investmentColumns = await pgPool.query(`
+          SELECT column_name FROM information_schema.columns 
+          WHERE table_name = 'investments'
+        `)
+        const colNames = new Set(investmentColumns.rows.map((r: any) => r.column_name))
+        
+        if (!colNames.has('progress_percentage')) {
+          await pgPool.query(`
+            ALTER TABLE investments ADD COLUMN progress_percentage REAL NOT NULL DEFAULT 0
+          `)
+          console.log('[Migration] Added progress_percentage column to investments table')
+        }
+        
+        if (!colNames.has('projected_return')) {
+          await pgPool.query(`
+            ALTER TABLE investments ADD COLUMN projected_return REAL NOT NULL DEFAULT 0
+          `)
+          console.log('[Migration] Added projected_return column to investments table')
+        }
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        if (!msg.includes('already exists') && !msg.includes('duplicate')) {
+          console.warn('[Migration] Error updating investments table columns:', msg)
         }
       }
 
@@ -1294,8 +1323,9 @@ export async function getUserActiveInvestments(userId: string): Promise<ActiveIn
         projected_return as "expectedProfit", 
         start_date as "startDate", 
         maturity_date as "endDate", 
-        status, 
-        (EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - start_date)) / EXTRACT(EPOCH FROM (maturity_date - start_date)) * 100) as "progressPercentage"
+        status,
+        COALESCE(progress_percentage, 0) as "progressPercentage",
+        (EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - start_date)) / EXTRACT(EPOCH FROM (maturity_date - start_date)) * 100) as "calculatedProgress"
       FROM investments 
       WHERE user_id = ? AND status = ?`
     : `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage 
@@ -1306,6 +1336,8 @@ export async function getUserActiveInvestments(userId: string): Promise<ActiveIn
   // Normalize column names
   return results.map((row: unknown) => {
     const r = row as Record<string, unknown>
+    // Use stored progress percentage if available, otherwise calculate from duration
+    const progressPercentage = Number(r.progressPercentage ?? r.calculatedProgress ?? 0)
     return {
       id: String(r.id ?? ''),
       userId: String(r.userId ?? r.userid ?? ''),
@@ -1316,7 +1348,7 @@ export async function getUserActiveInvestments(userId: string): Promise<ActiveIn
       startDate: String(r.startDate ?? r.startdate ?? ''),
       endDate: String(r.endDate ?? r.enddate ?? ''),
       status: String(r.status ?? 'active') as "active" | "completed" | "withdrawn",
-      progressPercentage: Number(r.progressPercentage ?? r.progresspercentage ?? 0),
+      progressPercentage: Math.min(100, progressPercentage),
     }
   })
 }
@@ -1497,16 +1529,30 @@ export async function processMaturedInvestments(userId: string) {
   const matured = (await all(query, params)) as ActiveInvestment[]
 
   for (const inv of matured) {
-    // mark complete and set full progress
-    const updateQuery = usePostgres
-      ? "UPDATE investments SET status = ? WHERE id = ?"
-      : "UPDATE active_investments SET status = 'completed', progressPercentage = 100 WHERE id = ?"
-    
-    const updateParams = usePostgres
-      ? ['completed', inv.id]
-      : [inv.id]
-    
-    await run(updateQuery, updateParams)
+    // mark complete and set full progress - update both tables for compatibility
+    try {
+      const updateQuery = usePostgres
+        ? "UPDATE investments SET status = ?, progress_percentage = ? WHERE id = ?"
+        : "UPDATE active_investments SET status = ?, progressPercentage = ? WHERE id = ?"
+      
+      const updateParams = usePostgres
+        ? ['completed', 100, inv.id]
+        : ['completed', 100, inv.id]
+      
+      await run(updateQuery, updateParams)
+    } catch (updateErr) {
+      console.error('Error marking investment as completed:', updateErr)
+    }
+
+    // Also update active_investments for backward compatibility
+    try {
+      await run(
+        "UPDATE active_investments SET status = ?, progressPercentage = ? WHERE id = ?",
+        ['completed', 100, inv.id]
+      )
+    } catch (_activeErr) {
+      // Might not exist in SQLite mode
+    }
 
     // credit the expected profit and principal back to user balance
     const profit = inv.expectedProfit || 0
