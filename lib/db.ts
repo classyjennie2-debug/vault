@@ -1777,5 +1777,6 @@ export function isPostgres(): boolean {
   return !!pgPool
 }
 
+export { pgPool }
 export default getDb
 
