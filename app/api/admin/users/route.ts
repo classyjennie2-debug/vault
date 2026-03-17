@@ -37,7 +37,7 @@ export async function GET() {
         // Get total invested
         const investmentResult = await all(
           usePostgres
-            ? "SELECT SUM(amount) as totalInvested FROM active_investments WHERE user_id = ?"
+            ? "SELECT SUM(amount) as totalInvested FROM investments WHERE user_id = ? AND status = 'active'"
             : "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = ?",
           [enrichedUser.id]
         )
@@ -48,7 +48,7 @@ export async function GET() {
         // Get active investment count
         const countResult = await all(
           usePostgres
-            ? "SELECT COUNT(*) as count FROM active_investments WHERE user_id = ? AND status = 'active'"
+            ? "SELECT COUNT(*) as count FROM investments WHERE user_id = ? AND status = 'active'"
             : "SELECT COUNT(*) as count FROM active_investments WHERE userId = ? AND status = 'active'",
           [enrichedUser.id]
         )
@@ -70,7 +70,7 @@ export async function GET() {
         // Get accumulated profit
         const profitResult = await all(
           usePostgres
-            ? "SELECT SUM(CAST(expected_profit AS DECIMAL) * CAST(progress_percentage AS DECIMAL) / 100) as totalProfit FROM active_investments WHERE user_id = ?"
+            ? "SELECT SUM(CAST(projected_return AS DECIMAL)) as totalProfit FROM investments WHERE user_id = ? AND status = 'active'"
             : "SELECT SUM(CAST(expectedProfit AS REAL) * CAST(progressPercentage AS REAL) / 100) as totalProfit FROM active_investments WHERE userId = ?",
           [enrichedUser.id]
         )

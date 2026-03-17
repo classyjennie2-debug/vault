@@ -24,8 +24,8 @@ export async function POST(req: NextRequest) {
     // Get all active investments with calculations
     const investments = await all<ActiveInvestment>(
       usePostgres
-        ? `SELECT id, user_id as "userId", plan_id as "planId", plan_name as "planName", amount, expected_profit as "expectedProfit", start_date as "startDate", end_date as "endDate", status
-           FROM active_investments 
+        ? `SELECT id, user_id as "userId", plan_id as "planId", name as "planName", amount, projected_return as "expectedProfit", start_date as "startDate", maturity_date as "endDate", status
+           FROM investments 
            WHERE status = 'active'
            ORDER BY user_id`
         : `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status
@@ -136,8 +136,8 @@ export async function GET(req: NextRequest) {
     // Get user's active investments
     const investments = await all<ActiveInvestment>(
       usePostgres
-        ? `SELECT id, user_id as "userId", plan_id as "planId", plan_name as "planName", amount, expected_profit as "expectedProfit", start_date as "startDate", end_date as "endDate", status
-           FROM active_investments 
+        ? `SELECT id, user_id as "userId", plan_id as "planId", name as "planName", amount, projected_return as "expectedProfit", start_date as "startDate", maturity_date as "endDate", status
+           FROM investments 
            WHERE user_id = ? AND status = 'active'
            ORDER BY start_date DESC`
         : `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status
