@@ -178,6 +178,52 @@ function initializeSqlite() {
 
 let pgInitPromise: Promise<void> | null = null
 
+async function migratePostgresUsers(pool: any) {
+  // Check which columns exist in the users table
+  try {
+    const existingColumns = await pool.query(`
+      SELECT column_name FROM information_schema.columns 
+      WHERE table_name = 'users'
+    `)
+    const existingColNames = new Set(existingColumns.rows.map((r: any) => r.column_name))
+    
+    // Define required columns with their SQL definitions
+    const requiredColumns: Record<string, string> = {
+      'password_hash': 'ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)',
+      'first_name': 'ALTER TABLE users ADD COLUMN first_name VARCHAR(100)',
+      'last_name': 'ALTER TABLE users ADD COLUMN last_name VARCHAR(100)',
+      'name': 'ALTER TABLE users ADD COLUMN name VARCHAR(255) NOT NULL DEFAULT \'\'',
+      'phone': 'ALTER TABLE users ADD COLUMN phone VARCHAR(20)',
+      'date_of_birth': 'ALTER TABLE users ADD COLUMN date_of_birth TEXT',
+      'avatar': 'ALTER TABLE users ADD COLUMN avatar VARCHAR(500)',
+      'role': 'ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT \'user\'',
+      'balance': 'ALTER TABLE users ADD COLUMN balance NUMERIC(15,2) NOT NULL DEFAULT 0',
+      'verified': 'ALTER TABLE users ADD COLUMN verified INTEGER NOT NULL DEFAULT 0',
+      'joined_at': 'ALTER TABLE users ADD COLUMN joined_at TEXT',
+      'last_login': 'ALTER TABLE users ADD COLUMN last_login TEXT',
+      'email_verified': 'ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT FALSE',
+      'created_at': 'ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+      'updated_at': 'ALTER TABLE users ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+    }
+    
+    // Add missing columns
+    for (const [colName, colSql] of Object.entries(requiredColumns)) {
+      if (!existingColNames.has(colName)) {
+        try {
+          await pool.query(colSql)
+          console.log(`[Migration] Created column: ${colName}`)
+        } catch (err: unknown) {
+          const msg = errMessage(err)
+          console.warn(`[Migration] Failed to create column ${colName}: ${msg}`)
+        }
+      }
+    }
+  } catch (err: unknown) {
+    const msg = errMessage(err)
+    console.warn('[Migration] Failed to check/migrate users columns:', msg)
+  }
+}
+
 async function initializePostgres() {
   // If already initializing, wait for it to complete
   if (pgInitPromise) {
@@ -301,33 +347,12 @@ async function initializePostgres() {
         await pgPool.query(sql)
       }
 
-      // Run migrations
+      // Run smart migrations to add missing columns
       try {
-        // Add missing columns to users table
-        const userColumns = [
-          { name: 'first_name', sql: 'ALTER TABLE users ADD COLUMN first_name VARCHAR(100)' },
-          { name: 'last_name', sql: 'ALTER TABLE users ADD COLUMN last_name VARCHAR(100)' },
-          { name: 'phone', sql: 'ALTER TABLE users ADD COLUMN phone VARCHAR(20)' },
-          { name: 'date_of_birth', sql: 'ALTER TABLE users ADD COLUMN date_of_birth TEXT' },
-          { name: 'avatar', sql: 'ALTER TABLE users ADD COLUMN avatar VARCHAR(500)' },
-          { name: 'joined_at', sql: 'ALTER TABLE users ADD COLUMN joined_at TEXT' },
-        ]
-        
-        for (const col of userColumns) {
-          try {
-            await pgPool.query(col.sql)
-          } catch (err: unknown) {
-            const msg = errMessage(err)
-            if (!msg.includes('already exists') && !msg.includes('duplicate')) {
-              // Column migration note
-            }
-          }
-        }
+        await migratePostgresUsers(pgPool)
       } catch (err: unknown) {
         const msg = errMessage(err)
-        if (!msg.includes('already exists') && !msg.includes('duplicate')) {
-          // User migration warning logged
-        }
+        console.warn('[Migration] Error running user migrations:', msg)
       }
 
       try {
@@ -687,23 +712,29 @@ export async function createUser(user: {
 }): Promise<void> {
   if (pgPool) {
     // PostgreSQL
-    await pgPool.query(
-      `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, email_verified, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-      [
-        user.id,
-        user.name,
-        user.firstName || null,
-        user.lastName || null,
-        user.email,
-        user.phone || null,
-        user.dateOfBirth || null,
-        user.passwordHash || null,
-        user.avatar,
-        user.verified ? true : false,
-        new Date().toISOString(),
-      ]
-    )
+    try {
+      await pgPool.query(
+        `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, email_verified, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [
+          user.id,
+          user.name,
+          user.firstName || null,
+          user.lastName || null,
+          user.email,
+          user.phone || null,
+          user.dateOfBirth || null,
+          user.passwordHash || null,
+          user.avatar,
+          user.verified ? true : false,
+          new Date().toISOString(),
+        ]
+      )
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      console.error('PostgreSQL createUser error:', msg)
+      throw err
+    }
   } else {
     // SQLite
     const db = getDb()
