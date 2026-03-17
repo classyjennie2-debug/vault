@@ -1,6 +1,7 @@
 import Database from "better-sqlite3"
 import path from "path"
 import type { ActiveInvestment, InvestmentPlan } from "./types"
+import type { ActivityType } from "@/components/dashboard/activity-log"
 
 // support PostgreSQL when DATABASE_URL is provided (e.g. Neon on Vercel)
 type PgPool = { query: (...args: any[]) => any }
@@ -1314,23 +1315,21 @@ export async function getRecentActivities(userId: string) {
   // Transform transactions to activities format
   const txActivities = transactions.map((tx: any) => ({
     id: tx.id,
-    userId: tx.userId,
-    type: tx.type,
-    title: getTitleFromType(tx.type, tx.status),
-    message: tx.description,
+    type: tx.type as ActivityType,
+    description: tx.description,
     timestamp: tx.date,
-    icon: getIconFromType(tx.type),
+    status: (tx.status || "success") as "success" | "pending" | "failed",
+    created_at: tx.date,
   }))
 
-  // Transform activity logs
+  // Transform activity logs to match Activity interface
   const logActivities = activityLogs.map((log: any) => ({
     id: log.id,
-    userId: log.userId,
-    type: log.type,
-    title: getTitleFromActivityLog(log.type),
-    message: log.description,
+    type: log.type as ActivityType,
+    description: log.description,
     timestamp: log.timestamp,
-    icon: getIconFromActivityLog(log.type),
+    status: "success" as const,
+    created_at: log.timestamp,
   }))
 
   // Merge and sort by timestamp, newest first, limit to 10
@@ -1339,50 +1338,6 @@ export async function getRecentActivities(userId: string) {
     .slice(0, 10)
 
   return allActivities
-}
-
-function getTitleFromType(type: string, status?: string): string {
-  const titles: { [key: string]: string } = {
-    investment: "Investment Started",
-    profit: "Profit Credited",
-    deposit: status === "pending" ? "Deposit Initiated" : "Deposit Approved",
-    withdrawal: "Withdrawal Processed",
-    return: "Return Credited",
-  }
-  return titles[type] || "Transaction"
-}
-
-function getTitleFromActivityLog(type: string): string {
-  const titles: { [key: string]: string } = {
-    login: "Login",
-    logout: "Logout",
-    profile_update: "Profile Updated",
-    deposit_submitted: "Deposit Submitted",
-    withdrawal_submitted: "Withdrawal Submitted",
-  }
-  return titles[type] || "Activity"
-}
-
-function getIconFromType(type: string): string {
-  const icons: { [key: string]: string } = {
-    investment: "TrendingUp",
-    profit: "Award",
-    deposit: "ArrowDown",
-    withdrawal: "ArrowUp",
-    return: "TrendingUp",
-  }
-  return icons[type] || "Zap"
-}
-
-function getIconFromActivityLog(type: string): string {
-  const icons: { [key: string]: string } = {
-    login: "LogIn",
-    logout: "LogOut",
-    profile_update: "Settings",
-    deposit_submitted: "ArrowDown",
-    withdrawal_submitted: "ArrowUp",
-  }
-  return icons[type] || "Activity"
 }
 
 export async function getUserStats(userId: string) {
@@ -1783,10 +1738,23 @@ export async function updateLastLogin(userId: string) {
 }
 
 export async function getUserActivity(userId: string, limit: number = 20) {
-  return all(
-    "SELECT * FROM activity_log WHERE userId = ? ORDER BY timestamp DESC LIMIT ?",
-    [userId, limit]
-  )
+  const usePostgres = pgPool !== null
+  
+  const query = usePostgres
+    ? "SELECT id, user_id as \"userId\", type, description, created_at as timestamp, 'success' as status FROM activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT ?"
+    : "SELECT id, userId, type, description, timestamp, status FROM activity_log WHERE userId = ? ORDER BY timestamp DESC LIMIT ?"
+  
+  const activities = await all(query, [userId, limit])
+  
+  // Map to Activity interface
+  return activities.map((activity: any) => ({
+    id: activity.id,
+    type: activity.type as ActivityType,
+    description: activity.description,
+    timestamp: activity.timestamp,
+    status: (activity.status || "success") as "success" | "pending" | "failed",
+    created_at: activity.timestamp,
+  }))
 }
 
 export async function deleteUser(userId: string): Promise<void> {

@@ -737,7 +737,7 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <Activity className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <ActivityIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             <div>
               <CardTitle>Account Activity</CardTitle>
               <CardDescription>
