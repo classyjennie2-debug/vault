@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     // Assign the wallet to the user
     await run(
-      "UPDATE wallet_addresses SET assignedto = $1, assignedat = $2 WHERE id = $3",
+      "UPDATE wallet_addresses SET assignedTo = $1, assignedAt = $2 WHERE id = $3",
       [user.id, new Date().toISOString(), walletId]
     )
 

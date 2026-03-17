@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 
       // Unassign the wallet
       await run(
-        "UPDATE wallet_addresses SET assignedto = NULL, assignedat = NULL WHERE id = $1",
+        "UPDATE wallet_addresses SET assignedTo = NULL, assignedAt = NULL WHERE id = $1",
         [wallet.id]
       )
 
