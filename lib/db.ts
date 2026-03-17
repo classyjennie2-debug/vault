@@ -636,6 +636,9 @@ interface DatabaseRow {
 }
 
 export async function run(sql: string, params: unknown[] = []): Promise<number> {
+  console.log(`[RUN] Executing SQL: ${sql.substring(0, 100)}...`)
+  console.log(`[RUN] Parameters:`, params)
+
   await initPostgresPool()
 
   if (!pgPool) {
@@ -643,7 +646,10 @@ export async function run(sql: string, params: unknown[] = []): Promise<number> 
   }
 
   await initializePostgres()
-  const result = await pgPool.query(adaptSql(sql), params)
+  const adaptedSql = adaptSql(sql)
+  console.log(`[RUN] Adapted SQL: ${adaptedSql.substring(0, 100)}...`)
+  const result = await pgPool.query(adaptedSql, params)
+  console.log(`[RUN] Rows affected:`, result.rowCount)
   return result.rowCount || 0
 }
 
@@ -673,9 +679,8 @@ export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []):
 }
 
 export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T[]> {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[ALL] Executing SQL: ${sql}`)
-  }
+  console.log(`[ALL] Executing SQL: ${sql.substring(0, 100)}...`)
+  console.log(`[ALL] Parameters:`, params)
 
   await initPostgresPool()
   
@@ -685,10 +690,10 @@ export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []):
 
   await initializePostgres()
   try {
-    const res = await pgPool.query(adaptSql(sql), params)
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[ALL] PostgreSQL result rows:`, res.rows.length)
-    }
+    const adaptedSql = adaptSql(sql)
+    console.log(`[ALL] Adapted SQL: ${adaptedSql.substring(0, 100)}...`)
+    const res = await pgPool.query(adaptedSql, params)
+    console.log(`[ALL] PostgreSQL result rows:`, res.rows.length)
     return res.rows as T[]
   } catch (err: unknown) {
     console.error(`[ALL] PostgreSQL error:`, errMessage(err))
@@ -1273,7 +1278,13 @@ export async function getUserTransactions(userId: string) {
        WHERE user_id = $1 
        ORDER BY COALESCE(created_at, date) DESC`
     : "SELECT * FROM transactions WHERE userId = $1 ORDER BY date DESC"
-  return all(query, [userId])
+  console.log("[getTx] Fetching transactions for userId:", userId)
+  const results = await all(query, [userId])
+  console.log("[getTx] Found transactions:", results.length, "records")
+  if (results.length > 0) {
+    console.log("[getTx] First transaction:", results[0])
+  }
+  return results
 }
 
 export async function getUserNotifications(userId: string) {
