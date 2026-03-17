@@ -818,6 +818,8 @@ export async function createUser(user: {
     // Ensure the Postgres schema is initialized/migrated before creating users
     await initializePostgres()
 
+    const verifiedValue = user.verified ? 1 : 0
+
     try {
       await pgPool.query(
         `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, role, balance, verified)
@@ -834,7 +836,7 @@ export async function createUser(user: {
           user.avatar,
           'user', // role - default to 'user'
           0, // balance - default to 0
-          !!user.verified, // ensure boolean
+          verifiedValue,
         ]
       )
     } catch (err: unknown) {
@@ -865,6 +867,7 @@ export async function createUser(user: {
     )
   }
 }
+
 
 export async function verifyUserEmail(email: string): Promise<void> {
   await run("UPDATE users SET verified = ? WHERE email = ?", [true, email])
