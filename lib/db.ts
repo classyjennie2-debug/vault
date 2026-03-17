@@ -286,9 +286,42 @@ async function migratePostgresUsers(pool: any) {
       await pool.query(`UPDATE users SET joined_at = CURRENT_TIMESTAMP WHERE joined_at IS NULL`)
       await pool.query(`UPDATE users SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL`)
       await pool.query(`UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE updated_at IS NULL`)
+      
+      // Ensure columns have proper defaults (if they were added without defaults)
+      try {
+        await pool.query(`ALTER TABLE users ALTER COLUMN joined_at SET NOT NULL`)
+      } catch (_e) {
+        // Column might already be NOT NULL
+      }
+      try {
+        await pool.query(`ALTER TABLE users ALTER COLUMN created_at SET NOT NULL`)
+      } catch (_e) {
+        // Column might already be NOT NULL
+      }
+      try {
+        await pool.query(`ALTER TABLE users ALTER COLUMN updated_at SET NOT NULL`)
+      } catch (_e) {
+        // Column might already be NOT NULL
+      }
+      
+      try {
+        await pool.query(`ALTER TABLE users ALTER COLUMN joined_at SET DEFAULT CURRENT_TIMESTAMP`)
+      } catch (_e) {
+        // Might already have default
+      }
+      try {
+        await pool.query(`ALTER TABLE users ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP`)
+      } catch (_e) {
+        // Might already have default
+      }
+      try {
+        await pool.query(`ALTER TABLE users ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP`)
+      } catch (_e) {
+        // Might already have default
+      }
     } catch (err: unknown) {
       const msg = errMessage(err)
-      console.warn('[Migration] Failed to populate missing timestamp values:', msg)
+      console.warn('[Migration] Failed to populate/set defaults for timestamp values:', msg)
     }
   } catch (err: unknown) {
     const msg = errMessage(err)
