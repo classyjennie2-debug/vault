@@ -1587,7 +1587,7 @@ export async function createTransaction(transaction: {
 
   await run(
     usePostgres
-      ? `INSERT INTO transactions (id, user_id, type, amount, status, description, date) VALUES ($1, $2, $3, $4, $5, $6, $7)`
+      ? `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)`
       : `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
     [
       id,
