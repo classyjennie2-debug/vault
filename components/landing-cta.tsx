@@ -12,6 +12,8 @@ interface LandingCTAProps {
   showText?: string
   showLoggedInText?: string
   planId?: string
+  hrefWhenLoggedOut?: string
+  hrefWhenLoggedIn?: string
 }
 
 export function LandingCTA({
@@ -19,11 +21,13 @@ export function LandingCTA({
   size = "default",
   className = "",
   showText = "Get Started",
-  showLoggedInText = "Go to Dashboard",
+  showLoggedInText = "View Dashboard",
   planId,
+  hrefWhenLoggedOut = "/register",
+  hrefWhenLoggedIn,
 }: LandingCTAProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [hasMounted, setHasMounted] = useState(false)
 
   useEffect(() => {
     const checkSession = async () => {
@@ -33,32 +37,31 @@ export function LandingCTA({
       } catch {
         setIsLoggedIn(false)
       } finally {
-        setIsLoading(false)
+        setHasMounted(true)
       }
     }
 
     checkSession()
   }, [])
 
-  if (isLoading) {
-    return (
-      <Button variant={variant} size={size} disabled className={className}>
-        Loading...
-      </Button>
-    )
-  }
+  // Render immediately without loading state - use default state
+  const isUserLoggedIn = hasMounted ? isLoggedIn : false
 
   let href: string
-  if (isLoggedIn) {
-    // If logged in and plan is provided, go to dashboard to invest in that plan
-    // Otherwise, go to investments/dashboard
-    href = planId ? `/dashboard/investments?plan=${planId}` : "/dashboard/investments"
+  if (isUserLoggedIn) {
+    // If logged in and planId provided, go to invest in that plan
+    if (hrefWhenLoggedIn) {
+      href = hrefWhenLoggedIn
+    } else if (planId) {
+      href = `/dashboard/investments?plan=${planId}`
+    } else {
+      href = "/dashboard"
+    }
   } else {
-    // If not logged in, go to register
-    href = "/register"
+    href = hrefWhenLoggedOut
   }
-  
-  const text = isLoggedIn ? showLoggedInText : showText
+
+  const text = isUserLoggedIn ? showLoggedInText : showText
 
   return (
     <Button variant={variant} size={size} asChild className={className}>

@@ -24,24 +24,12 @@ export function AuthNavButtons() {
     checkSession()
   }, [])
 
-  if (isLoading) {
-    return (
-      <>
-        <Button variant="ghost" size="sm" disabled>
-          Loading...
-        </Button>
-        <Button size="sm" disabled>
-          Loading...
-        </Button>
-      </>
-    )
-  }
-
+  // Don't show loading state - render with default immediately
   if (isLoggedIn) {
     return (
       <>
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/api/auth/logout">Log out</Link>
+          <Link href="/api/auth/logout?redirect=/">Log out</Link>
         </Button>
         <Button size="sm" asChild>
           <Link href="/dashboard">

@@ -29,8 +29,18 @@ import {
   Save,
   LogOut,
   Trash2,
+  AlertTriangle,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -75,6 +85,47 @@ export default function SettingsPage() {
     setCurrentPassword("")
     setNewPassword("")
     setConfirmPassword("")
+  }
+
+  // Delete account state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteReason, setDeleteReason] = useState("")
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [deleteError, setDeleteError] = useState("")
+
+  const handleDeleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setDeleteError("")
+
+    if (!deleteReason.trim()) {
+      setDeleteError("Please provide a reason for deleting your account.")
+      return
+    }
+
+    setIsDeletingAccount(true)
+    try {
+      const res = await fetch("/api/user/request-deletion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: deleteReason }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        setDeleteError(data.error || "Failed to request account deletion.")
+        return
+      }
+
+      // Show success and redirect
+      alert("Your account deletion request has been sent to our admin team for review. You will receive an email confirmation shortly.")
+      setShowDeleteDialog(false)
+      router.push("/")
+    } catch (error) {
+      setDeleteError("An error occurred. Please try again.")
+      console.error("Delete account error:", error)
+    } finally {
+      setIsDeletingAccount(false)
+    }
   }
 
   const [userSettings, setUserSettings] = useState({
@@ -573,10 +624,75 @@ export default function SettingsPage() {
           <Button
             variant="outline"
             className="w-full justify-start gap-2 border-red-500/30 hover:bg-red-500/10 text-red-600 dark:text-red-400 hover:text-red-700"
+            onClick={() => {
+              setShowDeleteDialog(true)
+              setDeleteError("")
+              setDeleteReason("")
+            }}
           >
             <Trash2 className="h-4 w-4" />
             Delete Account
           </Button>
+
+          {/* Delete Account Dialog */}
+          <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <DialogTitle>Delete Account</DialogTitle>
+                </div>
+                <DialogDescription>
+                  This action cannot be undone. We'll send your deletion request to our admin team for review.
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleDeleteAccount} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="delete-reason" className="text-base font-semibold">
+                    Why are you deleting your account?
+                  </Label>
+                  <Textarea
+                    id="delete-reason"
+                    placeholder="Please tell us why you're leaving... (minimum 10 characters)"
+                    value={deleteReason}
+                    onChange={(e) => setDeleteReason(e.target.value)}
+                    className="min-h-[100px] resize-none"
+                  />
+                  {deleteReason && (
+                    <p className="text-xs text-muted-foreground">
+                      {deleteReason.length} characters
+                    </p>
+                  )}
+                </div>
+
+                {deleteError && (
+                  <div className="rounded-lg bg-red-50 dark:bg-red-950 p-3 text-sm text-red-700 dark:text-red-400">
+                    {deleteError}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowDeleteDialog(false)}
+                    disabled={isDeletingAccount}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="destructive"
+                    disabled={isDeletingAccount || deleteReason.trim().length < 10}
+                    className="flex-1"
+                  >
+                    {isDeletingAccount ? "Sending request..." : "Request Deletion"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     </div>

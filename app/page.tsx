@@ -148,11 +148,15 @@ export default async function LandingPage() {
             size="sm" 
             showText="Log in" 
             showLoggedInText="Dashboard"
+            hrefWhenLoggedOut="/login"
+            hrefWhenLoggedIn="/dashboard"
           />
           <LandingCTA 
             size="sm" 
             showText="Get Started" 
-            showLoggedInText="Go to Dashboard"
+            showLoggedInText="Start Investing"
+            hrefWhenLoggedOut="/register"
+            hrefWhenLoggedIn="/dashboard/investments"
           />
         </div>
       </nav>
@@ -189,14 +193,18 @@ export default async function LandingPage() {
               size="lg" 
               className="shadow-lg hover:shadow-xl w-full sm:w-auto"
               showText="Start Investing Free"
-              showLoggedInText="Go to Dashboard"
+              showLoggedInText="Browse Plans"
+              hrefWhenLoggedOut="/register"
+              hrefWhenLoggedIn="/dashboard/plans"
             />
             <LandingCTA 
               variant="outline" 
               size="lg" 
               className="w-full sm:w-auto"
               showText="View Dashboard"
-              showLoggedInText="Go to Dashboard"
+              showLoggedInText="My Portfolio"
+              hrefWhenLoggedOut="/login"
+              hrefWhenLoggedIn="/dashboard"
             />
           </div>
           
@@ -328,6 +336,8 @@ export default async function LandingPage() {
                       showLoggedInText="Invest Now"
                       className="w-full"
                       planId={plan.id}
+                      hrefWhenLoggedOut="/register"
+                      hrefWhenLoggedIn={`/dashboard/investments?plan=${plan.id}`}
                     />
                   </div>
                 </div>
@@ -404,7 +414,9 @@ export default async function LandingPage() {
               variant="secondary"
               className="shadow-lg hover:shadow-xl"
               showText="Create Free Account"
-              showLoggedInText="Go to Dashboard"
+              showLoggedInText="Get Investing"
+              hrefWhenLoggedOut="/register"
+              hrefWhenLoggedIn="/dashboard/plans"
             />
           </div>
           <p className="mt-4 text-xs text-white/60">
