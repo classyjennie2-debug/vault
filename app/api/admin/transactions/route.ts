@@ -22,7 +22,7 @@ export async function GET(_req: NextRequest) {
     transactionLogger.info('Admin viewing all transactions', {}, user.id)
     const transactionsRaw = await all(
       usePostgres
-        ? `SELECT id, user_id as "userId", type, amount, status, description, COALESCE(created_at, date) as date FROM transactions ORDER BY COALESCE(created_at, date) DESC`
+        ? `SELECT id, user_id as "userId", type, amount, status, description, created_at as date FROM transactions ORDER BY created_at DESC`
         : "SELECT id, userId, type, amount, status, description, date FROM transactions ORDER BY date DESC"
     )
 
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
     const usePostgres = pgPool !== null
     const txResults: any[] = await all(
       usePostgres
-        ? `SELECT id, user_id as "userId", type, amount, status, description, COALESCE(created_at, date) as date FROM transactions WHERE id = $1`
+        ? `SELECT id, user_id as "userId", type, amount, status, description, created_at as date FROM transactions WHERE id = $1`
         : "SELECT id, userId, type, amount, status, description, date FROM transactions WHERE id = $1",
       [transactionId]
     )

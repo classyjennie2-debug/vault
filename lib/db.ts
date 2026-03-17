@@ -1273,10 +1273,10 @@ export async function getInvestmentPlanById(planId: string) {
 export async function getUserTransactions(userId: string) {
   const usePostgres = pgPool !== null
   const query = usePostgres
-    ? `SELECT id, user_id as "userId", type, amount, status, description, COALESCE(created_at, date) as date 
+    ? `SELECT id, user_id as "userId", type, amount, status, description, created_at as date 
        FROM transactions 
        WHERE user_id = $1 
-       ORDER BY COALESCE(created_at, date) DESC`
+       ORDER BY created_at DESC`
     : "SELECT * FROM transactions WHERE userId = $1 ORDER BY date DESC"
   console.log("[getTx] Fetching transactions for userId:", userId)
   const results = await all(query, [userId])
@@ -1335,10 +1335,10 @@ export async function getRecentActivities(userId: string) {
   
   // Get transactions - newest first
   const txQuery = usePostgres
-    ? `SELECT id, user_id as "userId", type, status, description, COALESCE(created_at, date) as date 
+    ? `SELECT id, user_id as "userId", type, status, description, created_at as date 
        FROM transactions 
        WHERE user_id = $1 
-       ORDER BY COALESCE(created_at, date) DESC LIMIT 10`
+       ORDER BY created_at DESC LIMIT 10`
     : "SELECT * FROM transactions WHERE userId = $1 ORDER BY date DESC LIMIT 10"
   const transactions = await all(txQuery, [userId])
   
@@ -1562,10 +1562,10 @@ export async function generatePortfolioData(userId: string) {
       amount: number
     }>(
       usePostgres
-        ? `SELECT COALESCE(created_at, date) as date, type, amount 
+        ? `SELECT created_at as date, type, amount 
            FROM transactions 
            WHERE user_id = $1 
-           ORDER BY COALESCE(created_at, date) ASC`
+           ORDER BY created_at ASC`
         : `SELECT date, type, amount FROM transactions WHERE userId = $1 ORDER BY date ASC`,
       [userId]
     )
