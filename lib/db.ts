@@ -69,7 +69,11 @@ async function initializePostgres() {
         `CREATE TABLE IF NOT EXISTS users (
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
+          firstName TEXT,
+          lastName TEXT,
           email TEXT UNIQUE NOT NULL,
+          phone TEXT,
+          dateOfBirth TEXT,
           passwordHash TEXT,
           verified INTEGER NOT NULL DEFAULT 0,
           role TEXT NOT NULL DEFAULT 'user',
@@ -490,7 +494,7 @@ export async function getUserByEmail(email: string): Promise<UserRow | undefined
   // our UserRow type (camelCase) even when using Postgres, which
   // returns lowercase column names.
   const row = (await get(
-    "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar FROM users WHERE email = ?",
+    "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar, firstName, lastName, phone, dateOfBirth FROM users WHERE email = ?",
     [email]
   )) as UserRow | undefined
 
@@ -508,7 +512,7 @@ export async function getUserByEmail(email: string): Promise<UserRow | undefined
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
   const row = (await get(
-    "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar FROM users WHERE id = ?",
+    "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar, firstName, lastName, phone, dateOfBirth FROM users WHERE id = ?",
     [id]
   )) as UserRow | undefined
 
@@ -525,23 +529,56 @@ export async function getUserById(id: string): Promise<UserRow | undefined> {
 export async function createUser(user: {
   id: string
   name: string
+  firstName?: string
+  lastName?: string
   email: string
+  phone?: string
+  dateOfBirth?: string
   passwordHash?: string
   avatar: string
   verified?: boolean
 }): Promise<void> {
-  await run(
-    "INSERT INTO users (id, name, email, passwordHash, avatar, joinedAt, verified) VALUES (?, ?, ?, ?, ?, ?, ?)",
-    [
+  if (pgPool) {
+    // PostgreSQL
+    await pgPool.query(
+      `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, email_verified, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        user.id,
+        user.name,
+        user.firstName || null,
+        user.lastName || null,
+        user.email,
+        user.phone || null,
+        user.dateOfBirth || null,
+        user.passwordHash || null,
+        user.avatar,
+        user.verified ? true : false,
+        new Date().toISOString(),
+      ]
+    )
+  } else {
+    // SQLite
+    const db = getDb()
+    db.prepare(`
+      INSERT INTO users (
+        id, name, firstName, lastName, email, phone, dateOfBirth, 
+        passwordHash, avatar, verified, joinedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
       user.id,
       user.name,
+      user.firstName || null,
+      user.lastName || null,
       user.email,
+      user.phone || null,
+      user.dateOfBirth || null,
       user.passwordHash || null,
       user.avatar,
-      new Date().toISOString(),
       user.verified ? 1 : 0,
-    ]
-  )
+      new Date().toISOString()
+    )
+  }
 }
 
 export async function verifyUserEmail(email: string): Promise<void> {

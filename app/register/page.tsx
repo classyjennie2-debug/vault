@@ -12,8 +12,11 @@ import { PasswordStrengthMeter, calculatePasswordStrength } from "@/components/a
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [name, setName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [dateOfBirth, setDateOfBirth] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [step, setStep] = useState<0 | 1>(0)
@@ -26,12 +29,25 @@ export default function RegisterPage() {
     e.preventDefault()
     setError("")
     setInfo("")
+    
+    if (!firstName.trim() || !lastName.trim() || !email || !password || !phone.trim() || !dateOfBirth) {
+      setError("All fields are required")
+      return
+    }
+
     setLoading(true)
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ 
+          firstName, 
+          lastName,
+          email, 
+          password,
+          phone,
+          dateOfBirth
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -146,15 +162,27 @@ export default function RegisterPage() {
             {info && (
               <p className="text-sm text-green-600">{info}</p>
             )}
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Full name</Label>
-              <Input
-                id="name"
-                placeholder="Alexandra Chen"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  placeholder="First"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  placeholder="Last"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
@@ -164,6 +192,27 @@ export default function RegisterPage() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+1 (555) 000-0000"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="dateOfBirth">Date of Birth</Label>
+              <Input
+                id="dateOfBirth"
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
                 required
               />
             </div>
