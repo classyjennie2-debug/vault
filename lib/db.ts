@@ -475,7 +475,14 @@ async function initializePostgres() {
       ]
 
       for (const sql of tableDefs) {
-        await pgPool.query(sql)
+        try {
+          await pgPool.query(sql)
+        } catch (err: unknown) {
+          const msg = errMessage(err)
+          if (!msg.includes('already exists') && !msg.includes('duplicate')) {
+            console.warn('[Migration] Error creating table:', msg)
+          }
+        }
       }
 
       // Run smart migrations to add missing columns
@@ -651,11 +658,16 @@ export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []):
   }
 
   await initializePostgres()
-  const res = await pgPool.query(adaptSql(sql), params)
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[ALL] PostgreSQL result rows:`, res.rows.length)
+  try {
+    const res = await pgPool.query(adaptSql(sql), params)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ALL] PostgreSQL result rows:`, res.rows.length)
+    }
+    return res.rows as T[]
+  } catch (err: unknown) {
+    console.error(`[ALL] PostgreSQL error:`, errMessage(err))
+    throw err
   }
-  return res.rows as T[]
 }
 
 
@@ -1374,60 +1386,73 @@ function getIconFromActivityLog(type: string): string {
 }
 
 export async function getUserStats(userId: string) {
-  // Use different queries for PostgreSQL vs SQLite
-  const usePostgres = pgPool !== null
-  
-  const totalInvestedRow: { sum: number } | undefined = await get(
-    usePostgres 
-      ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
-      : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
-    [userId, 'investment', 'approved']
-  )
-  const totalProfitRow: { sum: number } | undefined = await get(
-    usePostgres
-      ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
-      : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
-    [userId, 'return', 'approved']
-  )
-  const pendingDepositsRow: { cnt: number } | undefined = await get(
-    usePostgres
-      ? "SELECT COUNT(*) as cnt FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
-      : "SELECT COUNT(*) as cnt FROM transactions WHERE userId = ? AND type = ? AND status = ?",
-    [userId, 'deposit', 'pending']
-  )
-  const totalWithdrawnRow: { sum: number } | undefined = await get(
-    usePostgres
-      ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
-      : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
-    [userId, 'withdrawal', 'approved']
-  )
-  const activeCountRow: { cnt: number } | undefined = await get(
-    usePostgres
-      ? "SELECT COUNT(*) as cnt FROM investments WHERE user_id = ? AND status = ?"
-      : "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = ?",
-    [userId, 'active']
-  )
-  const userRow: { balance: number } | undefined = await get(
-    "SELECT balance FROM users WHERE id = ?",
-    [userId]
-  )
-  
-  const totalInvested = totalInvestedRow?.sum || 0
-  const totalProfit = totalProfitRow?.sum || 0
-  const userBalance = userRow?.balance || 0
-  
-  // FIX: availableBalance is the current wallet balance
-  // The userBalance is ALREADY reduced by investments when they were made
-  // So we don't subtract investments again (that was double-counting!)
-  const availableBalance = Math.max(0, userBalance)
-  
-  return {
-    totalInvested,
-    totalProfit,
-    availableBalance,
-    pendingDeposits: pendingDepositsRow?.cnt || 0,
-    totalWithdrawn: totalWithdrawnRow?.sum || 0,
-    activeInvestments: activeCountRow?.cnt || 0,
+  try {
+    // Use different queries for PostgreSQL vs SQLite
+    const usePostgres = pgPool !== null
+    
+    const totalInvestedRow: { sum: number } | undefined = await get(
+      usePostgres 
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+      [userId, 'investment', 'approved']
+    )
+    const totalProfitRow: { sum: number } | undefined = await get(
+      usePostgres
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+      [userId, 'return', 'approved']
+    )
+    const pendingDepositsRow: { cnt: number } | undefined = await get(
+      usePostgres
+        ? "SELECT COUNT(*) as cnt FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
+        : "SELECT COUNT(*) as cnt FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+      [userId, 'deposit', 'pending']
+    )
+    const totalWithdrawnRow: { sum: number } | undefined = await get(
+      usePostgres
+        ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
+        : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+      [userId, 'withdrawal', 'approved']
+    )
+    const activeCountRow: { cnt: number } | undefined = await get(
+      usePostgres
+        ? "SELECT COUNT(*) as cnt FROM investments WHERE user_id = ? AND status = ?"
+        : "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = ?",
+      [userId, 'active']
+    )
+    const userRow: { balance: number } | undefined = await get(
+      "SELECT balance FROM users WHERE id = ?",
+      [userId]
+    )
+    
+    const totalInvested = totalInvestedRow?.sum || 0
+    const totalProfit = totalProfitRow?.sum || 0
+    const userBalance = userRow?.balance || 0
+    
+    // FIX: availableBalance is the current wallet balance
+    // The userBalance is ALREADY reduced by investments when they were made
+    // So we don't subtract investments again (that was double-counting!)
+    const availableBalance = Math.max(0, userBalance)
+    
+    return {
+      totalInvested,
+      totalProfit,
+      availableBalance,
+      pendingDeposits: pendingDepositsRow?.cnt || 0,
+      totalWithdrawn: totalWithdrawnRow?.sum || 0,
+      activeInvestments: activeCountRow?.cnt || 0,
+    }
+  } catch (error: unknown) {
+    console.error('[getUserStats] Error:', errMessage(error as Error))
+    // Return defaults so dashboard doesn't crash
+    return {
+      totalInvested: 0,
+      totalProfit: 0,
+      availableBalance: 0,
+      pendingDeposits: 0,
+      totalWithdrawn: 0,
+      activeInvestments: 0,
+    }
   }
 }
 
@@ -1478,91 +1503,107 @@ export async function getUserActiveInvestments(userId: string): Promise<ActiveIn
  * This recalculates progress percentage and accumulated profit based on current time
  */
 export async function getUserActiveInvestmentsWithProfit(userId: string) {
-  const investments = await getUserActiveInvestments(userId)
-  
-  return investments.map((inv) => {
-    try {
-      const now = new Date().getTime()
-      const startTime = new Date(inv.startDate).getTime()
-      const endTime = new Date(inv.endDate).getTime()
-      
-      // Calculate progress percentage (0-100)
-      const totalDuration = endTime - startTime
-      const elapsed = now - startTime
-      let progressPercentage = 0
-      
-      if (elapsed > 0 && totalDuration > 0) {
-        progressPercentage = Math.min(100, (elapsed / totalDuration) * 100)
+  try {
+    const investments = await getUserActiveInvestments(userId)
+    
+    return investments.map((inv) => {
+      try {
+        const now = new Date().getTime()
+        const startTime = new Date(inv.startDate).getTime()
+        const endTime = new Date(inv.endDate).getTime()
+        
+        // Calculate progress percentage (0-100)
+        const totalDuration = endTime - startTime
+        const elapsed = now - startTime
+        let progressPercentage = 0
+        
+        if (elapsed > 0 && totalDuration > 0) {
+          progressPercentage = Math.min(100, (elapsed / totalDuration) * 100)
+        }
+        
+        // Calculate accumulated profit based on progress
+        const expectedProfit = inv.expectedProfit || 0
+        const accumulatedProfit = Math.max(0, (expectedProfit * progressPercentage) / 100)
+        
+        // Mark as completed if matured
+        if (progressPercentage >= 100) {
+          progressPercentage = 100
+        }
+        
+        return {
+          ...inv,
+          progressPercentage: Math.round(progressPercentage * 100) / 100,
+          accumulatedProfit: Math.round(accumulatedProfit * 100) / 100,
+        }
+      } catch (error) {
+        console.error('Error calculating investment profit:', error)
+        return inv
       }
-      
-      // Calculate accumulated profit based on progress
-      const expectedProfit = inv.expectedProfit || 0
-      const accumulatedProfit = Math.max(0, (expectedProfit * progressPercentage) / 100)
-      
-      // Mark as completed if matured
-      if (progressPercentage >= 100) {
-        progressPercentage = 100
-      }
-      
-      return {
-        ...inv,
-        progressPercentage: Math.round(progressPercentage * 100) / 100,
-        accumulatedProfit: Math.round(accumulatedProfit * 100) / 100,
-      }
-    } catch (error) {
-      console.error('Error calculating investment profit:', error)
-      return inv
-    }
-  })
+    })
+  } catch (error: unknown) {
+    console.error('[getUserActiveInvestmentsWithProfit] Error:', errMessage(error as Error))
+    // Return empty array so dashboard doesn't crash
+    return []
+  }
 }
 
 export async function generatePortfolioData(userId: string) {
-  const user = await getUserById(userId)
+  try {
+    const user = await getUserById(userId)
 
-  if (!user) return []
+    if (!user) return []
 
-  const usePostgres = pgPool !== null
-  
-  // Get all transactions for the user
-  const transactions = await all<{
-    date: string
-    type: string
-    amount: number
-  }>(
-    usePostgres
-      ? `SELECT date, type, amount FROM transactions WHERE user_id = ? ORDER BY date ASC`
-      : `SELECT date, type, amount FROM transactions WHERE userId = ? ORDER BY date ASC`,
-    [userId]
-  )
+    const usePostgres = pgPool !== null
+    
+    // Get all transactions for the user
+    const transactions = await all<{
+      date: string
+      type: string
+      amount: number
+    }>(
+      usePostgres
+        ? `SELECT date, type, amount FROM transactions WHERE user_id = ? ORDER BY date ASC`
+        : `SELECT date, type, amount FROM transactions WHERE userId = ? ORDER BY date ASC`,
+      [userId]
+    )
 
-  const months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
-  const data: { month: string; value: number }[] = []
+    const months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
+    const data: { month: string; value: number }[] = []
 
-  // If no transactions, return flat line at current balance
-  if (!transactions || transactions.length === 0) {
+    // If no transactions, return flat line at current balance
+    if (!transactions || transactions.length === 0) {
+      return months.map(month => ({
+        month,
+        value: Math.round(user.balance)
+      }))
+    }
+
+    // Calculate cumulative balance based on transaction types
+    // Start with 0 and accumulate based on transaction history
+    let cumulativeBalance = user.balance * 0.6 // Start at 60% for 6 months ago estimation
+
+    // Calculate the increment needed to reach current balance over 6 months
+    const totalIncrease = (user.balance - cumulativeBalance) / (months.length - 1)
+
+    // Generate 6-month trend
+    for (const month of months) {
+      data.push({
+        month,
+        value: Math.round(Math.max(0, cumulativeBalance)),
+      })
+      cumulativeBalance += totalIncrease
+    }
+
+    return data
+  } catch (error: unknown) {
+    console.error('[generatePortfolioData] Error:', errMessage(error as Error))
+    // Return empty data so chart doesn't crash
+    const months = ["Sep", "Oct", "Nov", "Dec", "Jan", "Feb"]
     return months.map(month => ({
       month,
-      value: Math.round(user.balance)
+      value: 0
     }))
   }
-
-  // Calculate cumulative balance based on transaction types
-  // Start with 0 and accumulate based on transaction history
-  let cumulativeBalance = user.balance * 0.6 // Start at 60% for 6 months ago estimation
-
-  // Calculate the increment needed to reach current balance over 6 months
-  const totalIncrease = (user.balance - cumulativeBalance) / (months.length - 1)
-
-  // Generate 6-month trend
-  for (const month of months) {
-    data.push({
-      month,
-      value: Math.round(Math.max(0, cumulativeBalance)),
-    })
-    cumulativeBalance += totalIncrease
-  }
-
-  return data
 }
 
 export async function createTransaction(transaction: {

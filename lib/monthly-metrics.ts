@@ -4,69 +4,83 @@ import { all, pgPool } from './db'
  * Calculate metrics for the current month based on actual user transactions
  */
 export async function calculateMonthlyMetrics(userId: string) {
-  const now = new Date()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-  const monthEnd = now.toISOString()
+  try {
+    const now = new Date()
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+    const monthEnd = now.toISOString()
 
-  const usePostgres = pgPool !== null
+    const usePostgres = pgPool !== null
 
-  // Get all transactions from this month
-  const transactions = await all<{
-    id: string
-    type: string
-    amount: number
-    status: string
-    date: string
-  }>(
-    usePostgres
-      ? `SELECT id, type, amount, status, created_at as date FROM transactions 
-         WHERE user_id = ? AND created_at >= ? AND created_at <= ?
-         ORDER BY created_at ASC`
-      : `SELECT id, type, amount, status, date FROM transactions 
-         WHERE userId = ? AND date >= ? AND date <= ?
-         ORDER BY date ASC`,
-    [userId, monthStart, monthEnd]
-  )
+    // Get all transactions from this month
+    const transactions = await all<{
+      id: string
+      type: string
+      amount: number
+      status: string
+      date: string
+    }>(
+      usePostgres
+        ? `SELECT id, type, amount, status, created_at as date FROM transactions 
+           WHERE user_id = ? AND created_at >= ? AND created_at <= ?
+           ORDER BY created_at ASC`
+        : `SELECT id, type, amount, status, date FROM transactions 
+           WHERE userId = ? AND date >= ? AND date <= ?
+           ORDER BY date ASC`,
+      [userId, monthStart, monthEnd]
+    )
 
-  let monthlyDeposits = 0
-  let monthlyReturns = 0
-  let monthlyInvestments = 0
-  let monthlyWithdrawals = 0
+    let monthlyDeposits = 0
+    let monthlyReturns = 0
+    let monthlyInvestments = 0
+    let monthlyWithdrawals = 0
 
-  // Sum up transactions by type
-  transactions.forEach((tx) => {
-    if (tx.status === 'approved') {
-      switch (tx.type) {
-        case 'deposit':
-          monthlyDeposits += tx.amount
-          break
-        case 'return':
-          monthlyReturns += tx.amount
-          break
-        case 'investment':
-          monthlyInvestments += tx.amount
-          break
-        case 'withdrawal':
-          monthlyWithdrawals += tx.amount
-          break
+    // Sum up transactions by type
+    transactions.forEach((tx) => {
+      if (tx.status === 'approved') {
+        switch (tx.type) {
+          case 'deposit':
+            monthlyDeposits += tx.amount
+            break
+          case 'return':
+            monthlyReturns += tx.amount
+            break
+          case 'investment':
+            monthlyInvestments += tx.amount
+            break
+          case 'withdrawal':
+            monthlyWithdrawals += tx.amount
+            break
+        }
       }
+    })
+
+    // FIX: Monthly gain should ONLY be investment returns, not cash flow
+    // monthlyReturns = actual profit earned from investments
+    // Deposits and withdrawals are cash movement, not profit
+    const monthlyGain = monthlyReturns
+    const monthlyNetCashFlow = monthlyDeposits - monthlyWithdrawals
+
+    return {
+      monthlyGain: Math.round(monthlyGain * 100) / 100,
+      monthlyNetCashFlow: Math.round(monthlyNetCashFlow * 100) / 100,
+      monthlyDeposits: Math.round(monthlyDeposits * 100) / 100,
+      monthlyReturns: Math.round(monthlyReturns * 100) / 100,
+      monthlyInvestments: Math.round(monthlyInvestments * 100) / 100,
+      monthlyWithdrawals: Math.round(monthlyWithdrawals * 100) / 100,
+      transactionCount: transactions.length,
     }
-  })
-
-  // FIX: Monthly gain should ONLY be investment returns, not cash flow
-  // monthlyReturns = actual profit earned from investments
-  // Deposits and withdrawals are cash movement, not profit
-  const monthlyGain = monthlyReturns
-  const monthlyNetCashFlow = monthlyDeposits - monthlyWithdrawals
-
-  return {
-    monthlyGain: Math.round(monthlyGain * 100) / 100,
-    monthlyNetCashFlow: Math.round(monthlyNetCashFlow * 100) / 100,
-    monthlyDeposits: Math.round(monthlyDeposits * 100) / 100,
-    monthlyReturns: Math.round(monthlyReturns * 100) / 100,
-    monthlyInvestments: Math.round(monthlyInvestments * 100) / 100,
-    monthlyWithdrawals: Math.round(monthlyWithdrawals * 100) / 100,
-    transactionCount: transactions.length,
+  } catch (error: unknown) {
+    console.error('[calculateMonthlyMetrics] Error:', error)
+    // Return default values so dashboard doesn't crash
+    return {
+      monthlyGain: 0,
+      monthlyNetCashFlow: 0,
+      monthlyDeposits: 0,
+      monthlyReturns: 0,
+      monthlyInvestments: 0,
+      monthlyWithdrawals: 0,
+      transactionCount: 0,
+    }
   }
 }
 
