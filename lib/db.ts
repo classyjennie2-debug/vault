@@ -462,6 +462,46 @@ async function initializePostgres() {
         console.warn('[Migration] Error running user migrations:', msg)
       }
 
+      // Migration: Rename userId to user_id in transactions table if needed
+      try {
+        // Check if userId column exists (old schema)
+        const checkColumn = await pgPool.query(`
+          SELECT column_name FROM information_schema.columns 
+          WHERE table_name = 'transactions' AND column_name = 'userId'
+        `)
+        
+        if (checkColumn.rows.length > 0) {
+          // Column exists, need to migrate it
+          console.log('[Migration] Found userId column in transactions, renaming to user_id...')
+          
+          // Drop the old foreign key if it exists
+          try {
+            await pgPool.query(`
+              ALTER TABLE transactions DROP CONSTRAINT IF EXISTS transactions_userid_fkey
+            `)
+          } catch (_e) {
+            // Might not exist
+          }
+          
+          // Rename the column
+          await pgPool.query(`
+            ALTER TABLE transactions RENAME COLUMN "userId" TO user_id
+          `)
+          
+          // Re-create the foreign key
+          await pgPool.query(`
+            ALTER TABLE transactions 
+            ADD CONSTRAINT transactions_user_id_fkey 
+            FOREIGN KEY (user_id) REFERENCES users(id)
+          `)
+          
+          console.log('[Migration] Successfully renamed userId to user_id in transactions')
+        }
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        console.warn('[Migration] Error migrating transactions columns:', msg)
+      }
+
       try {
         // Add status column to wallet_addresses if it doesn't exist
         await pgPool.query(`
