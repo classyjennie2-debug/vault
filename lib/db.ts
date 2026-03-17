@@ -387,6 +387,21 @@ async function initializePostgres() {
           description TEXT NOT NULL,
           plan_type TEXT NOT NULL DEFAULT 'Conservative Bond Fund'
         )`,
+        `CREATE TABLE IF NOT EXISTS investments (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          plan_id TEXT NOT NULL,
+          name TEXT,
+          amount REAL NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending',
+          projected_return REAL,
+          start_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          maturity_date TIMESTAMP,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id),
+          FOREIGN KEY (plan_id) REFERENCES investment_plans(id)
+        )`,
         `CREATE TABLE IF NOT EXISTS active_investments (
           id TEXT PRIMARY KEY,
           userId TEXT NOT NULL,
@@ -438,6 +453,15 @@ async function initializePostgres() {
           used INTEGER NOT NULL DEFAULT 0,
           createdAt TEXT NOT NULL,
           FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+        )`,
+        `CREATE TABLE IF NOT EXISTS activity_logs (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          type TEXT NOT NULL,
+          description TEXT NOT NULL,
+          metadata TEXT,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id)
         )`,
         `CREATE TABLE IF NOT EXISTS activity_log (
           id TEXT PRIMARY KEY,

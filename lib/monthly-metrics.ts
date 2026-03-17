@@ -1,4 +1,4 @@
-import { all } from './db'
+import { all, pgPool } from './db'
 
 /**
  * Calculate metrics for the current month based on actual user transactions
@@ -8,6 +8,8 @@ export async function calculateMonthlyMetrics(userId: string) {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const monthEnd = now.toISOString()
 
+  const usePostgres = pgPool !== null
+
   // Get all transactions from this month
   const transactions = await all<{
     id: string
@@ -16,9 +18,13 @@ export async function calculateMonthlyMetrics(userId: string) {
     status: string
     date: string
   }>(
-    `SELECT id, type, amount, status, date FROM transactions 
-     WHERE userId = ? AND date >= ? AND date <= ?
-     ORDER BY date ASC`,
+    usePostgres
+      ? `SELECT id, type, amount, status, created_at as date FROM transactions 
+         WHERE user_id = ? AND created_at >= ? AND created_at <= ?
+         ORDER BY created_at ASC`
+      : `SELECT id, type, amount, status, date FROM transactions 
+         WHERE userId = ? AND date >= ? AND date <= ?
+         ORDER BY date ASC`,
     [userId, monthStart, monthEnd]
   )
 
