@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AuthNavButtons } from "@/components/auth-nav-buttons"
 
 export default function Header() {
   return (
@@ -59,14 +60,7 @@ export default function Header() {
 
           {/* Right Side: Auth Links */}
           <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Sign in
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm">Get Started</Button>
-            </Link>
+            <AuthNavButtons />
 
             {/* Mobile Menu Button */}
             <Button variant="ghost" size="icon" className="md:hidden">

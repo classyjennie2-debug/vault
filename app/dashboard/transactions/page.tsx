@@ -77,6 +77,7 @@ export default function TransactionsPage() {
       ? userTransactions
       : userTransactions.filter((t) => t.type === filter)
 
+  // Find header section to add back button
   const totalDeposits = userTransactions
     .filter((t) => t.type === "deposit" && t.status === "approved")
     .reduce((sum, t) => sum + (t.amount || 0), 0)

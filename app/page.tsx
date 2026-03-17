@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { TrustBadges } from "@/components/ui/trust-badges"
 import { Logo } from "@/components/ui/logo"
+import { LandingCTA } from "@/components/landing-cta"
 import { getInvestmentPlansFromDb } from "@/lib/db"
 import { getPlanAnnualRate } from "@/lib/investment-utils"
 
@@ -142,15 +143,17 @@ export default async function LandingPage() {
           </Link>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/login">Log in</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/register">
-              Get Started
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+          <LandingCTA 
+            variant="ghost" 
+            size="sm" 
+            showText="Log in" 
+            showLoggedInText="Dashboard"
+          />
+          <LandingCTA 
+            size="sm" 
+            showText="Get Started" 
+            showLoggedInText="Go to Dashboard"
+          />
         </div>
       </nav>
 
@@ -182,20 +185,19 @@ export default async function LandingPage() {
             to maximize returns while managing risk effectively.
           </p>
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6 w-full">
-            <Button size="lg" asChild className="shadow-lg hover:shadow-xl w-full sm:w-auto">
-              <Link href="/register">
-                Start Investing Free
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              asChild
+            <LandingCTA 
+              size="lg" 
+              className="shadow-lg hover:shadow-xl w-full sm:w-auto"
+              showText="Start Investing Free"
+              showLoggedInText="Go to Dashboard"
+            />
+            <LandingCTA 
+              variant="outline" 
+              size="lg" 
               className="w-full sm:w-auto"
-            >
-              <Link href="/login">View Dashboard</Link>
-            </Button>
+              showText="View Dashboard"
+              showLoggedInText="Go to Dashboard"
+            />
           </div>
           
           {/* Trust badges */}
@@ -319,13 +321,15 @@ export default async function LandingPage() {
                       <span className="font-semibold text-slate-900 dark:text-white">Min. Investment:</span> ${(plan.minAmount || 0).toLocaleString()}
                     </p>
                   </div>
-                  <Button
-                    className="w-full"
-                    variant={detail.featured ? "default" : "outline"}
-                    asChild
-                  >
-                    <Link href="/register">Get Started</Link>
-                  </Button>
+                  <div className="w-full">
+                    <LandingCTA
+                      variant={detail.featured ? "default" : "outline"}
+                      showText="Get Started"
+                      showLoggedInText="Invest Now"
+                      className="w-full"
+                      planId={plan.id}
+                    />
+                  </div>
                 </div>
               )
             })}
@@ -394,17 +398,15 @@ export default async function LandingPage() {
             Join thousands of successful investors who are growing their wealth with Vault. 
             Create your account free and start investing in minutes.
           </p>
-          <Button
-            size="lg"
-            variant="secondary"
-            className="mt-8 shadow-lg hover:shadow-xl"
-            asChild
-          >
-            <Link href="/register">
-              Create Free Account
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+          <div className="mt-8">
+            <LandingCTA
+              size="lg"
+              variant="secondary"
+              className="shadow-lg hover:shadow-xl"
+              showText="Create Free Account"
+              showLoggedInText="Go to Dashboard"
+            />
+          </div>
           <p className="mt-4 text-xs text-white/60">
             No credit card required • Free forever plan • Upgrade anytime
           </p>

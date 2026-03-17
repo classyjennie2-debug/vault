@@ -139,9 +139,6 @@ export default function LoginPage() {
             Create one
           </Link>
         </p>
-        <p className="mt-4 text-center text-xs text-muted-foreground/60">
-          Tip: Use &quot;admin&quot; in email to access admin dashboard
-        </p>
       </div>
 
       {/* Right: visual panel */}
