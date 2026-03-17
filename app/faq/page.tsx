@@ -109,7 +109,7 @@ const faqs: FAQItem[] = [
   {
     category: "support",
     question: "How can I contact support?",
-    answer: "You can reach our support team 24/7 via email (support@vaultcapital.bond), live chat on our website, or phone (+1 800-123-4567). Response time is typically under 2 hours.",
+    answer: "You can reach our support team 24/7 via email (support@vaultcapital.bond), live chat on our website, or phone (+1 800-123-4567). Response time is typically under 15 minutes.",
   },
   {
     category: "support",

@@ -37,16 +37,37 @@ export function loadTawkChat() {
     }
 
     try {
-      // Initialize window properties for Tawk
+      // Initialize window properties for Tawk with enhanced configuration
       window.Tawk_API = {
         onLoad: function() {
           // Tawk has loaded - hide by default
           if (window.Tawk_API?.hideWidget) {
             window.Tawk_API.hideWidget()
           }
+          // Set a custom greeting for first-time visitors
+          if (window.Tawk_API?.setCustomStyle) {
+            window.Tawk_API.setCustomStyle({
+              'background-color': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              'color': '#fff'
+            })
+          }
+          // Pre-populate visitor information if available
+          if (window.Tawk_API?.setAttributes) {
+            window.Tawk_API.setAttributes({
+              'Support Team': 'Vault Capital Support',
+              'Response Time': 'Under 15 minutes'
+            }, function(error) {
+              // Attributes set
+            })
+          }
         },
         onStatusChange: function(status: string) {
-          // Status changed
+          // Status changed - for future analytics
+          console.log('[Tawk] Status changed to:', status)
+        },
+        onAgentJoin: function(data: any) {
+          // Agent joined - show confirmation to user
+          console.log('[Tawk] Agent joined:', data)
         }
       }
 

@@ -125,7 +125,7 @@ export default function SupportPage() {
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
             <p className="mb-2">support@vaultcapital.bond</p>
-            <p className="text-xs">Response time: 24 hours</p>
+            <p className="text-xs">Response time: 15 minutes</p>
           </CardContent>
         </Card>
 

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { BookOpen, Video, Users, Zap, Mail, MessageCircle } from "lucide-react"
+import { BookOpen, Users, Zap, Mail, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Footer from "@/components/layout/footer"
 
@@ -9,12 +9,6 @@ const resources = [
     title: "Getting Started Guide",
     description: "Learn the basics of creating an account and making your first investment.",
     link: "/help/getting-started",
-  },
-  {
-    icon: Video,
-    title: "Video Tutorials",
-    description: "Step-by-step video guides for all features and investment strategies.",
-    link: "/help/tutorials",
   },
   {
     icon: Users,
@@ -39,6 +33,12 @@ const resources = [
     title: "Live Chat Support",
     description: "Chat with our support team in real-time for immediate assistance.",
     link: "#",
+  },
+  {
+    icon: Mail,
+    title: "Email Support",
+    description: "Get detailed help via email with response time under 15 minutes.",
+    link: "mailto:support@vaultcapital.bond",
   },
 ]
 

@@ -328,6 +328,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                           plan={plan}
                           onSuccess={() => {
                             setSelectedPlan(null)
+                            setActiveTab("active-investments")
                             router.refresh()
                           }}
                         />
