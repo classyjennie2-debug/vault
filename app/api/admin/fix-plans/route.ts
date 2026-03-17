@@ -32,7 +32,7 @@ export async function POST() {
       try {
         // Use run() which works with both SQLite and PostgreSQL
         await run(
-          'UPDATE investment_plans SET plantype = $1 WHERE id = $2',
+          'UPDATE investment_plans SET plan_type = $1 WHERE id = $2',
           [mapping.planType, mapping.id]
         )
         

@@ -979,18 +979,18 @@ export async function insertVerificationCode(codeObj: {
 
 export async function consumeVerificationCode(code: string): Promise<boolean> {
   const row = await get(
-    "SELECT * FROM verification_codes WHERE code = $1 AND used = 0 AND expiresAt > $2",
+    "SELECT * FROM verification_codes WHERE code = $1 AND used = FALSE AND expiresAt > $2",
     [code, new Date().toISOString()]
   )
   if (!row) return false
-  await run("UPDATE verification_codes SET used = 1 WHERE code = $1", [code])
+  await run("UPDATE verification_codes SET used = TRUE WHERE code = $1", [code])
   return true
 }
 
 export async function canResendVerificationCode(email: string): Promise<{ canResend: boolean; nextRetryAt?: string }> {
   // Check for the most recent unused verification code for this email
   const row = await get<{ expiresAt: string }>(
-    "SELECT expiresAt FROM verification_codes WHERE email = $1 AND used = 0 ORDER BY expiresAt DESC LIMIT 1",
+    "SELECT expiresAt FROM verification_codes WHERE email = $1 AND used = FALSE ORDER BY expiresAt DESC LIMIT 1",
     [email]
   )
   
@@ -1027,7 +1027,7 @@ export async function createPasswordResetToken(userId: string, tokenString: stri
   
   await run(
     "INSERT INTO password_reset_tokens (id, userId, token, expiresAt, used, createdAt) VALUES ($1, $2, $3, $4, $5, $6)",
-    [tokenId, userId, tokenString, expiresAt, 0, new Date().toISOString()]
+    [tokenId, userId, tokenString, expiresAt, false, new Date().toISOString()]
   )
   
   return tokenString
@@ -1035,7 +1035,7 @@ export async function createPasswordResetToken(userId: string, tokenString: stri
 
 export async function validatePasswordResetToken(token: string): Promise<{ userId: string } | null> {
   const row = await get<{ userId: string; used: number }>(
-    "SELECT userId, used FROM password_reset_tokens WHERE token = $1 AND used = 0 AND expiresAt > $2",
+    "SELECT userId, used FROM password_reset_tokens WHERE token = $1 AND used = FALSE AND expiresAt > $2",
     [token, new Date().toISOString()]
   )
   
@@ -1047,7 +1047,7 @@ export async function validatePasswordResetToken(token: string): Promise<{ userI
 
 export async function markResetTokenAsUsed(token: string): Promise<boolean> {
   const changes = await run(
-    "UPDATE password_reset_tokens SET used = 1 WHERE token = $1",
+    "UPDATE password_reset_tokens SET used = TRUE WHERE token = $1",
     [token]
   )
   

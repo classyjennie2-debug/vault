@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
       // Create transaction record using correct column names for PostgreSQL
       const transactionId = uuidv4()
       await run(
-        `INSERT INTO transactions (id, user_id, type, amount, status, description, date) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         [
           transactionId,
           user.id,
