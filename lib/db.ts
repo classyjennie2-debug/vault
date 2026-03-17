@@ -535,7 +535,7 @@ async function initializePostgres() {
         }
         
         // Verify the updates
-        const verifyResult = await pgPool.query('SELECT id, plan_type as planType FROM investment_plans ORDER BY id')
+        const verifyResult = await pgPool.query('SELECT id, plan_type as \"planType\" FROM investment_plans ORDER BY id')
         if (process.env.NODE_ENV === 'development') {
           console.log('[Migration] Investment plan types:', verifyResult.rows)
         }
@@ -809,7 +809,7 @@ export interface UserRow {
 
 export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
   // Map PostgreSQL snake_case to camelCase for code consistency
-  const query = "SELECT id, name, email, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, avatar, first_name as firstName, last_name as lastName, phone, date_of_birth as dateOfBirth FROM users WHERE email = ?"
+  const query = "SELECT id, name, email, password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", avatar, first_name as \"firstName\", last_name as \"lastName\", phone, date_of_birth as \"dateOfBirth\" FROM users WHERE email = ?"
   
   const row = (await get(query, [email])) as UserRow | undefined
   if (row) {
@@ -819,7 +819,7 @@ export async function getUserByEmail(email: string): Promise<UserRow | undefined
 }
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
-  const query = "SELECT id, name, first_name as firstName, last_name as lastName, email, phone, date_of_birth as dateOfBirth, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, last_login as lastLogin, avatar, created_at as createdAt, updated_at as updatedAt FROM users WHERE id = ?"
+  const query = "SELECT id, name, first_name as \"firstName\", last_name as \"lastName\", email, phone, date_of_birth as \"dateOfBirth\", password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", last_login as \"lastLogin\", avatar, created_at as \"createdAt\", updated_at as \"updatedAt\" FROM users WHERE id = ?"
   
   const row = (await get(query, [id])) as UserRow | undefined
   if (row) {
@@ -830,7 +830,7 @@ export async function getUserById(id: string): Promise<UserRow | undefined> {
 
 export async function getAllUsers(): Promise<UserRow[]> {
   return all<UserRow>(
-    "SELECT id, name, first_name AS firstName, last_name AS lastName, email, phone, date_of_birth AS dateOfBirth, verified, role, balance, joined_at AS joinedAt, last_login AS lastLogin, avatar, created_at AS createdAt, updated_at AS updatedAt FROM users"
+    "SELECT id, name, first_name as \"firstName\", last_name as \"lastName\", email, phone, date_of_birth as \"dateOfBirth\", verified, role, balance, joined_at as \"joinedAt\", last_login as \"lastLogin\", avatar, created_at as \"createdAt\", updated_at as \"updatedAt\" FROM users"
   )
 }
 
@@ -1005,17 +1005,17 @@ export async function getInvestmentPlansFromDb() {
           id,
           name,
           description,
-          plan_type as planType,
-          min_amount as minAmount,
-          max_amount as maxAmount,
-          return_rate as returnRate,
+          plan_type as "planType",
+          min_amount as "minAmount",
+          max_amount as "maxAmount",
+          return_rate as "returnRate",
           duration,
-          duration_unit as durationUnit,
+          duration_unit as "durationUnit",
           risk,
           category,
-          management_fee as managementFee,
-          performance_fee as performanceFee,
-          withdrawal_fee as withdrawalFee
+          management_fee as "managementFee",
+          performance_fee as "performanceFee",
+          withdrawal_fee as "withdrawalFee"
         FROM investment_plans
       `
       : "SELECT * FROM investment_plans"
@@ -1206,7 +1206,7 @@ export async function getInvestmentPlanById(planId: string) {
 export async function getUserTransactions(userId: string) {
   const usePostgres = pgPool !== null
   const query = usePostgres
-    ? "SELECT id, user_id as userId, type, amount, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC"
+    ? "SELECT id, user_id as \"userId\", type, amount, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC"
     : "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC"
   return all(query, [userId])
 }
@@ -1214,7 +1214,7 @@ export async function getUserTransactions(userId: string) {
 export async function getUserNotifications(userId: string) {
   const usePostgres = pgPool !== null
   const query = usePostgres
-    ? "SELECT id, user_id as userId, title, message, type, read as isRead, created_at as timestamp, action_url as actionUrl FROM notifications WHERE user_id = ? ORDER BY created_at DESC"
+    ? "SELECT id, user_id as \"userId\", title, message, type, read as \"isRead\", created_at as timestamp, action_url as \"actionUrl\" FROM notifications WHERE user_id = ? ORDER BY created_at DESC"
     : "SELECT id, userId, title, message, type, isRead, timestamp, actionUrl FROM notifications WHERE userId = ? ORDER BY timestamp DESC"
   const notifications = await all(query, [userId])
   // Ensure isRead is properly cast to boolean for consistency
@@ -1259,7 +1259,7 @@ export async function getRecentActivities(userId: string) {
   
   // Get transactions - newest first
   const txQuery = usePostgres
-    ? "SELECT id, user_id as userId, type, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
+    ? "SELECT id, user_id as \"userId\", type, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
     : "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 10"
   const transactions = await all(txQuery, [userId])
   
@@ -1267,7 +1267,7 @@ export async function getRecentActivities(userId: string) {
   let activityLogs: any[] = []
   try {
     const logQuery = usePostgres
-      ? "SELECT id, user_id as userId, type, description, created_at as timestamp FROM activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
+      ? "SELECT id, user_id as \"userId\", type, description, created_at as timestamp FROM activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
       : "SELECT * FROM activity_log WHERE userId = ? ORDER BY timestamp DESC LIMIT 10"
     activityLogs = await all(logQuery, [userId])
   } catch (err) {
@@ -1415,15 +1415,15 @@ export async function getUserActiveInvestments(userId: string): Promise<ActiveIn
   const query = usePostgres
     ? `SELECT 
         id, 
-        user_id as userId, 
-        plan_id as planId, 
-        name as planName, 
+        user_id as "userId", 
+        plan_id as "planId", 
+        name as "planName", 
         amount, 
-        projected_return as expectedProfit, 
-        start_date as startDate, 
-        maturity_date as endDate, 
+        projected_return as "expectedProfit", 
+        start_date as "startDate", 
+        maturity_date as "endDate", 
         status, 
-        (EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - start_date)) / EXTRACT(EPOCH FROM (maturity_date - start_date)) * 100) as progressPercentage
+        (EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - start_date)) / EXTRACT(EPOCH FROM (maturity_date - start_date)) * 100) as "progressPercentage"
       FROM investments 
       WHERE user_id = ? AND status = ?`
     : `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage 
@@ -1590,13 +1590,13 @@ export async function processMaturedInvestments(userId: string) {
   const query = usePostgres
     ? `SELECT 
         id, 
-        user_id as userId, 
-        plan_id as planId, 
-        name as planName, 
+        user_id as "userId", 
+        plan_id as "planId", 
+        name as "planName", 
         amount, 
-        projected_return as expectedProfit, 
-        start_date as startDate, 
-        maturity_date as endDate, 
+        projected_return as "expectedProfit", 
+        start_date as "startDate", 
+        maturity_date as "endDate", 
         status
       FROM investments 
       WHERE user_id = ? AND status = ? AND maturity_date <= ?`
