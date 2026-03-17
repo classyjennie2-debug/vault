@@ -139,12 +139,8 @@ export async function POST(req: NextRequest) {
     const endDate = end.toISOString()
     const investmentId = uuidv4()
 
-    // Execute operations to create investment with atomicity
+    // Execute operations to create investment
     try {
-      // FIX: Wrap all operations in a transaction to ensure atomicity
-      // If any operation fails, all will be rolled back
-      await run('BEGIN')
-
       // Insert investment into investments table (PostgreSQL)
       // Using snake_case column names for PostgreSQL
       await run(
@@ -191,8 +187,9 @@ export async function POST(req: NextRequest) {
 
       // Create transaction record using correct column names for PostgreSQL
       const transactionId = uuidv4()
+      const now = new Date().toISOString()
       await run(
-        `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at, date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           transactionId,
           user.id,
@@ -200,11 +197,10 @@ export async function POST(req: NextRequest) {
           safeAmount,
           'approved',
           `${plan.name || "Investment"} - ${computedReturnRate.toFixed(2)}% for ${durationDays} days`,
-          new Date().toISOString()
+          now,
+          now
         ]
       )
-
-      await run('COMMIT')
       
       investmentLogger.info('Investment created successfully', 
         { investmentId, planId, amount: safeAmount, expectedProfit },
@@ -236,12 +232,6 @@ export async function POST(req: NextRequest) {
         }
       })
     } catch (error: unknown) {
-      // FIX: Rollback transaction if creation fails
-      try {
-        await run('ROLLBACK')
-      } catch (rollbackError: unknown) {
-        investmentLogger.error('Rollback failed', rollbackError)
-      }
       investmentLogger.error('Investment creation error', error, { planId, amount: safeAmount }, user.id)
       const appError = mapErrorToResponse(error)
       return createErrorResponse(appError)

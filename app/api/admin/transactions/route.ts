@@ -120,8 +120,6 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      await run("BEGIN")
-
       if (!transaction.userId) {
         throw new Error(`Transaction ${transactionId} has no userId field`)
       }
@@ -233,15 +231,8 @@ export async function POST(req: NextRequest) {
         }
       })
 
-      await run("COMMIT")
       return response
     } catch (error: any) {
-      try {
-        await run("ROLLBACK")
-      } catch (rollbackError) {
-        console.error('Rollback failed:', rollbackError)
-      }
-
       const errorMessage = error?.message || String(error) || "Unknown error"
 
       transactionLogger.error('Transaction approval error', error, { transactionId }, user.id)
