@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Settings, HelpCircle, LogOut, ChevronDown } from "lucide-react"
+import { Settings, HelpCircle, LogOut, ChevronDown, Moon, Sun } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useEffect, useState } from "react"
 
 interface UserMenuProps {
   user: {
@@ -25,6 +26,31 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter()
+  const [isDark, setIsDark] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    const saved = localStorage.getItem("theme")
+    const prefersDark =
+      saved === "dark" ||
+      (saved === null && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    setIsDark(prefersDark)
+  }, [])
+
+  const toggleTheme = () => {
+    if (!mounted) return
+    const newDark = !isDark
+    setIsDark(newDark)
+    const root = document.documentElement
+    if (newDark) {
+      root.classList.add("dark")
+      localStorage.setItem("theme", "dark")
+    } else {
+      root.classList.remove("dark")
+      localStorage.setItem("theme", "light")
+    }
+  }
 
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -100,6 +126,17 @@ export function UserMenu({ user }: UserMenuProps) {
               <Settings className="h-4 w-4 text-muted-foreground" />
               <span>Settings</span>
             </Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem onClick={toggleTheme}>
+            <div className="flex items-center gap-2 cursor-pointer">
+              {isDark ? (
+                <Sun className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <Moon className="h-4 w-4 text-muted-foreground" />
+              )}
+              <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+            </div>
           </DropdownMenuItem>
 
           <DropdownMenuItem asChild>

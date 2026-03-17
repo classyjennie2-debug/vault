@@ -286,9 +286,9 @@ CREATE TRIGGER update_user_settings_updated_at BEFORE UPDATE ON user_settings
 -- Seed default investment plans
 INSERT INTO investment_plans (name, description, plan_type, min_amount, max_amount, return_rate, duration, risk)
 VALUES
-  ('Conservative Bond Fund', 'Low-risk bond portfolio', 'Conservative', 1000, 100000, 4.5, 6, 'Low'),
-  ('Growth Stock Portfolio', 'Diversified growth stocks', 'Growth', 5000, 500000, 8.0, 12, 'Medium'),
-  ('Aggressive Tech Fund', 'High-growth technology stocks', 'Aggressive', 10000, 1000000, 15.0, 24, 'High'),
+  ('Conservative Bond Fund', 'Low-risk bond portfolio', 'Conservative', 100, 100000, 4.5, 6, 'Low'),
+  ('Growth Stock Portfolio', 'Diversified growth stocks', 'Growth', 500, 500000, 8.0, 12, 'Medium'),
+  ('Aggressive Tech Fund', 'High-growth technology stocks', 'Aggressive', 1000, 1000000, 15.0, 24, 'High'),
   ('Real Estate Trust', 'Real estate backed investment', 'Real Estate Trust', 2000, 500000, 7.5, 365, 'Medium')
 ON CONFLICT DO NOTHING;
 
