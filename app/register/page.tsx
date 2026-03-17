@@ -8,6 +8,7 @@ import { Lock, ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PasswordStrengthMeter, calculatePasswordStrength } from "@/components/auth/password-strength-meter"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -191,11 +192,9 @@ export default function RegisterPage() {
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Must be at least 8 characters
-              </p>
+              <PasswordStrengthMeter password={password} />
             </div>
-            <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
+            <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading || calculatePasswordStrength(password).score < 2}>
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>

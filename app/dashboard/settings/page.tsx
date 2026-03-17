@@ -41,6 +41,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { ActivityLog } from "@/components/dashboard/activity-log"
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -693,6 +694,24 @@ export default function SettingsPage() {
               </form>
             </DialogContent>
           </Dialog>
+        </CardContent>
+      </Card>
+
+      {/* Activity Log */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <div>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>
+                Monitor your account access and actions
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ActivityLog />
         </CardContent>
       </Card>
     </div>

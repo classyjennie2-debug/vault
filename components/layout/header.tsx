@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AuthNavButtons } from "@/components/auth-nav-buttons"
+import { ThemeToggle } from "@/components/theme/theme-toggle"
 
 export default function Header() {
   return (
@@ -59,7 +60,8 @@ export default function Header() {
           </nav>
 
           {/* Right Side: Auth Links */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <AuthNavButtons />
 
             {/* Mobile Menu Button */}
