@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
         // Now insert the fresh calculated profit
         await run(
           usePostgres
-            ? `INSERT INTO transactions (id, user_id, type, amount, status, description, date) 
+            ? `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at) 
                VALUES (?, ?, ?, ?, ?, ?, ?)`
             : `INSERT INTO transactions (id, userId, type, amount, status, description, date) 
                VALUES (?, ?, ?, ?, ?, ?, ?)`,

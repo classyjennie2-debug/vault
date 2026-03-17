@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { getUserById, all, run, createNotification } from "@/lib/db"
+import { getUserById, all, run, createNotification, pgPool } from "@/lib/db"
 import { validate, adminApprovalSchema } from "@/lib/validation"
 import { mapErrorToResponse, createErrorResponse, AuthorizationError, NotFoundError, ValidationError } from "@/lib/error-handling"
 import { transactionLogger, logAuditEvent } from "@/lib/logging"
@@ -18,8 +18,13 @@ export async function GET(_req: NextRequest) {
       return createErrorResponse(appError)
     }
 
+    const usePostgres = pgPool !== null
     transactionLogger.info('Admin viewing all transactions', {}, user.id)
-    const transactionsRaw = await all("SELECT id, userId, type, amount, status, description, date FROM transactions ORDER BY date DESC")
+    const transactionsRaw = await all(
+      usePostgres
+        ? "SELECT id, user_id as \"userId\", type, amount, status, description, created_at as date FROM transactions ORDER BY created_at DESC"
+        : "SELECT id, userId, type, amount, status, description, date FROM transactions ORDER BY date DESC"
+    )
 
     const transactions = transactionsRaw.map((tx: any) => ({
       id: tx.id,
@@ -89,8 +94,11 @@ export async function POST(req: NextRequest) {
     const { transactionId, approved, notes } = validationResult.data
     const newStatus = approved ? 'approved' : 'rejected'
 
+    const usePostgres = pgPool !== null
     const txResults: any[] = await all(
-      "SELECT id, userId, type, amount, status, description, date FROM transactions WHERE id = ?",
+      usePostgres
+        ? "SELECT id, user_id as \"userId\", type, amount, status, description, created_at as date FROM transactions WHERE id = ?"
+        : "SELECT id, userId, type, amount, status, description, date FROM transactions WHERE id = ?",
       [transactionId]
     )
     const txRaw = txResults[0]
