@@ -16,11 +16,11 @@ export function calculatePasswordStrength(password: string): PasswordStrength {
   if (password.length >= 12) score++
   if (password.length >= 16) score++
 
-  // Character variety checks
-  if (/[a-z]/.test(password)) score += 0
-  if (/[A-Z]/.test(password)) score += 0
-  if (/[0-9]/.test(password)) score += 0
-  if (/[^a-zA-Z0-9]/.test(password)) score += 0
+  // Character variety checks (each type contributes to score)
+  if (/[a-z]/.test(password)) score += 1
+  if (/[A-Z]/.test(password)) score += 1
+  if (/[0-9]/.test(password)) score += 1
+  if (/[^a-zA-Z0-9]/.test(password)) score += 1
 
   // Boost if has multiple character types
   const typeCount = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^a-zA-Z0-9]/].filter((regex) =>

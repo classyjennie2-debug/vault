@@ -4,14 +4,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { currentUser } from "@/lib/mock-data"
 import { ArrowUpRight, ArrowDownRight, Wallet } from "lucide-react"
+import type { UserRow } from "@/lib/db"
 
-export function BalanceCard() {
+export function BalanceCard({ user }: { user: UserRow }) {
   const formattedBalance = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(currentUser.balance)
+  }).format(user.balance)
 
   return (
     <Card className="md:col-span-2 lg:col-span-2 overflow-hidden">

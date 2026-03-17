@@ -25,10 +25,8 @@ async function initPostgresPool() {
     await pgPool.query('SELECT 1')
   } catch (err: unknown) {
     const msg = errMessage(err)
-    if (isProduction) {
-      console.error('[DB INIT] Warning: PostgreSQL not available, falling back to SQLite:', msg)
-    }
-    pgPool = null
+    console.error('[DB] PostgreSQL connection failed:', msg)
+    throw new Error('PostgreSQL database is required. DATABASE_URL must be set.')
   }
 }
 
@@ -38,11 +36,7 @@ let _db: Database.Database | null = null
 let sqliteInitialized = false
 
 function getDb(): Database.Database {
-  if (!_db) {
-    _db = new Database(DB_PATH)
-    initializeSqlite()
-  }
-  return _db
+  throw new Error('SQLite is not supported. Use PostgreSQL via DATABASE_URL only.')
 }
 
 function initializeSqlite() {
@@ -165,13 +159,9 @@ function initializeSqlite() {
       db.exec(sql)
     }
 
-    // Seed default data (tables + plans) for local development
-    seedDatabaseSync(db)
-    
     sqliteInitialized = true
-  } catch (err: unknown) {
-    console.error('Error initializing SQLite:', errMessage(err))
-    throw err
+  } catch (err) {
+    console.error('[initializeSqlite] Error:', errMessage(err as Error))
   }
 }
 
@@ -476,16 +466,16 @@ async function initializePostgres() {
         ]
         
         // CRITICAL: Sync investment plan types from mapping
-        
+        // Use snake_case column name for PostgreSQL
         for (const mapping of planMappings) {
           await pgPool.query(
-            'UPDATE investment_plans SET plantype = $1 WHERE id = $2',
+            'UPDATE investment_plans SET plan_type = $1 WHERE id = $2',
             [mapping.planType, mapping.id]
           )
         }
         
         // Verify the updates
-        const verifyResult = await pgPool.query('SELECT id, plantype FROM investment_plans ORDER BY id')
+        const verifyResult = await pgPool.query('SELECT id, plan_type as planType FROM investment_plans ORDER BY id')
         if (process.env.NODE_ENV === 'development') {
           console.log('[Migration] Investment plan types:', verifyResult.rows)
         }
@@ -529,57 +519,38 @@ interface DatabaseRow {
 }
 
 export async function run(sql: string, params: unknown[] = []): Promise<number> {
-  // In production, only minimal logging. Development logging disabled to prevent SQL parameter leakage.
-  
   await initPostgresPool()
 
-  if (pgPool) {
-    await initializePostgres()
-    const result = await pgPool.query(adaptSql(sql), params)
-    if (process.env.NODE_ENV === 'development') {
-      // PostgreSQL query executed
-    }
-    return result.rowCount || 0
-  } else {
-    const db = getDb()
-    const result = db.prepare(sql).run(...params)
-    if (process.env.NODE_ENV === 'development') {
-      // SQLite query executed
-    }
-    return result.changes || 0
+  if (!pgPool) {
+    throw new Error('PostgreSQL pool not initialized. DATABASE_URL is required.')
   }
+
+  await initializePostgres()
+  const result = await pgPool.query(adaptSql(sql), params)
+  return result.rowCount || 0
 }
 
 export async function get<T = DatabaseRow>(sql: string, params: unknown[] = []): Promise<T | undefined> {
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[GET] Executing SQL: ${sql}`, 'Backend:', pgPool ? 'PostgreSQL' : 'SQLite')
+    console.log(`[GET] Executing SQL: ${sql}`)
   }
 
   await initPostgresPool()
   
-  if (pgPool) {
-    await initializePostgres()
-    try {
-      const res = await pgPool.query(adaptSql(sql), params)
-      const result = res.rows[0] as T
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[GET] PostgreSQL success`)
-      }
-      return result
-    } catch (err: unknown) {
-      console.error(`[GET] PostgreSQL error:`, errMessage(err))
-      throw err
-    }
+  if (!pgPool) {
+    throw new Error('PostgreSQL pool not initialized. DATABASE_URL is required.')
   }
-  
+
+  await initializePostgres()
   try {
-    const result = getDb().prepare(sql).get(...params) as T
+    const res = await pgPool.query(adaptSql(sql), params)
+    const result = res.rows[0] as T
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[GET] SQLite success`)
+      console.log(`[GET] PostgreSQL success`)
     }
     return result
   } catch (err: unknown) {
-    console.error(`[GET] SQLite error:`, errMessage(err))
+    console.error(`[GET] PostgreSQL error:`, errMessage(err))
     throw err
   }
 }
@@ -591,20 +562,16 @@ export async function all<T = DatabaseRow>(sql: string, params: unknown[] = []):
 
   await initPostgresPool()
   
-  if (pgPool) {
-    await initializePostgres()
-    const res = await pgPool.query(adaptSql(sql), params)
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[ALL] PostgreSQL result rows:`, res.rows.length)
-    }
-    return res.rows as T[]
+  if (!pgPool) {
+    throw new Error('PostgreSQL pool not initialized. DATABASE_URL is required.')
   }
-  
-  const result = getDb().prepare(sql).all(...params) as T[]
+
+  await initializePostgres()
+  const res = await pgPool.query(adaptSql(sql), params)
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[ALL] SQLite result rows:`, result.length)
+    console.log(`[ALL] PostgreSQL result rows:`, res.rows.length)
   }
-  return result
+  return res.rows as T[]
 }
 
 
@@ -677,24 +644,7 @@ const planTemplates = [
 ]
 
 function seedDatabaseSync(db: Database.Database) {
-  // Insert plan templates with fixed duration and return rates
-  const insertPlan = db.prepare(
-    "INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description, planType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  )
-  for (const tpl of planTemplates) {
-    insertPlan.run(
-      tpl.id,
-      tpl.name,
-      tpl.minAmount,
-      tpl.maxAmount,
-      tpl.returnRate, // Fixed return rate
-      tpl.duration, // Fixed duration
-      tpl.durationUnit,
-      tpl.risk,
-      tpl.description,
-      tpl.planType
-    )
-  }
+  throw new Error('SQLite is not supported. Use PostgreSQL only.')
 }
 
 async function seedDatabasePostgres() {
@@ -704,21 +654,21 @@ async function seedDatabasePostgres() {
 
   // Seed plan templates with fixed duration and return rates
   for (const tpl of planTemplates) {
-    // Use UPSERT to ensure planType is always set correctly
-    // Use lowercase 'plantype' for PostgreSQL compatibility
+    // Use UPSERT to ensure plan_type is always set correctly
+    // Use snake_case for PostgreSQL column names
     await pool.query(
-      `INSERT INTO investment_plans (id, name, minAmount, maxAmount, returnRate, duration, durationUnit, risk, description, plantype) 
+      `INSERT INTO investment_plans (id, name, min_amount, max_amount, return_rate, duration, duration_unit, risk, description, plan_type) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
        ON CONFLICT (id) DO UPDATE SET 
          name = $2,
-         minAmount = $3,
-         maxAmount = $4,
-         returnRate = $5,
+         min_amount = $3,
+         max_amount = $4,
+         return_rate = $5,
          duration = $6,
-         durationUnit = $7,
+         duration_unit = $7,
          risk = $8,
          description = $9,
-         plantype = $10`,
+         plan_type = $10`,
       [
         tpl.id,
         tpl.name,
@@ -759,14 +709,8 @@ export interface UserRow {
 }
 
 export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
-  // Use correct column names: snake_case for PostgreSQL, camelCase for SQLite
   // Map PostgreSQL snake_case to camelCase for code consistency
-  let query: string
-  if (pgPool) {
-    query = "SELECT id, name, email, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, avatar, first_name as firstName, last_name as lastName, phone, date_of_birth as dateOfBirth FROM users WHERE email = ?"
-  } else {
-    query = "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar, firstName, lastName, phone, dateOfBirth FROM users WHERE email = ?"
-  }
+  const query = "SELECT id, name, email, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, avatar, first_name as firstName, last_name as lastName, phone, date_of_birth as dateOfBirth FROM users WHERE email = ?"
   
   const row = (await get(query, [email])) as UserRow | undefined
   if (row) {
@@ -776,12 +720,7 @@ export async function getUserByEmail(email: string): Promise<UserRow | undefined
 }
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
-  let query: string
-  if (pgPool) {
-    query = "SELECT id, name, first_name as firstName, last_name as lastName, email, phone, date_of_birth as dateOfBirth, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, last_login as lastLogin, avatar, created_at as createdAt, updated_at as updatedAt FROM users WHERE id = ?"
-  } else {
-    query = "SELECT id, name, firstName, lastName, email, phone, dateOfBirth, passwordHash, verified, role, balance, joinedAt, lastLogin, avatar, createdAt, updatedAt FROM users WHERE id = ?"
-  }
+  const query = "SELECT id, name, first_name as firstName, last_name as lastName, email, phone, date_of_birth as dateOfBirth, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, last_login as lastLogin, avatar, created_at as createdAt, updated_at as updatedAt FROM users WHERE id = ?"
   
   const row = (await get(query, [id])) as UserRow | undefined
   if (row) {
@@ -791,14 +730,8 @@ export async function getUserById(id: string): Promise<UserRow | undefined> {
 }
 
 export async function getAllUsers(): Promise<UserRow[]> {
-  if (pgPool) {
-    return all<UserRow>(
-      "SELECT id, name, first_name AS firstName, last_name AS lastName, email, phone, date_of_birth AS dateOfBirth, verified, role, balance, joined_at AS joinedAt, last_login AS lastLogin, avatar, created_at AS createdAt, updated_at AS updatedAt FROM users"
-    )
-  }
-
   return all<UserRow>(
-    "SELECT id, name, firstName, lastName, email, phone, dateOfBirth, verified, role, balance, joinedAt, lastLogin, avatar, createdAt, updatedAt FROM users"
+    "SELECT id, name, first_name AS firstName, last_name AS lastName, email, phone, date_of_birth AS dateOfBirth, verified, role, balance, joined_at AS joinedAt, last_login AS lastLogin, avatar, created_at AS createdAt, updated_at AS updatedAt FROM users"
   )
 }
 
@@ -814,57 +747,34 @@ export async function createUser(user: {
   avatar: string
   verified?: boolean
 }): Promise<void> {
-  if (pgPool) {
-    // Ensure the Postgres schema is initialized/migrated before creating users
-    await initializePostgres()
+  // Ensure the Postgres schema is initialized/migrated before creating users
+  await initializePostgres()
 
-    const verifiedValue = user.verified ? 1 : 0
+  const verifiedValue = user.verified ? 1 : 0
 
-    try {
-      await pgPool.query(
-        `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, role, balance, verified)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-        [
-          user.id,
-          user.name,
-          user.firstName || null,
-          user.lastName || null,
-          user.email,
-          user.phone || null,
-          user.dateOfBirth || null,
-          user.passwordHash || null,
-          user.avatar,
-          'user', // role - default to 'user'
-          0, // balance - default to 0
-          verifiedValue,
-        ]
-      )
-    } catch (err: unknown) {
-      const msg = errMessage(err)
-      console.error('PostgreSQL createUser error:', msg)
-      throw err
-    }
-  } else {
-    // SQLite
-    const db = getDb()
-    db.prepare(`
-      INSERT INTO users (
-        id, name, firstName, lastName, email, phone, dateOfBirth, 
-        passwordHash, avatar, verified, joinedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      user.id,
-      user.name,
-      user.firstName || null,
-      user.lastName || null,
-      user.email,
-      user.phone || null,
-      user.dateOfBirth || null,
-      user.passwordHash || null,
-      user.avatar,
-      user.verified ? 1 : 0,
-      new Date().toISOString()
+  try {
+    await pgPool!.query(
+      `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, role, balance, verified)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [
+        user.id,
+        user.name,
+        user.firstName || null,
+        user.lastName || null,
+        user.email,
+        user.phone || null,
+        user.dateOfBirth || null,
+        user.passwordHash || null,
+        user.avatar,
+        'user', // role - default to 'user'
+        0, // balance - default to 0
+        verifiedValue,
+      ]
     )
+  } catch (err: unknown) {
+    const msg = errMessage(err)
+    console.error('PostgreSQL createUser error:', msg)
+    throw err
   }
 }
 
@@ -884,17 +794,10 @@ export async function setUserPassword(
   userId: string,
   passwordHash: string
 ): Promise<void> {
-  if (pgPool) {
-    await run("UPDATE users SET password_hash = ? WHERE id = ?", [
-      passwordHash,
-      userId,
-    ])
-  } else {
-    await run("UPDATE users SET passwordHash = ? WHERE id = ?", [
-      passwordHash,
-      userId,
-    ])
-  }
+  await run("UPDATE users SET password_hash = ? WHERE id = ?", [
+    passwordHash,
+    userId,
+  ])
 }
 
 export async function insertVerificationCode(codeObj: {
@@ -988,7 +891,33 @@ export async function markResetTokenAsUsed(token: string): Promise<boolean> {
 
 export async function getInvestmentPlansFromDb() {
   try {
-    const rows: InvestmentPlan[] = await all("SELECT * FROM investment_plans")
+    // Use different queries for PostgreSQL vs SQLite
+    const usePostgres = pgPool !== null
+    
+    // SQLite uses camelCase (plantype, minAmount, etc.)
+    // PostgreSQL uses snake_case (plan_type, min_amount, etc.) with aliases to camelCase
+    const query = usePostgres
+      ? `
+        SELECT 
+          id,
+          name,
+          description,
+          plan_type as planType,
+          min_amount as minAmount,
+          max_amount as maxAmount,
+          return_rate as returnRate,
+          duration,
+          duration_unit as durationUnit,
+          risk,
+          category,
+          management_fee as managementFee,
+          performance_fee as performanceFee,
+          withdrawal_fee as withdrawalFee
+        FROM investment_plans
+      `
+      : "SELECT * FROM investment_plans"
+    
+    const rows: InvestmentPlan[] = await all(query)
     
     if (process.env.NODE_ENV === 'development') {
       console.log("[getInvestmentPlansFromDb] Raw DB rows count:", rows.length)
@@ -1000,8 +929,6 @@ export async function getInvestmentPlansFromDb() {
     // Map to include optional fields and ensure correct defaults
     const mappedPlans = rows.map((p: any, idx: number) => {
       const rp = p as Record<string, unknown>
-      // PostgreSQL returns column names in lowercase, so check both planType and plantype
-      const planTypeValue = rp.planType ?? rp.plantype
       
       const mapped: InvestmentPlan = {
         ...p,
@@ -1013,8 +940,7 @@ export async function getInvestmentPlansFromDb() {
         durationUnit: (rp.durationUnit as string) || "months",
         risk: (rp.risk as string) || "Medium",
         // CRITICAL: Explicitly include planType with proper fallback based on ID
-        // Check both camelCase (planType) and lowercase (plantype) for PostgreSQL compatibility
-        planType: planTypeValue && String(planTypeValue).trim() ? String(planTypeValue).trim() : getPlanTypeById((rp.id ?? '') as string),
+        planType: rp.planType && String(rp.planType).trim() ? String(rp.planType).trim() : getPlanTypeById((rp.id ?? '') as string),
         // Optional fields
         fees: typeof rp.fees === 'object' && rp.fees !== null ? (rp.fees as Record<string, number>) : { management: 0, performance: 0, withdrawal: 0 },
         category: (rp.category as string) || "",
@@ -1117,25 +1043,51 @@ function getDefaultPlans(): InvestmentPlan[] {
 }
 
 export async function getInvestmentPlanById(planId: string) {
-  const p: InvestmentPlan | undefined = await get("SELECT * FROM investment_plans WHERE id = ?", [planId])
+  const usePostgres = pgPool !== null
+  
+  const query = usePostgres
+    ? `
+    SELECT 
+      id,
+      name,
+      description,
+      plan_type as planType,
+      min_amount as minAmount,
+      max_amount as maxAmount,
+      return_rate as returnRate,
+      duration,
+      duration_unit as durationUnit,
+      risk,
+      category,
+      management_fee as managementFee,
+      performance_fee as performanceFee,
+      withdrawal_fee as withdrawalFee
+    FROM investment_plans 
+    WHERE id = ?
+  `
+    : "SELECT * FROM investment_plans WHERE id = ?"
+  
+  const p: InvestmentPlan | undefined = await get(query, [planId])
   if (!p) {
     console.warn(`[getInvestmentPlanById] Plan ${planId} not found in database`)
     return undefined
   }
-  
-  // PostgreSQL returns column names in lowercase
-  const rp = p as Record<string, unknown>
-  const planTypeValue = rp.planType ?? rp.plantype
   
   // Log for debugging (dev only)
   if (process.env.NODE_ENV === 'development') {
     console.log(`[getInvestmentPlanById] Found plan ${planId}`)
   }
   
+  const rp = p as Record<string, unknown>
   const mapped: InvestmentPlan = {
     ...p,
     // CRITICAL: Ensure planType is set with fallback to ID-based mapping
-    planType: planTypeValue && String(planTypeValue).trim() ? String(planTypeValue).trim() : getPlanTypeById((rp.id ?? '') as string),
+    planType: rp.planType && String(rp.planType).trim() ? String(rp.planType).trim() : getPlanTypeById((rp.id ?? '') as string),
+    minAmount: (Number.isFinite(Number(rp.minAmount)) && Number(rp.minAmount) > 0) ? Number(rp.minAmount) : 100,
+    maxAmount: (Number.isFinite(Number(rp.maxAmount)) && Number(rp.maxAmount) > 0) ? Number(rp.maxAmount) : 500000,
+    returnRate: (Number.isFinite(Number(rp.returnRate)) && Number(rp.returnRate) > 0) ? Number(rp.returnRate) : 8,
+    duration: (Number.isFinite(Number(rp.duration)) && Number(rp.duration) > 0) ? Number(rp.duration) : 6,
+    durationUnit: (rp.durationUnit as string) || "months",
     fees: typeof rp.fees === 'object' && rp.fees !== null ? (rp.fees as Record<string, number>) : { management: 0, performance: 0, withdrawal: 0 },
     category: (rp.category as string) || "",
   } as InvestmentPlan
@@ -1149,11 +1101,19 @@ export async function getInvestmentPlanById(planId: string) {
 }
 
 export async function getUserTransactions(userId: string) {
-  return all("SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC", [userId])
+  const usePostgres = pgPool !== null
+  const query = usePostgres
+    ? "SELECT id, user_id as userId, type, amount, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC"
+    : "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC"
+  return all(query, [userId])
 }
 
 export async function getUserNotifications(userId: string) {
-  const notifications = await all("SELECT id, userId, title, message, type, isRead, timestamp, actionUrl FROM notifications WHERE userId = ? ORDER BY timestamp DESC", [userId])
+  const usePostgres = pgPool !== null
+  const query = usePostgres
+    ? "SELECT id, user_id as userId, title, message, type, read as isRead, created_at as timestamp, action_url as actionUrl FROM notifications WHERE user_id = ? ORDER BY created_at DESC"
+    : "SELECT id, userId, title, message, type, isRead, timestamp, actionUrl FROM notifications WHERE userId = ? ORDER BY timestamp DESC"
+  const notifications = await all(query, [userId])
   // Ensure isRead is properly cast to boolean for consistency
   return notifications.map((n: any) => {
     const rn = n as Record<string, unknown>
@@ -1173,7 +1133,11 @@ export async function getUserNotifications(userId: string) {
 export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
   try {
     // Use parameterized query to mark notification as read
-    const changes = await run("UPDATE notifications SET isRead = ? WHERE id = ?", [1, notificationId])
+    const usePostgres = pgPool !== null
+    const query = usePostgres
+      ? "UPDATE notifications SET read = ? WHERE id = ?"
+      : "UPDATE notifications SET isRead = ? WHERE id = ?"
+    const changes = await run(query, [1, notificationId])
     
     if (changes === 0) {
       console.error(`[Notification] Failed to mark notification as read: ${notificationId}`)
@@ -1188,17 +1152,25 @@ export async function markNotificationAsRead(notificationId: string): Promise<bo
 }
 
 export async function getRecentActivities(userId: string) {
-  // Get transactions - newest first
-  const transactions = await all(
-    "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 10",
-    [userId]
-  )
+  const usePostgres = pgPool !== null
   
-  // Get activity log entries
-  const activityLogs = await all(
-    "SELECT * FROM activity_log WHERE userId = ? ORDER BY timestamp DESC LIMIT 10",
-    [userId]
-  )
+  // Get transactions - newest first
+  const txQuery = usePostgres
+    ? "SELECT id, user_id as userId, type, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
+    : "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 10"
+  const transactions = await all(txQuery, [userId])
+  
+  // Get activity log entries (if table exists)
+  let activityLogs: any[] = []
+  try {
+    const logQuery = usePostgres
+      ? "SELECT id, user_id as userId, type, description, created_at as timestamp FROM activity_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
+      : "SELECT * FROM activity_log WHERE userId = ? ORDER BY timestamp DESC LIMIT 10"
+    activityLogs = await all(logQuery, [userId])
+  } catch (err) {
+    // activity_logs table might not exist, continue without it
+    console.debug("Activity logs table not available")
+  }
   
   // Transform transactions to activities format
   const txActivities = transactions.map((tx: any) => ({
@@ -1275,25 +1247,38 @@ function getIconFromActivityLog(type: string): string {
 }
 
 export async function getUserStats(userId: string) {
+  // Use different queries for PostgreSQL vs SQLite
+  const usePostgres = pgPool !== null
+  
   const totalInvestedRow: { sum: number } | undefined = await get(
-    "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'investment' AND status = 'approved'",
-    [userId]
+    usePostgres 
+      ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
+      : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+    [userId, 'investment', 'approved']
   )
   const totalProfitRow: { sum: number } | undefined = await get(
-    "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'return' AND status = 'approved'",
-    [userId]
+    usePostgres
+      ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
+      : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+    [userId, 'return', 'approved']
   )
   const pendingDepositsRow: { cnt: number } | undefined = await get(
-    "SELECT COUNT(*) as cnt FROM transactions WHERE userId = ? AND type = 'deposit' AND status = 'pending'",
-    [userId]
+    usePostgres
+      ? "SELECT COUNT(*) as cnt FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
+      : "SELECT COUNT(*) as cnt FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+    [userId, 'deposit', 'pending']
   )
   const totalWithdrawnRow: { sum: number } | undefined = await get(
-    "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = 'withdrawal' AND status = 'approved'",
-    [userId]
+    usePostgres
+      ? "SELECT SUM(amount) as sum FROM transactions WHERE user_id = ? AND type = ? AND status = ?"
+      : "SELECT SUM(amount) as sum FROM transactions WHERE userId = ? AND type = ? AND status = ?",
+    [userId, 'withdrawal', 'approved']
   )
   const activeCountRow: { cnt: number } | undefined = await get(
-    "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = 'active'",
-    [userId]
+    usePostgres
+      ? "SELECT COUNT(*) as cnt FROM investments WHERE user_id = ? AND status = ?"
+      : "SELECT COUNT(*) as cnt FROM active_investments WHERE userId = ? AND status = ?",
+    [userId, 'active']
   )
   const userRow: { balance: number } | undefined = await get(
     "SELECT balance FROM users WHERE id = ?",
@@ -1320,13 +1305,30 @@ export async function getUserStats(userId: string) {
 }
 
 export async function getUserActiveInvestments(userId: string): Promise<ActiveInvestment[]> {
-  const results = (await all(
-    `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage 
-     FROM active_investments WHERE userId = ? AND status = 'active'`,
-    [userId]
-  )) as unknown[]
+  const usePostgres = pgPool !== null
   
-  // Normalize column names (handle both camelCase and lowercase from database)
+  // For PostgreSQL, use investments table with proper column name mapping
+  // For SQLite, use active_investments table
+  const query = usePostgres
+    ? `SELECT 
+        id, 
+        user_id as userId, 
+        plan_id as planId, 
+        name as planName, 
+        amount, 
+        projected_return as expectedProfit, 
+        start_date as startDate, 
+        maturity_date as endDate, 
+        status, 
+        (EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - start_date)) / EXTRACT(EPOCH FROM (maturity_date - start_date)) * 100) as progressPercentage
+      FROM investments 
+      WHERE user_id = ? AND status = ?`
+    : `SELECT id, userId, planId, planName, amount, expectedProfit, startDate, endDate, status, progressPercentage 
+       FROM active_investments WHERE userId = ? AND status = ?`
+  
+  const results = (await all(query, [userId, 'active'])) as unknown[]
+  
+  // Normalize column names
   return results.map((row: unknown) => {
     const r = row as Record<string, unknown>
     return {
@@ -1472,17 +1474,41 @@ export async function createTransaction(transaction: {
 // process investments that have matured and credit returns to user
 export async function processMaturedInvestments(userId: string) {
   const now = new Date().toISOString()
-  const matured = (await all(
-    "SELECT * FROM active_investments WHERE userId = ? AND status = 'active' AND endDate <= ?",
-    [userId, now]
-  )) as ActiveInvestment[]
+  const usePostgres = pgPool !== null
+  
+  // Get matured investments - use different table names for PostgreSQL vs SQLite
+  const query = usePostgres
+    ? `SELECT 
+        id, 
+        user_id as userId, 
+        plan_id as planId, 
+        name as planName, 
+        amount, 
+        projected_return as expectedProfit, 
+        start_date as startDate, 
+        maturity_date as endDate, 
+        status
+      FROM investments 
+      WHERE user_id = ? AND status = ? AND maturity_date <= ?`
+    : "SELECT * FROM active_investments WHERE userId = ? AND status = 'active' AND endDate <= ?"
+  
+  const params = usePostgres 
+    ? [userId, 'active', now]
+    : [userId, now]
+  
+  const matured = (await all(query, params)) as ActiveInvestment[]
 
   for (const inv of matured) {
     // mark complete and set full progress
-    await run(
-      "UPDATE active_investments SET status = 'completed', progressPercentage = 100 WHERE id = ?",
-      [inv.id]
-    )
+    const updateQuery = usePostgres
+      ? "UPDATE investments SET status = ? WHERE id = ?"
+      : "UPDATE active_investments SET status = 'completed', progressPercentage = 100 WHERE id = ?"
+    
+    const updateParams = usePostgres
+      ? ['completed', inv.id]
+      : [inv.id]
+    
+    await run(updateQuery, updateParams)
 
     // credit the expected profit and principal back to user balance
     const profit = inv.expectedProfit || 0
@@ -1575,17 +1601,10 @@ export async function logActivity(userId: string, type: string, description: str
 }
 
 export async function updateLastLogin(userId: string) {
-  if (pgPool) {
-    await run("UPDATE users SET last_login = ? WHERE id = ?", [
-      new Date().toISOString(),
-      userId,
-    ])
-  } else {
-    await run("UPDATE users SET lastLogin = ? WHERE id = ?", [
-      new Date().toISOString(),
-      userId,
-    ])
-  }
+  await run("UPDATE users SET last_login = ? WHERE id = ?", [
+    new Date().toISOString(),
+    userId,
+  ])
 }
 
 export async function getUserActivity(userId: string, limit: number = 20) {

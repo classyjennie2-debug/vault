@@ -1,0 +1,35 @@
+import type { CoinType, NetworkType } from "@/lib/types"
+
+// Cryptocurrency network and coin configurations
+export const coinNetworks: Record<CoinType, NetworkType[]> = {
+  USDT: ["TRC20", "ERC20", "BEP20", "USDT0"],
+  BTC: ["BTC"],
+  ETH: ["ERC20"],
+  BNB: ["BEP20"],
+  TRX: ["TRC20"],
+  SOL: ["SOL"],
+}
+
+export const coinDetails: Record<
+  CoinType,
+  { name: string; color: string; bgColor: string }
+> = {
+  USDT: { name: "Tether", color: "#26A17B", bgColor: "rgba(38,161,123,0.12)" },
+  BTC: { name: "Bitcoin", color: "#F7931A", bgColor: "rgba(247,147,26,0.12)" },
+  ETH: { name: "Ethereum", color: "#627EEA", bgColor: "rgba(98,126,234,0.12)" },
+  BNB: {
+    name: "BNB",
+    color: "#F3BA2F",
+    bgColor: "rgba(243,186,47,0.12)",
+  },
+  TRX: {
+    name: "Tron",
+    color: "#FF0013",
+    bgColor: "rgba(255,0,19,0.12)",
+  },
+  SOL: {
+    name: "Solana",
+    color: "#9945FF",
+    bgColor: "rgba(153,69,255,0.12)",
+  },
+}

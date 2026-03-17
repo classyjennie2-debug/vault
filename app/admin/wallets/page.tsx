@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from "react"
 import type { CoinType, NetworkType, WalletAddress } from "@/lib/types"
-import {
-  coinNetworks,
-  coinDetails,
-  allUsers,
-} from "@/lib/mock-data"
+import type { UserRow } from "@/lib/db"
+import { coinNetworks, coinDetails } from "@/lib/crypto-config"
 import { CoinIcon } from "@/components/crypto/coin-icon"
 import {
   Card,
@@ -53,6 +50,7 @@ const allCoins: CoinType[] = ["USDT", "BTC", "ETH", "BNB", "TRX", "SOL"]
 
 export default function AdminWalletsPage() {
   const [walletPool, setWalletPool] = useState<WalletAddress[]>([])
+  const [users, setUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -73,14 +71,14 @@ export default function AdminWalletsPage() {
   const [isAdding, setIsAdding] = useState(false)
   const [isChangingStatus, setIsChangingStatus] = useState(false)
 
-  // Fetch wallets from API on mount
+  // Fetch wallets and users from API on mount
   useEffect(() => {
-    const fetchWallets = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/admin/wallets")
-        if (res.ok) {
-          const data = await res.json()
-          setWalletPool(data || [])
+        const walletsRes = await fetch("/api/admin/wallets")
+        if (walletsRes.ok) {
+          const walletsData = await walletsRes.json()
+          setWalletPool(walletsData || [])
         } else {
           setError("Failed to fetch wallets from database")
         }
@@ -92,7 +90,7 @@ export default function AdminWalletsPage() {
       }
     }
 
-    fetchWallets()
+    fetchData()
   }, [])
 
   const handleAddWallet = async () => {
@@ -270,7 +268,7 @@ export default function AdminWalletsPage() {
 
   const getUserName = (userId: string | null) => {
     if (!userId) return null
-    const user = allUsers.find((u) => u.id === userId)
+    const user = users.find((u) => u.id === userId)
     return user?.name || userId
   }
 

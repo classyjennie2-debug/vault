@@ -26,6 +26,19 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [info, setInfo] = useState("")
+  const [canResend, setCanResend] = useState(true)
+  const [resendCountdown, setResendCountdown] = useState(0)
+
+  // Countdown timer for resend
+  React.useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+    if (resendCountdown === 0 && !canResend) {
+      setCanResend(true)
+    }
+  }, [resendCountdown, canResend])
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
@@ -92,6 +105,45 @@ export default function RegisterPage() {
     } catch (err) {
       setError("An error occurred. Please try again.")
       setLoading(false)
+    }
+  }
+
+  async function handleResendCode(e: React.FormEvent) {
+    e.preventDefault()
+    if (!canResend || !email) return
+
+    setError("")
+    setInfo("")
+    setCanResend(false)
+    setResendCountdown(300) // 5 minutes countdown
+
+    try {
+      const res = await fetch("/api/auth/resend-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setCanResend(true)
+        setResendCountdown(0)
+        if (res.status === 429) {
+          setError(data.error || "Please wait before requesting a new code")
+        } else if (res.status === 404) {
+          setError("Email not found")
+        } else {
+          setError(data.error || "Failed to resend code")
+        }
+        return
+      }
+
+      setInfo("Verification code sent to your email")
+    } catch (err) {
+      setCanResend(true)
+      setResendCountdown(0)
+      const message = err instanceof Error ? err.message : "Network error"
+      setError(`Failed to resend code: ${message}`)
     }
   }
 
@@ -224,7 +276,7 @@ export default function RegisterPage() {
               </div>
               {phoneCountry && (
                 <p className="text-xs text-muted-foreground">
-                  Format: {COUNTRY_CODES_LIST.find(c => c.code === phoneCountry)?.format}
+                  Format: {COUNTRY_CODES_LIST.find(c => c.countryCode === phoneCountry)?.format}
                 </p>
               )}
             </div>
@@ -274,6 +326,9 @@ export default function RegisterPage() {
             {error && (
               <p className="text-sm text-red-500">{error}</p>
             )}
+            {info && (
+              <p className="text-sm text-green-600">{info}</p>
+            )}
             <p className="text-sm text-muted-foreground">
               Enter the verification code we sent to <strong>{email}</strong>
             </p>
@@ -289,6 +344,17 @@ export default function RegisterPage() {
             </div>
             <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
               {loading ? "Verifying..." : "Verify & Continue"}
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full" 
+              onClick={handleResendCode}
+              disabled={!canResend || loading}
+            >
+              {!canResend && resendCountdown > 0
+                ? `Resend in ${Math.floor(resendCountdown / 60)}:${String(resendCountdown % 60).padStart(2, '0')}`
+                : "Resend Code"}
             </Button>
           </form>
         )}

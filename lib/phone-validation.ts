@@ -55,6 +55,6 @@ export function getCountryCodeEntry(code: CountryCode) {
 }
 
 export const COUNTRY_CODES_LIST = Object.entries(COUNTRY_CODES).map(([key, value]) => ({
-  code: key as CountryCode,
+  countryCode: key as CountryCode,
   ...value,
 }))

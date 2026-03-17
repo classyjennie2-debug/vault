@@ -66,6 +66,20 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
   INDEX idx_expires_at (expires_at)
 );
 
+-- Email verification codes
+CREATE TABLE IF NOT EXISTS verification_codes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  email VARCHAR(255) NOT NULL,
+  code VARCHAR(6) NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  expiresAt TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  
+  INDEX idx_email (email),
+  INDEX idx_code (code),
+  INDEX idx_expiresAt (expiresAt)
+);
+
 -- Activity logs
 CREATE TABLE IF NOT EXISTS activity_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
