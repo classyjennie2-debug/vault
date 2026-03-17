@@ -30,7 +30,7 @@ import {
   LogOut,
   Trash2,
   AlertTriangle,
-  Activity,
+  Activity as ActivityIcon,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {

@@ -92,8 +92,6 @@ export default function AdminTransactionsPage() {
         body: JSON.stringify({ transactionId: txId, approved: true }),
       })
       
-      const contentType = res.headers.get("content-type")
-      
       let data
       try {
         data = await res.json()
@@ -151,13 +149,13 @@ export default function AdminTransactionsPage() {
         body: JSON.stringify({ transactionId: txId, approved: false }),
       })
       
-      const contentType = res.headers.get("content-type")
-      
       let data
       try {
         data = await res.json()
       } catch (parseError) {
+        console.error("Failed to parse response as JSON:", parseError)
         const text = await res.text()
+        console.error("Raw response:", text)
         alert(`Error: Invalid server response (${res.status})`)
         setProcessingId(null)
         return

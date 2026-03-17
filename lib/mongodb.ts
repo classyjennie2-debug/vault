@@ -19,12 +19,16 @@ import type { MongoClient as MongoClientType, Db as DbType, ObjectId as ObjectId
 let MongoClientClass: unknown = null
 let ObjectIdClass: unknown = null
 
-try {
-  const mongodb = require('mongodb') as { MongoClient: any; ObjectId: any }
-  MongoClientClass = mongodb.MongoClient
-  ObjectIdClass = mongodb.ObjectId
-} catch (err) {
-  // MongoDB driver not installed — Mongo functions will throw if used without driver
+async function loadMongoDriver() {
+  if (MongoClientClass && ObjectIdClass) return
+
+  try {
+    const mongodb = await import('mongodb')
+    MongoClientClass = mongodb.MongoClient
+    ObjectIdClass = mongodb.ObjectId
+  } catch {
+    // MongoDB driver not installed — Mongo functions will throw if used without driver
+  }
 }
 
 let cachedClient: MongoClientType | null = null
@@ -48,6 +52,12 @@ export async function connectToMongoDB() {
     throw new Error(
       "MONGODB_URI environment variable is not defined. Please set it in your .env.local file."
     )
+  }
+
+  await loadMongoDriver()
+
+  if (!MongoClientClass) {
+    throw new Error("MongoDB driver not installed")
   }
 
   const client = new (MongoClientClass as any)(mongoUri)

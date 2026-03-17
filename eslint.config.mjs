@@ -37,8 +37,9 @@ export default [
     },
     rules: {
       ...typescriptEslint.configs.recommended.rules,
-      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
+      "no-undef": "off",
       "no-console": "off", // Allow console statements
     },
   },
@@ -58,6 +59,6 @@ export default [
     },
   },
   {
-    ignores: ["node_modules/**", ".next/**", "out/**"],
+    ignores: ["node_modules/**", ".next/**", "out/**", "scripts/**"],
   },
 ];

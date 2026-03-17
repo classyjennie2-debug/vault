@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
-import { getAllUsers, getUserById, deleteUser, run, isPostgres } from "@/lib/db"
+import { all, getAllUsers, getUserById, deleteUser, run, isPostgres } from "@/lib/db"
 import { apiLogger } from "@/lib/logging"
 
 export async function GET() {
