@@ -1,4 +1,6 @@
+import Link from "next/link"
 import { Star, TrendingUp } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import Footer from "@/components/layout/footer"
 
 const testimonials = [

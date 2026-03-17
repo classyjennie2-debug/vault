@@ -7,6 +7,12 @@ let pgPool: PgPool | null = null
 const DATABASE_URL = process.env.DATABASE_URL
 let pgInitialized = false
 
+// Legacy stub to keep older imports working while enforcing Postgres-only mode.
+// Any call will throw; callers should use run/get/all helpers instead.
+function getDb(): never {
+  throw new Error('SQLite has been removed. Use PostgreSQL via DATABASE_URL and the async helpers (run/get/all).')
+}
+
 function errMessage(err: unknown): string {
   if (!err) return ""
   if (typeof err === 'string') return err
@@ -292,14 +298,14 @@ async function initializePostgres() {
         )`,
         `CREATE TABLE IF NOT EXISTS notifications (
           id TEXT PRIMARY KEY,
-          userId TEXT NOT NULL,
+          user_id TEXT NOT NULL,
           title TEXT NOT NULL,
           message TEXT NOT NULL,
           type TEXT NOT NULL,
-          isRead INTEGER NOT NULL DEFAULT 0,
-          timestamp TEXT NOT NULL,
-          actionUrl TEXT,
-          FOREIGN KEY (userId) REFERENCES users(id)
+          read BOOLEAN NOT NULL DEFAULT FALSE,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          action_url TEXT,
+          FOREIGN KEY (user_id) REFERENCES users(id)
         )`,
         `CREATE TABLE IF NOT EXISTS verification_codes (
           id TEXT PRIMARY KEY,
@@ -1439,7 +1445,7 @@ export async function createTransaction(transaction: {
 
   await run(
     usePostgres
-      ? `INSERT INTO transactions (id, user_id, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ? `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
       : `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
@@ -1561,14 +1567,14 @@ export async function createNotification(notification: {
   const { v4: uuidv4 } = await import('uuid')
   const notificationId = uuidv4()
   await run(
-    "INSERT INTO notifications (id, userId, title, message, type, isRead, timestamp, actionUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO notifications (id, user_id, title, message, type, read, created_at, action_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     [
       notificationId,
       notification.userId,
       notification.title,
       notification.message,
       notification.type,
-      0, // isRead = false
+      false, // read = false
       new Date().toISOString(),
       notification.actionUrl || null,
     ]

@@ -287,8 +287,9 @@ export default function SettingsPage() {
               id="dateOfBirth"
               type="date"
               value={userSettings.dateOfBirth}
-              onChange={(e) => setUserSettings({ ...userSettings, dateOfBirth: e.target.value })}
-              className="mt-1"
+              readOnly
+              disabled
+              className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
             />
           </div>
 
@@ -298,8 +299,9 @@ export default function SettingsPage() {
               id="address"
               type="text"
               value={userSettings.address}
-              onChange={(e) => setUserSettings({ ...userSettings, address: e.target.value })}
-              className="mt-1"
+              readOnly
+              disabled
+              className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
             />
           </div>
 
@@ -324,17 +326,16 @@ export default function SettingsPage() {
               id="phone"
               type="tel"
               value={userSettings.phone}
-              onChange={(e) =>
-                setUserSettings({ ...userSettings, phone: e.target.value })
-              }
-              className="mt-1"
+              readOnly
+              disabled
+              className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
             />
           </div>
 
           <div>
             <Label htmlFor="timezone">Timezone</Label>
-            <Select value={userSettings.timezone}>
-              <SelectTrigger className="mt-1">
+            <Select value={userSettings.timezone} disabled>
+              <SelectTrigger className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
