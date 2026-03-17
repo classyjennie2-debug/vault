@@ -1111,7 +1111,7 @@ export async function getInvestmentPlanById(planId: string) {
 export async function getUserTransactions(userId: string) {
   const usePostgres = pgPool !== null
   const query = usePostgres
-    ? "SELECT id, user_id as \"userId\", type, amount, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC"
+    ? "SELECT id, user_id as \"userId\", type, amount, status, description, date FROM transactions WHERE user_id = ? ORDER BY date DESC"
     : "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC"
   return all(query, [userId])
 }
@@ -1164,7 +1164,7 @@ export async function getRecentActivities(userId: string) {
   
   // Get transactions - newest first
   const txQuery = usePostgres
-    ? "SELECT id, user_id as \"userId\", type, status, description, created_at as date FROM transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 10"
+    ? "SELECT id, user_id as \"userId\", type, status, description, date FROM transactions WHERE user_id = ? ORDER BY date DESC LIMIT 10"
     : "SELECT * FROM transactions WHERE userId = ? ORDER BY date DESC LIMIT 10"
   const transactions = await all(txQuery, [userId])
   
@@ -1445,7 +1445,7 @@ export async function createTransaction(transaction: {
 
   await run(
     usePostgres
-      ? `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ? `INSERT INTO transactions (id, user_id, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`
       : `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
