@@ -713,9 +713,10 @@ export async function createUser(user: {
   if (pgPool) {
     // PostgreSQL
     try {
+      const now = new Date().toISOString()
       await pgPool.query(
-        `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, email_verified, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        `INSERT INTO users (id, name, first_name, last_name, email, phone, date_of_birth, password_hash, avatar, role, balance, verified, joined_at, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
         [
           user.id,
           user.name,
@@ -726,8 +727,12 @@ export async function createUser(user: {
           user.dateOfBirth || null,
           user.passwordHash || null,
           user.avatar,
+          'user', // role - default to 'user'
+          0, // balance - default to 0
           user.verified ? true : false,
-          new Date().toISOString(),
+          now, // joined_at
+          now, // created_at
+          now, // updated_at
         ]
       )
     } catch (err: unknown) {
