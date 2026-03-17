@@ -134,7 +134,9 @@ export async function POST(req: NextRequest) {
           throw new Error(`User ${transaction.userId} not found for deposit`)
         }
 
-        const newBalance = userData.balance + transaction.amount
+        const userBalance = typeof userData.balance === 'string' ? parseFloat(userData.balance) : userData.balance
+        const txAmount = typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : transaction.amount
+        const newBalance = userBalance + txAmount
         await run("UPDATE users SET balance = $1 WHERE id = $2", [newBalance, transaction.userId])
 
         responseUserBalance = newBalance
@@ -142,7 +144,7 @@ export async function POST(req: NextRequest) {
         responseUserEmail = userData.email
 
         transactionLogger.info('Deposit approved and balance updated', 
-          { transactionId, depositAmount: transaction.amount, newBalance, userId: transaction.userId },
+          { transactionId, depositAmount: txAmount, newBalance, userId: transaction.userId },
           user.id
         )
       } else if (!approved && transaction.type === "withdrawal") {
@@ -152,7 +154,9 @@ export async function POST(req: NextRequest) {
           throw new Error(`User ${transaction.userId} not found for withdrawal rejection`)
         }
 
-        const restoredBalance = userData.balance + transaction.amount
+        const userBalance = typeof userData.balance === 'string' ? parseFloat(userData.balance) : userData.balance
+        const txAmount = typeof transaction.amount === 'string' ? parseFloat(transaction.amount) : transaction.amount
+        const restoredBalance = userBalance + txAmount
         await run("UPDATE users SET balance = $1 WHERE id = $2", [restoredBalance, transaction.userId])
 
         responseUserBalance = restoredBalance
@@ -160,7 +164,7 @@ export async function POST(req: NextRequest) {
         responseUserEmail = userData.email
 
         transactionLogger.info('Withdrawal rejected and balance restored', 
-          { transactionId, withdrawalAmount: transaction.amount, restoredBalance, userId: transaction.userId },
+          { transactionId, withdrawalAmount: txAmount, restoredBalance, userId: transaction.userId },
           user.id
         )
       } else {
@@ -168,7 +172,7 @@ export async function POST(req: NextRequest) {
         if (userData) {
           responseUserName = userData.name
           responseUserEmail = userData.email
-          responseUserBalance = userData.balance
+          responseUserBalance = typeof userData.balance === 'string' ? parseFloat(userData.balance) : userData.balance
         }
       }
 

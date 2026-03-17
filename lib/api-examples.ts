@@ -58,13 +58,15 @@ export async function POST(request: NextRequest) {
     })
 
     // Update user balance
-    await updateUserBalance(userId, user.balance - amount)
+    const userBalance = typeof user.balance === 'string' ? parseFloat(user.balance) : user.balance
+    const investmentAmount = typeof amount === 'string' ? parseFloat(amount) : amount
+    await updateUserBalance(userId, userBalance - investmentAmount)
 
     // Create transaction
     await createTransaction({
       userId,
       type: "investment",
-      amount,
+      amount: investmentAmount,
       description: `Investment in ${plan.name}`,
       status: "completed",
     })

@@ -1574,19 +1574,20 @@ export async function generatePortfolioData(userId: string) {
     const data: { month: string; value: number }[] = []
 
     // If no transactions, return flat line at current balance
+    const currentBalance = typeof user.balance === 'string' ? parseFloat(user.balance) : user.balance
     if (!transactions || transactions.length === 0) {
       return months.map(month => ({
         month,
-        value: Math.round(user.balance)
+        value: Math.round(currentBalance)
       }))
     }
 
     // Calculate cumulative balance based on transaction types
     // Start with 0 and accumulate based on transaction history
-    let cumulativeBalance = user.balance * 0.6 // Start at 60% for 6 months ago estimation
+    let cumulativeBalance = currentBalance * 0.6 // Start at 60% for 6 months ago estimation
 
     // Calculate the increment needed to reach current balance over 6 months
-    const totalIncrease = (user.balance - cumulativeBalance) / (months.length - 1)
+    const totalIncrease = (currentBalance - cumulativeBalance) / (months.length - 1)
 
     // Generate 6-month trend
     for (const month of months) {

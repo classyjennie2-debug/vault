@@ -25,13 +25,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
     // Update user balance
-    const newBalance = user.balance + amount
+    const userBalance = typeof user.balance === 'string' ? parseFloat(user.balance) : user.balance
+    const bonusAmount = typeof amount === 'string' ? parseFloat(amount) : amount
+    const newBalance = userBalance + bonusAmount
     await setUserBalance(userId, newBalance)
     // Log transaction
     await createTransaction({
       userId,
       type: "deposit",
-      amount,
+      amount: bonusAmount,
       status: "approved",
       description: note ? `Admin bonus: ${note}` : "Admin bonus credited"
     })
