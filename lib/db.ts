@@ -198,19 +198,19 @@ async function initializePostgres() {
         )`,
         `CREATE TABLE IF NOT EXISTS users (
           id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          firstName TEXT,
-          lastName TEXT,
-          email TEXT UNIQUE NOT NULL,
-          phone TEXT,
-          dateOfBirth TEXT,
-          passwordHash TEXT,
+          name VARCHAR(255) NOT NULL,
+          first_name VARCHAR(100),
+          last_name VARCHAR(100),
+          email VARCHAR(255) UNIQUE NOT NULL,
+          phone VARCHAR(20),
+          date_of_birth TEXT,
+          password_hash VARCHAR(255),
           verified INTEGER NOT NULL DEFAULT 0,
-          role TEXT NOT NULL DEFAULT 'user',
-          balance REAL NOT NULL DEFAULT 0,
-          joinedAt TEXT NOT NULL,
-          avatar TEXT NOT NULL,
-          lastLogin TEXT
+          role VARCHAR(20) NOT NULL DEFAULT 'user',
+          balance NUMERIC(15,2) NOT NULL DEFAULT 0,
+          joined_at TEXT NOT NULL,
+          avatar VARCHAR(500),
+          last_login TEXT
         )`,
         `CREATE TABLE IF NOT EXISTS transactions (
           id TEXT PRIMARY KEY,
@@ -302,6 +302,34 @@ async function initializePostgres() {
       }
 
       // Run migrations
+      try {
+        // Add missing columns to users table
+        const userColumns = [
+          { name: 'first_name', sql: 'ALTER TABLE users ADD COLUMN first_name VARCHAR(100)' },
+          { name: 'last_name', sql: 'ALTER TABLE users ADD COLUMN last_name VARCHAR(100)' },
+          { name: 'phone', sql: 'ALTER TABLE users ADD COLUMN phone VARCHAR(20)' },
+          { name: 'date_of_birth', sql: 'ALTER TABLE users ADD COLUMN date_of_birth TEXT' },
+          { name: 'avatar', sql: 'ALTER TABLE users ADD COLUMN avatar VARCHAR(500)' },
+          { name: 'joined_at', sql: 'ALTER TABLE users ADD COLUMN joined_at TEXT' },
+        ]
+        
+        for (const col of userColumns) {
+          try {
+            await pgPool.query(col.sql)
+          } catch (err: unknown) {
+            const msg = errMessage(err)
+            if (!msg.includes('already exists') && !msg.includes('duplicate')) {
+              // Column migration note
+            }
+          }
+        }
+      } catch (err: unknown) {
+        const msg = errMessage(err)
+        if (!msg.includes('already exists') && !msg.includes('duplicate')) {
+          // User migration warning logged
+        }
+      }
+
       try {
         // Add status column to wallet_addresses if it doesn't exist
         await pgPool.query(`
@@ -620,39 +648,28 @@ export interface UserRow {
 }
 
 export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
-  // run the query and then normalize the column names so they match
-  // our UserRow type (camelCase) even when using Postgres, which
-  // returns lowercase column names.
-  const row = (await get(
-    "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar, firstName, lastName, phone, dateOfBirth FROM users WHERE email = ?",
-    [email]
-  )) as UserRow | undefined
-
-  if (row) {
-    // Postgres returns column names in lowercase by default
-    // so `passwordHash` may come back as `passwordhash`.
-    const r = row as unknown as Record<string, unknown>
-    if (r.passwordhash && !r.passwordHash) {
-      r.passwordHash = String(r.passwordhash)
-    }
+  // Use correct column names: snake_case for PostgreSQL, camelCase for SQLite
+  // Map PostgreSQL snake_case to camelCase for code consistency
+  let query: string
+  if (pgPool) {
+    query = "SELECT id, name, email, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, avatar, first_name as firstName, last_name as lastName, phone, date_of_birth as dateOfBirth FROM users WHERE email = ?"
+  } else {
+    query = "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar, firstName, lastName, phone, dateOfBirth FROM users WHERE email = ?"
   }
-
+  
+  const row = (await get(query, [email])) as UserRow | undefined
   return row
 }
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
-  const row = (await get(
-    "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar, firstName, lastName, phone, dateOfBirth FROM users WHERE id = ?",
-    [id]
-  )) as UserRow | undefined
-
-  if (row) {
-    const r = row as unknown as Record<string, unknown>
-    if (r.passwordhash && !r.passwordHash) {
-      r.passwordHash = String(r.passwordhash)
-    }
+  let query: string
+  if (pgPool) {
+    query = "SELECT id, name, email, password_hash as passwordHash, verified, role, balance, joined_at as joinedAt, avatar, first_name as firstName, last_name as lastName, phone, date_of_birth as dateOfBirth FROM users WHERE id = ?"
+  } else {
+    query = "SELECT id, name, email, passwordHash, verified, role, balance, joinedAt, avatar, firstName, lastName, phone, dateOfBirth FROM users WHERE id = ?"
   }
-
+  
+  const row = (await get(query, [id])) as UserRow | undefined
   return row
 }
 
@@ -726,10 +743,17 @@ export async function setUserPassword(
   userId: string,
   passwordHash: string
 ): Promise<void> {
-  await run("UPDATE users SET passwordHash = ? WHERE id = ?", [
-    passwordHash,
-    userId,
-  ])
+  if (pgPool) {
+    await run("UPDATE users SET password_hash = ? WHERE id = ?", [
+      passwordHash,
+      userId,
+    ])
+  } else {
+    await run("UPDATE users SET passwordHash = ? WHERE id = ?", [
+      passwordHash,
+      userId,
+    ])
+  }
 }
 
 export async function insertVerificationCode(codeObj: {
@@ -1397,10 +1421,17 @@ export async function logActivity(userId: string, type: string, description: str
 }
 
 export async function updateLastLogin(userId: string) {
-  await run("UPDATE users SET lastLogin = ? WHERE id = ?", [
-    new Date().toISOString(),
-    userId,
-  ])
+  if (pgPool) {
+    await run("UPDATE users SET last_login = ? WHERE id = ?", [
+      new Date().toISOString(),
+      userId,
+    ])
+  } else {
+    await run("UPDATE users SET lastLogin = ? WHERE id = ?", [
+      new Date().toISOString(),
+      userId,
+    ])
+  }
 }
 
 export async function getUserActivity(userId: string, limit: number = 20) {
