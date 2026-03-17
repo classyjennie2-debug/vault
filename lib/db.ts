@@ -241,7 +241,11 @@ async function initializePostgres() {
           amount REAL NOT NULL,
           status TEXT NOT NULL DEFAULT 'pending',
           description TEXT NOT NULL,
-          date TEXT NOT NULL,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          date TEXT DEFAULT CURRENT_TIMESTAMP,
+          method VARCHAR(50),
+          bank_account VARCHAR(255),
+          crypto_address VARCHAR(255),
           FOREIGN KEY (user_id) REFERENCES users(id)
         )`,
         `CREATE TABLE IF NOT EXISTS investment_plans (
@@ -454,6 +458,7 @@ async function initializePostgres() {
         const txColNames = new Set(txColumns.rows.map((r: any) => r.column_name))
         
         const requiredTxColumns = [
+          { name: 'created_at', sql: 'ALTER TABLE transactions ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP' },
           { name: 'method', sql: 'ALTER TABLE transactions ADD COLUMN method VARCHAR(50)' },
           { name: 'bank_account', sql: 'ALTER TABLE transactions ADD COLUMN bank_account VARCHAR(255)' },
           { name: 'crypto_address', sql: 'ALTER TABLE transactions ADD COLUMN crypto_address VARCHAR(255)' },
@@ -463,6 +468,18 @@ async function initializePostgres() {
           if (!txColNames.has(col.name)) {
             await pgPool.query(col.sql)
             console.log(`[Migration] Added ${col.name} column to transactions table`)
+          }
+        }
+
+        // Backfill created_at from legacy date column when present
+        if (txColNames.has('date')) {
+          try {
+            await pgPool.query(
+              `UPDATE transactions SET created_at = COALESCE(created_at, date::TIMESTAMP) WHERE created_at IS NULL AND date IS NOT NULL`
+            )
+          } catch (err: unknown) {
+            const msg = errMessage(err)
+            console.warn('[Migration] Error backfilling transactions.created_at from date:', msg)
           }
         }
       } catch (err: unknown) {
@@ -534,6 +551,7 @@ async function initializePostgres() {
           `CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id)`,
           `CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status)`,
           `CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date)`,
+          `CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at)`,
           `CREATE INDEX IF NOT EXISTS idx_investments_user_id ON investments(user_id)`,
           `CREATE INDEX IF NOT EXISTS idx_investments_status ON investments(status)`,
           `CREATE INDEX IF NOT EXISTS idx_investments_maturity ON investments(maturity_date)`,
@@ -1250,7 +1268,10 @@ export async function getInvestmentPlanById(planId: string) {
 export async function getUserTransactions(userId: string) {
   const usePostgres = pgPool !== null
   const query = usePostgres
-    ? "SELECT id, user_id as \"userId\", type, amount, status, description, created_at as date FROM transactions WHERE user_id = $1 ORDER BY created_at DESC"
+    ? `SELECT id, user_id as "userId", type, amount, status, description, COALESCE(created_at, date) as date 
+       FROM transactions 
+       WHERE user_id = $1 
+       ORDER BY COALESCE(created_at, date) DESC`
     : "SELECT * FROM transactions WHERE userId = $1 ORDER BY date DESC"
   return all(query, [userId])
 }
@@ -1303,7 +1324,10 @@ export async function getRecentActivities(userId: string) {
   
   // Get transactions - newest first
   const txQuery = usePostgres
-    ? "SELECT id, user_id as \"userId\", type, status, description, created_at as date FROM transactions WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10"
+    ? `SELECT id, user_id as "userId", type, status, description, COALESCE(created_at, date) as date 
+       FROM transactions 
+       WHERE user_id = $1 
+       ORDER BY COALESCE(created_at, date) DESC LIMIT 10`
     : "SELECT * FROM transactions WHERE userId = $1 ORDER BY date DESC LIMIT 10"
   const transactions = await all(txQuery, [userId])
   
@@ -1527,7 +1551,10 @@ export async function generatePortfolioData(userId: string) {
       amount: number
     }>(
       usePostgres
-        ? `SELECT created_at as date, type, amount FROM transactions WHERE user_id = $1 ORDER BY created_at ASC`
+        ? `SELECT COALESCE(created_at, date) as date, type, amount 
+           FROM transactions 
+           WHERE user_id = $1 
+           ORDER BY COALESCE(created_at, date) ASC`
         : `SELECT date, type, amount FROM transactions WHERE userId = $1 ORDER BY date ASC`,
       [userId]
     )

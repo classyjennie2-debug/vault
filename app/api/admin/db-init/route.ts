@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
     // 3. Add missing columns to transactions table
     try {
       const txColumns = [
+        { name: 'created_at', type: 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP' },
         { name: 'method', type: 'VARCHAR(50)' },
         { name: 'bank_account', type: 'VARCHAR(255)' },
         { name: 'crypto_address', type: 'VARCHAR(255)' },
@@ -72,6 +73,18 @@ export async function POST(req: NextRequest) {
           if (!e.message?.includes('already exists') && !e.message?.includes('duplicate')) {
             throw e
           }
+        }
+      }
+
+      // Backfill created_at from legacy date column if present
+      try {
+        await pgPool.query(
+          `UPDATE transactions SET created_at = COALESCE(created_at, date::TIMESTAMP) WHERE created_at IS NULL AND date IS NOT NULL`
+        )
+        results.push('✓ Backfilled transactions.created_at from date')
+      } catch (e: any) {
+        if (!e.message?.includes('column \"created_at\" does not exist')) {
+          errors.push(`Backfill created_at failed: ${e instanceof Error ? e.message : String(e)}`)
         }
       }
     } catch (err: unknown) {
@@ -111,6 +124,7 @@ export async function POST(req: NextRequest) {
         `CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id)`,
         `CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status)`,
         `CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date)`,
+        `CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at)`,
         `CREATE INDEX IF NOT EXISTS idx_investments_user_id ON investments(user_id)`,
         `CREATE INDEX IF NOT EXISTS idx_investments_status ON investments(status)`,
         `CREATE INDEX IF NOT EXISTS idx_investments_maturity ON investments(maturity_date)`,
