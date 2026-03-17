@@ -1,4 +1,4 @@
-import { ArrowUpRight, ArrowDownRight, User, Lock, Settings, Trash2, LogOut, LogIn } from "lucide-react"
+import { ArrowUpRight, ArrowDownRight, User, Lock, Settings, Trash2, LogOut, LogIn, Globe, Smartphone } from "lucide-react"
 
 export type ActivityType =
   | "login"
@@ -17,8 +17,12 @@ export interface Activity {
   timestamp: string
   location?: string
   device?: string
+  ip_address?: string
   ipAddress?: string
+  user_agent?: string
+  metadata?: any
   status: "success" | "pending" | "failed"
+  created_at?: string
 }
 
 const activityIcons: Record<ActivityType, React.ReactNode> = {
@@ -58,12 +62,18 @@ function formatTimeAgo(timestamp: string): string {
   return activityTime.toLocaleDateString()
 }
 
+function formatFullDateTime(timestamp: string): string {
+  const date = new Date(timestamp)
+  return date.toLocaleString()
+}
+
 interface ActivityLogProps {
   activities?: Activity[]
   limit?: number
+  expanded?: boolean
 }
 
-export function ActivityLog({ activities = [], limit = 10 }: ActivityLogProps) {
+export function ActivityLog({ activities = [], limit = 10, expanded = false }: ActivityLogProps) {
   const displayActivities = (activities || []).slice(0, limit)
 
   return (
@@ -73,50 +83,79 @@ export function ActivityLog({ activities = [], limit = 10 }: ActivityLogProps) {
           No recent activity
         </p>
       ) : (
-        displayActivities.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex items-start gap-3 rounded-lg border border-border p-3 hover:bg-secondary/50 transition-colors"
-          >
-            {/* Icon */}
-            <div className="flex-shrink-0 mt-0.5">
-              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
-                {activityIcons[activity.type]}
-              </div>
-            </div>
+        displayActivities.map((activity) => {
+          const timestamp = activity.timestamp || activity.created_at || ""
+          const ipAddress = activity.ip_address || activity.ipAddress || ""
+          
+          return (
+            <div
+              key={activity.id}
+              className="flex flex-col gap-2 rounded-lg border border-border p-3 hover:bg-secondary/50 transition-colors"
+            >
+              {/* Main row */}
+              <div className="flex items-start gap-3">
+                {/* Icon */}
+                <div className="flex-shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
+                    {activityIcons[activity.type]}
+                  </div>
+                </div>
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground">
-                {activityLabels[activity.type]}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {activity.description}
-              </p>
-              {activity.location && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  📍 {activity.location}
-                </p>
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    {activityLabels[activity.type]}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {activity.description}
+                  </p>
+                </div>
+
+                {/* Time & Status */}
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-xs text-muted-foreground">
+                    {formatTimeAgo(timestamp)}
+                  </p>
+                  <p className={`text-xs font-medium mt-1 ${
+                    activity.status === "success"
+                      ? "text-green-600 dark:text-green-400"
+                      : activity.status === "pending"
+                        ? "text-yellow-600 dark:text-yellow-400"
+                        : "text-red-600 dark:text-red-400"
+                  }`}>
+                    {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Expanded details */}
+              {expanded && (
+                <div className="ml-11 pt-2 border-t border-border/50 space-y-1 text-xs">
+                  <div className="text-muted-foreground">
+                    <p><strong>Time:</strong> {formatFullDateTime(timestamp)}</p>
+                  </div>
+                  {activity.location && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Globe className="h-3 w-3" />
+                      <span><strong>Location:</strong> {activity.location}</span>
+                    </div>
+                  )}
+                  {activity.device && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Smartphone className="h-3 w-3" />
+                      <span><strong>Device:</strong> {activity.device}</span>
+                    </div>
+                  )}
+                  {ipAddress && (
+                    <div className="text-muted-foreground">
+                      <p><strong>IP Address:</strong> {ipAddress}</p>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-
-            {/* Time & Status */}
-            <div className="flex-shrink-0 text-right">
-              <p className="text-xs text-muted-foreground">
-                {formatTimeAgo(activity.timestamp)}
-              </p>
-              <p className={`text-xs font-medium mt-1 ${
-                activity.status === "success"
-                  ? "text-green-600 dark:text-green-400"
-                  : activity.status === "pending"
-                    ? "text-yellow-600 dark:text-yellow-400"
-                    : "text-red-600 dark:text-red-400"
-              }`}>
-                {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
-              </p>
-            </div>
-          </div>
-        ))
+          )
+        })
       )}
     </div>
   )

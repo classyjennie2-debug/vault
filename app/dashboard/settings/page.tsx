@@ -30,6 +30,7 @@ import {
   LogOut,
   Trash2,
   AlertTriangle,
+  Activity,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
@@ -41,6 +42,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ActivityLog, type Activity } from "@/components/dashboard/activity-log"
 
 export default function SettingsPage() {
@@ -48,54 +50,11 @@ export default function SettingsPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [saved, setSaved] = useState(false)
   
-  // Activities state
-  const [activities, setActivities] = useState<Activity[]>([
-    {
-      id: "1",
-      type: "login",
-      description: "Signed in from Chrome on Windows",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      location: "New York, USA",
-      device: "Windows 10 - Chrome",
-      status: "success",
-    },
-    {
-      id: "2",
-      type: "deposit",
-      description: "Deposited $1,000.00 to investment account",
-      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      location: "New York, USA",
-      device: "Windows 10 - Chrome",
-      status: "success",
-    },
-    {
-      id: "3",
-      type: "investment",
-      description: "Invested in Growth Plan - $500.00",
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      location: "New York, USA",
-      device: "Windows 10 - Chrome",
-      status: "success",
-    },
-    {
-      id: "4",
-      type: "password_change",
-      description: "Changed password",
-      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      location: "New York, USA",
-      device: "Windows 10 - Chrome",
-      status: "success",
-    },
-    {
-      id: "5",
-      type: "login",
-      description: "Signed in from Safari on iPhone",
-      timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      location: "San Francisco, USA",
-      device: "iPhone 15 Pro - Safari",
-      status: "success",
-    },
-  ])
+  // Activities state - fetch from API
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [allActivities, setAllActivities] = useState<Activity[]>([])
+  const [loadingActivities, setLoadingActivities] = useState(true)
+  const [activityTab, setActivityTab] = useState<"recent" | "all">("recent")
   
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("")
@@ -213,6 +172,33 @@ export default function SettingsPage() {
       }
     }
     fetchUser()
+  }, [])
+
+  // Fetch activities
+  useEffect(() => {
+    const fetchActivities = async () => {
+      setLoadingActivities(true)
+      try {
+        // Fetch recent activities
+        const recentRes = await fetch("/api/activities")
+        if (recentRes.ok) {
+          const recentData = await recentRes.json()
+          setActivities(recentData)
+        }
+        
+        // Fetch all activities
+        const allRes = await fetch("/api/activities/all?limit=100")
+        if (allRes.ok) {
+          const allData = await allRes.json()
+          setAllActivities(allData)
+        }
+      } catch (error) {
+        console.error("Error fetching activities:", error)
+      } finally {
+        setLoadingActivities(false)
+      }
+    }
+    fetchActivities()
   }, [])
 
   const [securitySettings, setSecuritySettings] = useState({
@@ -751,17 +737,36 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <Activity className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             <div>
-              <CardTitle>Recent Activity</CardTitle>
+              <CardTitle>Account Activity</CardTitle>
               <CardDescription>
-                Monitor your account access and actions
+                Monitor your account access and actions since account creation
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <ActivityLog activities={activities} limit={10} />
+          {loadingActivities ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <Tabs defaultValue="recent" value={activityTab} onValueChange={(value: any) => setActivityTab(value)}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="recent">Recent Activity (10)</TabsTrigger>
+                <TabsTrigger value="all">All Activities ({allActivities.length})</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="recent" className="mt-4">
+                <ActivityLog activities={activities} limit={10} expanded={true} />
+              </TabsContent>
+              
+              <TabsContent value="all" className="mt-4">
+                <ActivityLog activities={allActivities} limit={100} expanded={true} />
+              </TabsContent>
+            </Tabs>
+          )}
         </CardContent>
       </Card>
     </div>
