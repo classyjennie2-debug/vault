@@ -219,17 +219,30 @@ async function migratePostgresUsers(pool: any) {
     // This helps avoid issues where older deployments created columns like `joinedAt` / `passwordHash`.
     const legacyColumnMap: Record<string, string> = {
       joinedat: 'joined_at',
+      joineddAt: 'joined_at',
+      joinedAt: 'joined_at',
       firstname: 'first_name',
+      firstName: 'first_name',
       lastname: 'last_name',
+      lastName: 'last_name',
       passwordhash: 'password_hash',
+      passwordHash: 'password_hash',
       dateofbirth: 'date_of_birth',
+      dateOfBirth: 'date_of_birth',
       lastlogin: 'last_login',
+      lastLogin: 'last_login',
       createdat: 'created_at',
+      createdAt: 'created_at',
       updatedat: 'updated_at',
+      updatedAt: 'updated_at',
       emailverified: 'email_verified',
+      emailVerified: 'email_verified',
       twofactorenabled: 'two_factor_enabled',
+      twoFactorEnabled: 'two_factor_enabled',
       twofactorsecret: 'two_factor_secret',
+      twoFactorSecret: 'two_factor_secret',
       backupcodes: 'backup_codes',
+      backupCodes: 'backup_codes',
     }
 
     for (const [legacy, canonical] of Object.entries(legacyColumnMap)) {
