@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PasswordStrengthMeter, calculatePasswordStrength } from "@/components/auth/password-strength-meter"
+import { COUNTRY_CODES_LIST, type CountryCode } from "@/lib/phone-validation"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>("US")
   const [dateOfBirth, setDateOfBirth] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -30,7 +32,7 @@ export default function RegisterPage() {
     setError("")
     setInfo("")
     
-    if (!firstName.trim() || !lastName.trim() || !email || !password || !phone.trim() || !dateOfBirth) {
+    if (!firstName.trim() || !lastName.trim() || !email || !password || !phone.trim() || !dateOfBirth || !phoneCountry) {
       setError("All fields are required")
       return
     }
@@ -46,6 +48,7 @@ export default function RegisterPage() {
           email, 
           password,
           phone,
+          phoneCountry,
           dateOfBirth
         }),
       })
@@ -197,14 +200,33 @@ export default function RegisterPage() {
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1 (555) 000-0000"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-              />
+              <div className="flex gap-2">
+                <select
+                  value={phoneCountry}
+                  onChange={(e) => setPhoneCountry(e.target.value as CountryCode)}
+                  className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  {COUNTRY_CODES_LIST.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.flag} {country.code}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="(555) 000-0000"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  className="flex-1"
+                />
+              </div>
+              {phoneCountry && (
+                <p className="text-xs text-muted-foreground">
+                  Format: {COUNTRY_CODES_LIST.find(c => c.code === phoneCountry)?.format}
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="dateOfBirth">Date of Birth</Label>

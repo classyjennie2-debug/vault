@@ -729,7 +729,7 @@ export async function createUser(user: {
           user.avatar,
           'user', // role - default to 'user'
           0, // balance - default to 0
-          user.verified ? true : false,
+          user.verified ? 1 : 0, // Convert boolean to integer (0 or 1)
           now, // joined_at
           now, // created_at
           now, // updated_at

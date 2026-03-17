@@ -3,19 +3,29 @@ import { v4 as uuidv4 } from "uuid"
 import { getUserByEmail, createUser } from "@/lib/db"
 import { hashPassword, sendVerificationCode, sendAdminNotification } from "@/lib/auth"
 import { rateLimitedResponse, rateLimitConfigs, getClientIp } from "@/lib/rate-limiting"
+import { validatePhone, COUNTRY_CODES, type CountryCode } from "@/lib/phone-validation"
 
 export async function POST(request: Request) {
   try {
-    const { firstName, lastName, email, password, phone, dateOfBirth } = await request.json()
+    const { firstName, lastName, email, password, phone, phoneCountry, dateOfBirth } = await request.json()
     const clientIp = await getClientIp(request)
 
     return await rateLimitedResponse(
       `signup_${clientIp}_${email ?? 'unknown'}`,
       rateLimitConfigs.register,
       async () => {
-    if (!firstName || !lastName || !email || !password || !phone || !dateOfBirth) {
+    if (!firstName || !lastName || !email || !password || !phone || !phoneCountry || !dateOfBirth) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 })
     }
+
+    // Validate phone number with country code
+    if (!validatePhone(phone, phoneCountry as CountryCode)) {
+      const country = COUNTRY_CODES[phoneCountry as CountryCode]
+      return NextResponse.json({ 
+        error: `Invalid phone number for ${country?.name || phoneCountry}. Format: ${country?.format || 'Invalid country'}` 
+      }, { status: 400 })
+    }
+
     const existing = await getUserByEmail(email)
     if (existing) {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 })
@@ -24,6 +34,9 @@ export async function POST(request: Request) {
     const id = uuidv4()
     const fullName = `${firstName} ${lastName}`
     const avatar = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+
+    // Store phone with country code
+    const fullPhone = `${COUNTRY_CODES[phoneCountry as CountryCode]?.code || '+1'} ${phone}`
 
     // Create user as unverified - always send verification code
     await createUser({ 
@@ -34,7 +47,7 @@ export async function POST(request: Request) {
       email, 
       passwordHash, 
       avatar, 
-      phone,
+      phone: fullPhone,
       dateOfBirth,
       verified: false 
     })
