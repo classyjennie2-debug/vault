@@ -281,48 +281,49 @@ export default function TransactionsPage() {
       {/* Transaction Details Modal */}
       {selectedTransaction && (
         <div 
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-6"
+          className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-2 sm:p-6"
           onClick={() => setSelectedTransaction(null)}
         >
           <div 
-            className="bg-card rounded-xl max-w-2xl w-full shadow-2xl border border-border overflow-hidden"
+            className="bg-card rounded-t-2xl sm:rounded-xl max-w-2xl w-full sm:max-h-[90vh] max-h-[95vh] shadow-2xl border border-border overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header - Professional Gradient Background */}
-            <div className="bg-gradient-to-r from-card to-secondary/30 p-6 border-b border-border/50">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4 flex-1">
+            <div className="bg-gradient-to-r from-card to-secondary/30 p-3 sm:p-6 border-b border-border/50 flex-shrink-0">
+              <div className="flex items-start justify-between gap-2 sm:gap-4">
+                <div className="flex items-start gap-2 sm:gap-4 flex-1 min-w-0">
                   {(() => {
                     const Icon = typeIcons[selectedTransaction.type as keyof typeof typeIcons]
                     const color = typeColors[selectedTransaction.type as keyof typeof typeColors]
                     return (
-                      <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-secondary/60 border border-border/50">
-                        <Icon className={`h-7 w-7 ${color}`} />
+                      <div className="flex h-10 w-10 sm:h-14 sm:w-14 items-center justify-center rounded-lg sm:rounded-xl bg-secondary/60 border border-border/50 flex-shrink-0">
+                        <Icon className={`h-5 w-5 sm:h-7 sm:w-7 ${color}`} />
                       </div>
                     )
                   })()}
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-2xl font-bold text-foreground capitalize">
+                    <h2 className="text-lg sm:text-2xl font-bold text-foreground capitalize truncate">
                       {typeLabels[selectedTransaction.type as keyof typeof typeLabels]}
                     </h2>
-                    <p className="text-sm text-muted-foreground mt-1">{selectedTransaction.description}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1 truncate">{selectedTransaction.description}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedTransaction(null)}
-                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                  className="text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors flex-shrink-0 p-2 rounded-lg"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
               </div>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 space-y-6">
+            {/* Modal Content - Scrollable */}
+            <div className="overflow-y-auto flex-1">
+              <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
               {/* Amount Section - Prominent Display */}
-              <div className="bg-gradient-to-br from-secondary/50 to-secondary/20 rounded-xl p-6 border border-border/50">
-                <p className="text-sm text-muted-foreground mb-2">Transaction Amount</p>
-                <p className={`text-4xl font-bold ${selectedTransaction.type === "deposit" || selectedTransaction.type === "return" ? "text-accent" : "text-foreground"}`}>
+              <div className="bg-gradient-to-br from-secondary/50 to-secondary/20 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-border/50">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2">Transaction Amount</p>
+                <p className={`text-2xl sm:text-4xl font-bold ${selectedTransaction.type === "deposit" || selectedTransaction.type === "return" ? "text-accent" : "text-foreground"}`}>
                   {selectedTransaction.type === "deposit" || selectedTransaction.type === "return" ? "+" : "-"}
                   ${selectedTransaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </p>
@@ -330,9 +331,9 @@ export default function TransactionsPage() {
 
               {/* Withdrawal Fee Breakdown (if applicable) */}
               {selectedTransaction.type === "withdrawal" && (selectedTransaction as any).withdrawalFee && (
-                <div className="space-y-2 p-4 rounded-lg bg-destructive/5 border border-destructive/15">
-                  <p className="text-sm font-semibold text-destructive">Fee Breakdown</p>
-                  <div className="space-y-2 text-sm">
+                <div className="space-y-2 p-3 sm:p-4 rounded-lg bg-destructive/5 border border-destructive/15">
+                  <p className="text-xs sm:text-sm font-semibold text-destructive">Fee Breakdown</p>
+                  <div className="space-y-2 text-xs sm:text-sm">
                     <div className="flex justify-between items-center py-1">
                       <span className="text-muted-foreground">Requested Amount:</span>
                       <span className="font-semibold">${selectedTransaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
@@ -346,7 +347,7 @@ export default function TransactionsPage() {
                     {(selectedTransaction as any).amountAfterFee && (
                       <div className="flex justify-between items-center py-2 border-t border-destructive/20">
                         <span className="text-foreground font-semibold">Net Amount Received:</span>
-                        <span className="font-bold text-lg">${((selectedTransaction as any).amountAfterFee).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                        <span className="font-bold">${((selectedTransaction as any).amountAfterFee).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                       </div>
                     )}
                   </div>
@@ -355,16 +356,16 @@ export default function TransactionsPage() {
 
               {/* Cryptocurrency Details (if applicable) */}
               {selectedTransaction.type === "withdrawal" && (selectedTransaction as any).coin && (selectedTransaction as any).coinAmount && (
-                <div className="space-y-2 p-4 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/30 dark:border-blue-800/30">
-                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">Cryptocurrency Details</p>
-                  <div className="space-y-2 text-sm">
+                <div className="space-y-2 p-3 sm:p-4 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/30 dark:border-blue-800/30">
+                  <p className="text-xs sm:text-sm font-semibold text-blue-900 dark:text-blue-100">Cryptocurrency Details</p>
+                  <div className="space-y-2 text-xs sm:text-sm">
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Currency:</span>
                       <span className="font-semibold">{(selectedTransaction as any).coin.toUpperCase()}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Crypto Amount:</span>
-                      <span className="font-mono font-semibold">{((selectedTransaction as any).coinAmount as number).toFixed(8)} {(selectedTransaction as any).coin.toUpperCase()}</span>
+                      <span className="font-mono font-semibold text-xs">{((selectedTransaction as any).coinAmount as number).toFixed(8)} {(selectedTransaction as any).coin.toUpperCase()}</span>
                     </div>
                   </div>
                 </div>
@@ -372,12 +373,12 @@ export default function TransactionsPage() {
 
               {/* Address Information */}
               {((selectedTransaction as any).cryptoAddress || (selectedTransaction as any).bankAccount) && (
-                <div className="space-y-3 p-4 rounded-lg bg-slate-50/50 dark:bg-slate-900/20 border border-border/50">
-                  <p className="text-sm font-semibold">Address Details</p>
+                <div className="space-y-3 p-3 sm:p-4 rounded-lg bg-slate-50/50 dark:bg-slate-900/20 border border-border/50">
+                  <p className="text-xs sm:text-sm font-semibold">Address Details</p>
                   {(selectedTransaction as any).cryptoAddress && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground uppercase tracking-wide">Crypto Address</p>
-                      <p className="font-mono text-xs bg-secondary p-3 rounded border border-border/50 break-all">
+                      <p className="font-mono text-xs bg-secondary p-2 sm:p-3 rounded border border-border/50 break-all">
                         {(selectedTransaction as any).cryptoAddress}
                       </p>
                     </div>
@@ -385,7 +386,7 @@ export default function TransactionsPage() {
                   {(selectedTransaction as any).bankAccount && (
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground uppercase tracking-wide">Bank Account</p>
-                      <p className="font-mono text-xs bg-secondary p-3 rounded border border-border/50 break-all">
+                      <p className="font-mono text-xs bg-secondary p-2 sm:p-3 rounded border border-border/50 break-all">
                         {(selectedTransaction as any).bankAccount}
                       </p>
                     </div>
@@ -394,10 +395,10 @@ export default function TransactionsPage() {
               )}
 
               {/* Date and Time - Separated */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 rounded-lg bg-secondary/30 border border-border/50">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="p-2 sm:p-3 rounded-lg bg-secondary/30 border border-border/50">
                   <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Date</p>
-                  <p className="text-sm font-semibold mt-2">
+                  <p className="text-xs sm:text-sm font-semibold mt-2">
                     {selectedTransaction.date ? new Date(selectedTransaction.date).toLocaleDateString('en-US', { 
                       weekday: 'short',
                       year: 'numeric', 
@@ -406,9 +407,9 @@ export default function TransactionsPage() {
                     }) : 'N/A'}
                   </p>
                 </div>
-                <div className="p-3 rounded-lg bg-secondary/30 border border-border/50">
+                <div className="p-2 sm:p-3 rounded-lg bg-secondary/30 border border-border/50">
                   <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Time</p>
-                  <p className="text-sm font-semibold mt-2">
+                  <p className="text-xs sm:text-sm font-semibold mt-2">
                     {selectedTransaction.date ? new Date(selectedTransaction.date).toLocaleTimeString('en-US', { 
                       hour: '2-digit', 
                       minute: '2-digit',
@@ -420,7 +421,7 @@ export default function TransactionsPage() {
               </div>
 
               {/* Status and Method */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
                 <div className="space-y-2">
                   <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Status</p>
                   <Badge
@@ -431,7 +432,7 @@ export default function TransactionsPage() {
                           ? "outline"
                           : "destructive"
                     }
-                    className="w-fit"
+                    className="w-fit text-xs"
                   >
                     <span className={`h-2 w-2 rounded-full mr-2 ${
                       selectedTransaction.status === "approved" ? "bg-green-500" :
@@ -444,7 +445,7 @@ export default function TransactionsPage() {
                 {(selectedTransaction as any).method && (
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Method</p>
-                    <p className="text-sm font-semibold capitalize bg-secondary/50 px-3 py-2 rounded border border-border/50 w-fit">
+                    <p className="text-xs sm:text-sm font-semibold capitalize bg-secondary/50 px-2 sm:px-3 py-2 rounded border border-border/50 w-fit">
                       {(selectedTransaction as any).method}
                     </p>
                   </div>
@@ -452,9 +453,9 @@ export default function TransactionsPage() {
               </div>
 
               {/* Transaction ID - Reference Number */}
-              <div className="border-t border-border/50 pt-4">
+              <div className="border-t border-border/50 pt-3 sm:pt-4">
                 <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">Transaction Reference</p>
-                <div className="bg-secondary/30 rounded-lg p-4 border border-border/50 group">
+                <div className="bg-secondary/30 rounded-lg p-2 sm:p-4 border border-border/50 group">
                   <p className="font-mono text-xs text-foreground break-all font-semibold">
                     {selectedTransaction.id}
                   </p>
@@ -469,15 +470,25 @@ export default function TransactionsPage() {
                   </button>
                 </div>
               </div>
+              </div>
+            </div>
 
-              {/* Close Button */}
+            {/* Close Button - Fixed at bottom on mobile */}
+            <div className="border-t border-border/50 p-3 sm:p-4 flex gap-2 flex-shrink-0 bg-card">
               <Button
                 onClick={() => setSelectedTransaction(null)}
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+                variant="outline"
+                className="flex-1 text-sm"
               >
-                Close
+                Cancel
               </Button>
-            </div>
+              <Button
+                onClick={() => setSelectedTransaction(null)}
+                className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-sm"
+              >
+                Done
+              </Button>
+              </div>
           </div>
         </div>
       )}
