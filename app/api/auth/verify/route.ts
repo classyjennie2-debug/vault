@@ -10,7 +10,11 @@ export async function POST(request: Request) {
     if (!email || !code) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 })
     }
-    const ok = await verifySignupCode(email, code)
+    
+    // Trim the code to remove any whitespace
+    const trimmedCode = code.toString().trim()
+    
+    const ok = await verifySignupCode(email, trimmedCode)
     if (!ok) {
       return NextResponse.json({ error: "Invalid or expired code" }, { status: 400 })
     }

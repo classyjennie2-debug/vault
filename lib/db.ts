@@ -988,19 +988,21 @@ export async function insertVerificationCode(codeObj: {
 }
 
 export async function consumeVerificationCode(code: string): Promise<boolean> {
+  // Trim the code to ensure whitespace doesn't cause issues
+  const trimmedCode = code.trim()
   const row = await get(
     "SELECT * FROM verification_codes WHERE code = $1 AND used = FALSE AND expiresAt > $2",
-    [code, new Date().toISOString()]
+    [trimmedCode, new Date().toISOString()]
   )
   if (!row) return false
-  await run("UPDATE verification_codes SET used = TRUE WHERE code = $1", [code])
+  await run("UPDATE verification_codes SET used = TRUE WHERE code = $1", [trimmedCode])
   return true
 }
 
 export async function canResendVerificationCode(email: string): Promise<{ canResend: boolean; nextRetryAt?: string }> {
   // Check for the most recent unused verification code for this email
-  const row = await get<{ expiresAt: string }>(
-    "SELECT expiresAt FROM verification_codes WHERE email = $1 AND used = FALSE ORDER BY expiresAt DESC LIMIT 1",
+  const row = await get<{ expiresAt: string; created_at: string }>(
+    "SELECT expiresAt, created_at FROM verification_codes WHERE email = $1 AND used = FALSE ORDER BY created_at DESC LIMIT 1",
     [email]
   )
   
@@ -1009,11 +1011,9 @@ export async function canResendVerificationCode(email: string): Promise<{ canRes
     return { canResend: true }
   }
   
-  // Calculate if 5 minutes have passed since code creation
-  // Code expiration is 10 minutes, so we allow resend after 5 minutes
-  const codeExpiresAt = new Date(row.expiresAt)
-  const codeCreatedAt = new Date(codeExpiresAt.getTime() - 10 * 60 * 1000) // subtract 10 minutes
-  const resendAllowedAt = new Date(codeCreatedAt.getTime() + 5 * 60 * 1000) // add 5 minutes
+  // Calculate if 15 seconds have passed since code creation
+  const codeCreatedAt = new Date(row.created_at)
+  const resendAllowedAt = new Date(codeCreatedAt.getTime() + 15 * 1000) // add 15 seconds
   const now = new Date()
   
   if (now >= resendAllowedAt) {

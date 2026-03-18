@@ -115,7 +115,7 @@ export default function RegisterPage() {
     setError("")
     setInfo("")
     setCanResend(false)
-    setResendCountdown(300) // 5 minutes countdown
+    setResendCountdown(15) // 15 seconds countdown
 
     try {
       const res = await fetch("/api/auth/resend-code", {
@@ -267,7 +267,7 @@ export default function RegisterPage() {
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="(555) 000-0000"
+                  placeholder={COUNTRY_CODES_LIST.find(c => c.countryCode === phoneCountry)?.format || "(555) 000-0000"}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
