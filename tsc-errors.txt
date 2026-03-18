@@ -1,0 +1,45 @@
+﻿app/admin/layout.tsx(25,29): error TS2322: Type '{ role: "user" | "admin"; id: string; name: string; firstName?: string; lastName?: string; email: string; phone?: string; dateOfBirth?: string; passwordHash?: string; verified: boolean; balance: number; ... 5 more ...; emailVerified?: boolean; }' is not assignable to type 'User'.
+  Types of property 'firstName' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+app/admin/users/page.tsx(371,28): error TS18048: 'user.activeInvestmentsCount' is possibly 'undefined'.
+app/admin/wallets/page.tsx(266,18): error TS2552: Cannot find name 'users'. Did you mean 'user'?
+app/admin/wallets/page.tsx(266,30): error TS7006: Parameter 'u' implicitly has an 'any' type.
+app/api/admin/users/route.ts(87,77): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, any> | undefined'.
+app/api/notifications/[id]/read/route.ts(24,45): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: { id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }, index: number, obj: { id: string; userId: string; ... 5 more ...; isRead: boolean; }[]) => value is { ...; }, thisArg?: any): { ...; } | undefined', gave the following error.
+    Argument of type '(n: Notification) => boolean' is not assignable to parameter of type '(value: { id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }, index: number, obj: { id: string; userId: string; ... 5 more ...; isRead: boolean; }[]) => value is { ...; }'.
+      Types of parameters 'n' and 'value' are incompatible.
+        Type '{ id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }' is missing the following properties from type 'Notification': badge, body, data, dir, and 13 more.
+  Overload 2 of 2, '(predicate: (value: { id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }, index: number, obj: { id: string; userId: string; ... 5 more ...; isRead: boolean; }[]) => unknown, thisArg?: any): { ...; } | undefined', gave the following error.
+    Argument of type '(n: Notification) => boolean' is not assignable to parameter of type '(value: { id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }, index: number, obj: { id: string; userId: string; ... 5 more ...; isRead: boolean; }[]) => unknown'.
+      Types of parameters 'n' and 'value' are incompatible.
+        Type '{ id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }' is missing the following properties from type 'Notification': badge, body, data, dir, and 13 more.
+app/api/notifications/[id]/read/route.ts(24,68): error TS2339: Property 'id' does not exist on type 'Notification'.
+app/api/notifications/[id]/read/route.ts(85,45): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(predicate: (value: { id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }, index: number, obj: { id: string; userId: string; ... 5 more ...; isRead: boolean; }[]) => value is { ...; }, thisArg?: any): { ...; } | undefined', gave the following error.
+    Argument of type '(n: Notification) => boolean' is not assignable to parameter of type '(value: { id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }, index: number, obj: { id: string; userId: string; ... 5 more ...; isRead: boolean; }[]) => value is { ...; }'.
+      Types of parameters 'n' and 'value' are incompatible.
+        Type '{ id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }' is missing the following properties from type 'Notification': badge, body, data, dir, and 13 more.
+  Overload 2 of 2, '(predicate: (value: { id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }, index: number, obj: { id: string; userId: string; ... 5 more ...; isRead: boolean; }[]) => unknown, thisArg?: any): { ...; } | undefined', gave the following error.
+    Argument of type '(n: Notification) => boolean' is not assignable to parameter of type '(value: { id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }, index: number, obj: { id: string; userId: string; ... 5 more ...; isRead: boolean; }[]) => unknown'.
+      Types of parameters 'n' and 'value' are incompatible.
+        Type '{ id: string; userId: string; title: string; message: string; type: string; timestamp: string; actionUrl: string | undefined; isRead: boolean; }' is missing the following properties from type 'Notification': badge, body, data, dir, and 13 more.
+app/api/notifications/[id]/read/route.ts(85,68): error TS2339: Property 'id' does not exist on type 'Notification'.
+app/page.tsx(145,13): error TS2322: Type '"ghost"' is not assignable to type '"default" | "outline" | "secondary" | undefined'.
+components/dashboard/recent-transactions.tsx(96,15): error TS2322: Type '"initiated"' is not assignable to type '"pending" | "approved" | "rejected"'.
+lib/queries.ts(8,13): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(13,13): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(18,13): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(23,13): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(28,6): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(35,13): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(40,13): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(45,6): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(52,13): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(59,13): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(64,6): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(71,6): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(77,6): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(78,13): error TS2339: Property 'prepare' does not exist on type 'never'.
+lib/queries.ts(83,13): error TS2339: Property 'prepare' does not exist on type 'never'.

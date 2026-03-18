@@ -263,8 +263,7 @@ export default function AdminWalletsPage() {
 
   const getUserName = (userId: string | null) => {
     if (!userId) return null
-    const user = users.find((u) => u.id === userId)
-    return user?.name || userId
+    return userId
   }
 
   return (

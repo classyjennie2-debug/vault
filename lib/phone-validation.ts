@@ -53,34 +53,45 @@ export const COUNTRY_CODES = {
 
 export type CountryCode = keyof typeof COUNTRY_CODES
 
+// Normalize user input: remove non-digits and drop the country code prefix if the
+// user typed it. This lets callers accept either a local number or a full E.164.
+export function stripCountryCode(phoneNumber: string, countryCode: CountryCode): string {
+  const country = COUNTRY_CODES[countryCode]
+  const digitsOnly = phoneNumber.replace(/\D/g, '')
+  if (!country) return digitsOnly
+
+  const countryDigits = country.code.replace(/\D/g, '')
+  if (digitsOnly.startsWith(countryDigits)) {
+    return digitsOnly.slice(countryDigits.length)
+  }
+  return digitsOnly
+}
+
 export function validatePhone(phoneNumber: string, countryCode: CountryCode): boolean {
   const country = COUNTRY_CODES[countryCode]
   if (!country) return false
-  
-  // Remove all non-digit characters
-  const cleanNumber = phoneNumber.replace(/\D/g, '')
-  
-  return country.pattern.test(cleanNumber)
+
+  const localNumber = stripCountryCode(phoneNumber, countryCode)
+  return country.pattern.test(localNumber)
 }
 
 export function formatPhone(phoneNumber: string, countryCode: CountryCode): string {
   const country = COUNTRY_CODES[countryCode]
   if (!country) return phoneNumber
-  
-  const cleanNumber = phoneNumber.replace(/\D/g, '')
-  
-  // Format based on pattern
-  // This is a simple formatter - adjust as needed per country
-  let formatted = cleanNumber
+
+  const localNumber = stripCountryCode(phoneNumber, countryCode)
+
+  // Format based on pattern; keep it simple and return prefixed number
+  let formatted = localNumber
   if (countryCode === 'US' || countryCode === 'CA') {
-    formatted = `+${country.code} (${cleanNumber.slice(0, 3)}) ${cleanNumber.slice(3, 6)}-${cleanNumber.slice(6)}`
+    formatted = `${country.code} (${localNumber.slice(0, 3)}) ${localNumber.slice(3, 6)}-${localNumber.slice(6)}`
   } else if (countryCode === 'GB') {
-    formatted = `+${country.code} ${cleanNumber.slice(0, 4)} ${cleanNumber.slice(4)}`
+    formatted = `${country.code} ${localNumber.slice(0, 4)} ${localNumber.slice(4)}`
   } else if (countryCode === 'IN') {
-    formatted = `+${country.code} ${cleanNumber.slice(0, 5)} ${cleanNumber.slice(5)}`
+    formatted = `${country.code} ${localNumber.slice(0, 5)} ${localNumber.slice(5)}`
   }
-  
-  return formatted
+
+  return formatted.startsWith(country.code) ? formatted : `${country.code} ${formatted}`
 }
 
 export function getCountryCodeEntry(code: CountryCode) {

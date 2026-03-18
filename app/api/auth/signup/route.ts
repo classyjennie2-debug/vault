@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid"
 import { getUserByEmail, createUser } from "@/lib/db"
 import { hashPassword, sendVerificationCode, sendAdminNotification } from "@/lib/auth"
 import { rateLimitedResponse, rateLimitConfigs, getClientIp } from "@/lib/rate-limiting"
-import { validatePhone, COUNTRY_CODES, type CountryCode } from "@/lib/phone-validation"
+import { validatePhone, stripCountryCode, COUNTRY_CODES, type CountryCode } from "@/lib/phone-validation"
 
 export async function POST(request: Request) {
   try {
@@ -18,9 +18,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 })
     }
 
+    const countryCode = phoneCountry as CountryCode
+    const localPhone = stripCountryCode(phone, countryCode)
+
     // Validate phone number with country code
-    if (!validatePhone(phone, phoneCountry as CountryCode)) {
-      const country = COUNTRY_CODES[phoneCountry as CountryCode]
+    if (!validatePhone(phone, countryCode)) {
+      const country = COUNTRY_CODES[countryCode]
       return NextResponse.json({ 
         error: `Invalid phone number for ${country?.name || phoneCountry}. Format: ${country?.format || 'Invalid country'}` 
       }, { status: 400 })
@@ -36,7 +39,7 @@ export async function POST(request: Request) {
     const avatar = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
 
     // Store phone with country code
-    const fullPhone = `${COUNTRY_CODES[phoneCountry as CountryCode]?.code || '+1'} ${phone}`
+    const fullPhone = `${COUNTRY_CODES[countryCode]?.code || '+1'} ${localPhone}`
 
     // Create user as unverified - always send verification code
     await createUser({ 
@@ -70,7 +73,7 @@ export async function POST(request: Request) {
           <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
           <p><strong>Name:</strong> ${fullName}</p>
           <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Phone:</strong> ${phone}</p>
+          <p><strong>Phone:</strong> ${fullPhone}</p>
           <p><strong>Date of Birth:</strong> ${dateOfBirth}</p>
           <p><strong>Status:</strong> Pending Email Verification</p>
           <hr />
