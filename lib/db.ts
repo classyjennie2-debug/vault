@@ -994,15 +994,16 @@ export async function consumeVerificationCode(code: string): Promise<boolean> {
   console.log(`[Verify] Looking for code: ${trimmedCode}`)
   
   // Query for valid, unused, non-expired code
+  // Note: column is 'expiresat' (lowercase) and stored as text, converted to timestamp
   const row = await get(
-    "SELECT id FROM verification_codes WHERE code = $1 AND used = FALSE AND expiresAt > NOW() LIMIT 1",
+    "SELECT id FROM verification_codes WHERE code = $1 AND used = FALSE AND expiresat::timestamp > NOW() LIMIT 1",
     [trimmedCode]
   )
   
   if (!row) {
     // Check if code exists but is expired or already used
     const expiredRow = await get(
-      "SELECT code, used, expiresAt FROM verification_codes WHERE code = $1 LIMIT 1",
+      "SELECT code, used, expiresat FROM verification_codes WHERE code = $1 LIMIT 1",
       [trimmedCode]
     )
     console.log(`[Verify] Code lookup result - exists: ${!!expiredRow}`, expiredRow)
@@ -1021,8 +1022,8 @@ export async function consumeVerificationCode(code: string): Promise<boolean> {
 
 export async function canResendVerificationCode(email: string): Promise<{ canResend: boolean; nextRetryAt?: string }> {
   // Check for the most recent unused verification code for this email
-  const row = await get<{ expiresAt: string; created_at: string }>(
-    "SELECT expiresAt, created_at FROM verification_codes WHERE email = $1 AND used = FALSE ORDER BY created_at DESC LIMIT 1",
+  const row = await get<{ created_at: string }>(
+    "SELECT created_at FROM verification_codes WHERE email = $1 AND used = FALSE ORDER BY created_at DESC LIMIT 1",
     [email]
   )
   
