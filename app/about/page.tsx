@@ -26,28 +26,28 @@ const values = [
 
 const team = [
   {
-    name: "David Mitchell",
+    name: "Robert Hartwell",
     role: "Chief Executive Officer",
-    bio: "20+ years in fintech with a track record of building successful investment platforms",
-    image: "https://i.pravatar.cc/150?img=1",
+    bio: "30+ years in fintech with a track record of building successful investment platforms",
+    image: "https://i.pravatar.cc/150?img=33",
   },
   {
-    name: "Christopher Thompson",
+    name: "Paul Greenfield",
     role: "Chief Technology Officer",
-    bio: "Former Google engineer specializing in scalable financial systems and blockchain",
-    image: "https://i.pravatar.cc/150?img=12",
+    bio: "Former Yahoo and IBM architect specializing in scalable financial systems and blockchain",
+    image: "https://i.pravatar.cc/150?img=62",
   },
   {
-    name: "Jennifer Williams",
+    name: "Margaret Stone",
     role: "Chief Investment Officer",
-    bio: "Portfolio manager with $5B+ AUM and expertise in crypto and DeFi strategies",
-    image: "https://i.pravatar.cc/150?img=45",
+    bio: "Portfolio manager with $8B+ AUM and 25 years expertise in crypto and DeFi strategies",
+    image: "https://i.pravatar.cc/150?img=47",
   },
   {
-    name: "Michael Anderson",
+    name: "Edward Williamson",
     role: "Head of Compliance",
-    bio: "Legal expert with 15 years ensuring regulatory compliance in fintech",
-    image: "https://i.pravatar.cc/150?img=23",
+    bio: "Legal expert with 20 years ensuring regulatory compliance across multiple financial sectors",
+    image: "https://i.pravatar.cc/150?img=71",
   },
 ]
 

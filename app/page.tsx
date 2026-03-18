@@ -63,22 +63,22 @@ const stats = [
 
 const testimonials = [
   {
-    name: "Sarah Chen",
+    name: "Dorothy Winters",
     role: "Investor",
     quote: "Vault has completely transformed how I manage my investments. The automated strategies have saved me time and increased my returns.",
-    avatar: "SC",
+    avatar: "https://i.pravatar.cc/150?img=72",
   },
   {
-    name: "Marcus Johnson",
+    name: "Wallace Fitzgerald",
     role: "Financial Advisor",
     quote: "I recommend Vault to all my clients. The platform's transparency and security features are unmatched in the industry.",
-    avatar: "MJ",
+    avatar: "https://i.pravatar.cc/150?img=58",
   },
   {
-    name: "Priya Patel",
+    name: "Harriet Coleman",
     role: "Business Owner",
     quote: "As a busy entrepreneur, Vault allows me to invest without the complexity. Highly impressed with the results.",
-    avatar: "PP",
+    avatar: "https://i.pravatar.cc/150?img=55",
   },
 ]
 
@@ -366,8 +366,12 @@ export default async function LandingPage() {
                 className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-7 transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600"
               >
                 <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 flex-shrink-0">
-                    <span className="text-xs font-bold text-primary">{testimonial.avatar}</span>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 flex-shrink-0 overflow-hidden">
+                    {testimonial.avatar.startsWith("http") ? (
+                      <img src={testimonial.avatar} alt={testimonial.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold text-primary">{testimonial.avatar}</span>
+                    )}
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900 dark:text-white text-sm">{testimonial.name}</p>
