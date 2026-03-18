@@ -142,9 +142,18 @@ export function NotificationBell() {
           <SheetHeader className="border-b px-6 py-4 sticky top-0 z-10">
             <div className="flex items-center justify-between">
               <SheetTitle>Notifications</SheetTitle>
-              <span className="text-xs text-muted-foreground">
-                {notifications.length} {notifications.length === 1 ? "item" : "items"}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {notifications.length} {notifications.length === 1 ? "item" : "items"}
+                </span>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Close notifications"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </SheetHeader>
 

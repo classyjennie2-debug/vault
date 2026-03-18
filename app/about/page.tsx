@@ -26,51 +26,61 @@ const values = [
 
 const team = [
   {
-    name: "Sarah Chen",
+    name: "David Mitchell",
     role: "Chief Executive Officer",
     bio: "20+ years in fintech with a track record of building successful investment platforms",
-    image: "👩‍💼",
+    image: "https://i.pravatar.cc/150?img=1",
   },
   {
-    name: "Marcus Johnson",
+    name: "Christopher Thompson",
     role: "Chief Technology Officer",
     bio: "Former Google engineer specializing in scalable financial systems and blockchain",
-    image: "👨‍💻",
+    image: "https://i.pravatar.cc/150?img=12",
   },
   {
-    name: "Priya Patel",
+    name: "Jennifer Williams",
     role: "Chief Investment Officer",
     bio: "Portfolio manager with $5B+ AUM and expertise in crypto and DeFi strategies",
-    image: "👩‍🔬",
+    image: "https://i.pravatar.cc/150?img=45",
   },
   {
-    name: "James Wilson",
+    name: "Michael Anderson",
     role: "Head of Compliance",
     bio: "Legal expert with 15 years ensuring regulatory compliance in fintech",
-    image: "👨‍⚖️",
+    image: "https://i.pravatar.cc/150?img=23",
   },
 ]
 
 const milestones = [
   {
-    year: "2024",
+    year: "2017",
     title: "Founded",
-    description: "Vault launches with a mission to revolutionize retail investing",
+    description: "Vault was established with a vision to democratize investing and make financial growth accessible to everyone",
+  },
+  {
+    year: "2018",
+    title: "Beta Launch",
+    description: "Launched beta platform with 500 early adopters and initial investment strategies",
+  },
+  {
+    year: "2020",
+    title: "Series A Funding",
+    description: "Raised $20M in Series A funding to expand technology and product offerings",
+  },
+  {
+    year: "2022",
+    title: "$50M Series B",
+    description: "Secured $50M Series B funding and expanded to 15 new markets",
   },
   {
     year: "2024",
-    title: "$50M Series A",
-    description: "Secured funding to scale operations and technology",
-  },
-  {
-    year: "2025",
     title: "10,000+ Users",
-    description: "Reached 10,000 active investors with $100M+ AUM",
+    description: "Reached 10,000 active investors with $500M+ AUM across crypto and traditional assets",
   },
   {
     year: "2026",
     title: "Global Expansion",
-    description: "Now serving investors in 45+ countries with 24/7 support",
+    description: "Now serving investors in 45+ countries with 24/7 support and AI-powered investment strategies",
   },
 ]
 
@@ -136,7 +146,7 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {team.map((member, index) => (
               <div key={index} className="rounded-lg border p-6 text-center hover:shadow-lg transition-all">
-                <div className="text-6xl mb-4 block">{member.image}</div>
+                <img src={member.image} alt={member.name} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover" />
                 <h3 className="font-semibold mb-1">{member.name}</h3>
                 <p className="text-sm text-accent font-medium mb-3">{member.role}</p>
                 <p className="text-sm text-muted-foreground">{member.bio}</p>
