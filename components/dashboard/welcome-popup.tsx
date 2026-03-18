@@ -42,92 +42,99 @@ export function WelcomePopup({ firstName = "", lastName = "", isFirstVisit = tru
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-sm sm:max-w-md md:max-w-lg border border-primary/20 shadow-2xl bg-gradient-to-b from-slate-950/50 to-slate-900/50 backdrop-blur p-4 sm:p-6 rounded-xl">
+      <DialogContent className="max-w-sm sm:max-w-md md:max-w-lg border border-primary/30 shadow-2xl bg-gradient-to-b from-white to-slate-50 p-4 sm:p-6 rounded-2xl">
         <DialogHeader className="space-y-3 sm:space-y-4">
           {/* Animated Icon */}
           <div className="flex items-center justify-center mb-1 sm:mb-2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/40 via-accent/40 to-primary/40 rounded-full blur-lg sm:blur-xl animate-pulse"></div>
-              <div className="relative bg-gradient-to-br from-primary to-accent rounded-full p-2 sm:p-3 shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 via-blue-500/30 to-blue-400/30 rounded-full blur-lg sm:blur-xl animate-pulse"></div>
+              <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 rounded-full p-2 sm:p-3 shadow-lg">
                 <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
             </div>
           </div>
 
           {/* Welcome Message */}
-          <DialogTitle className="text-center space-y-1 sm:space-y-2">
-            <div className="text-sm sm:text-base md:text-lg text-muted-foreground font-medium">Welcome,</div>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent leading-tight">
+          <DialogTitle className="text-center space-y-2 sm:space-y-3">
+            <div className="text-sm sm:text-base font-medium text-slate-600">Welcome back,</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
               {displayName}
             </div>
           </DialogTitle>
 
-          <DialogDescription className="text-center text-sm sm:text-base text-muted-foreground/80 leading-relaxed px-1">
-            Your account is all set. You're now ready to start building your investment portfolio and grow your wealth with Vault.
+          <DialogDescription className="text-center text-sm sm:text-base text-slate-700 leading-relaxed px-1 font-medium">
+            Your account is all set. You're ready to start investing and growing your wealth with Vault.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Feature Highlights */}
-        <div className="space-y-2 sm:space-y-3 py-4 sm:py-6">
-          <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-500/50 transition-colors">
-            <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="font-semibold text-xs sm:text-sm text-emerald-100">
-                Diversified Investment Options
-              </p>
-              <p className="text-xs text-emerald-200/70 mt-0.5 leading-snug">
-                Choose from multiple plans with competitive returns
-              </p>
+        {/* Quick Start Section */}
+        <div className="mt-6 sm:mt-8 space-y-3">
+          <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            <span className="inline-block w-1 h-4 bg-blue-500 rounded-full"></span>
+            Key Features
+          </h3>
+          
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-300 transition-colors">
+              <CheckCircle2 className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="font-semibold text-sm text-slate-900">
+                  Diversified Plans
+                </p>
+                <p className="text-xs text-slate-600 mt-0.5 leading-snug">
+                  Multiple investment options with competitive returns
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-blue-500/10 border border-blue-500/30 hover:border-blue-500/50 transition-colors">
-            <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="font-semibold text-xs sm:text-sm text-blue-100">
-                Enterprise Security
-              </p>
-              <p className="text-xs text-blue-200/70 mt-0.5 leading-snug">
-                Bank-level encryption to protect your funds
-              </p>
+            <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-300 transition-colors">
+              <Lock className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="font-semibold text-sm text-slate-900">
+                  Bank-Level Security
+                </p>
+                <p className="text-xs text-slate-600 mt-0.5 leading-snug">
+                  Military-grade encryption protecting your assets
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-violet-500/10 border border-violet-500/30 hover:border-violet-500/50 transition-colors">
-            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-violet-500 flex-shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="font-semibold text-xs sm:text-sm text-violet-100">
-                Real-Time Portfolio Tracking
-              </p>
-              <p className="text-xs text-violet-200/70 mt-0.5 leading-snug">
-                Monitor investments with live updates
-              </p>
+            <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-300 transition-colors">
+              <TrendingUp className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="font-semibold text-sm text-slate-900">
+                  Real-Time Tracking
+                </p>
+                <p className="text-xs text-slate-600 mt-0.5 leading-snug">
+                  Monitor your portfolio with live market updates
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 hover:border-amber-500/50 transition-colors">
-            <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="font-semibold text-xs sm:text-sm text-amber-100">
-                Quick Setup
-              </p>
-              <p className="text-xs text-amber-200/70 mt-0.5 leading-snug">
-                Start investing in minutes
-              </p>
+            <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-300 transition-colors">
+              <Zap className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="font-semibold text-sm text-slate-900">
+                  Quick Setup
+                </p>
+                <p className="text-xs text-slate-600 mt-0.5 leading-snug">
+                  Start investing in just a few minutes
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Action Button */}
-        <div className="space-y-2 sm:space-y-3 pt-3 sm:pt-4">
+        <div className="space-y-3 pt-6 sm:pt-8">
           <Button
             onClick={() => setOpen(false)}
-            className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold h-9 sm:h-11 rounded-lg shadow-lg hover:shadow-primary/50 transition-all text-sm sm:text-base"
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold h-10 sm:h-12 rounded-lg shadow-lg hover:shadow-blue-500/50 transition-all text-sm sm:text-base"
           >
-            Start Exploring
+            Start Exploring Dashboard
           </Button>
-          <p className="text-center text-xs text-muted-foreground/60 px-1">
-            Visit Feature Guide in dashboard to learn more
+          <p className="text-center text-xs text-slate-500">
+            Learn more in the Feature Guide
           </p>
         </div>
       </DialogContent>

@@ -56,7 +56,7 @@ const emailTemplates = {
     subject: `Deposit Confirmed - $${data.amount}`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px; text-align: center;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
               <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
@@ -99,7 +99,7 @@ const emailTemplates = {
     subject: `Withdrawal Request - $${data.amount}`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 20px; text-align: center;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
               <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
@@ -140,7 +140,7 @@ const emailTemplates = {
     subject: `Investment Return Credited - $${data.amount}`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px; text-align: center;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
               <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
