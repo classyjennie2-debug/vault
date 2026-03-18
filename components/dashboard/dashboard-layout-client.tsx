@@ -5,18 +5,20 @@ import { ReactNode } from "react"
 
 interface DashboardLayoutClientProps {
   children: ReactNode
-  userName?: string
+  firstName?: string
+  lastName?: string
   isFirstVisit?: boolean
 }
 
 export function DashboardLayoutClient({
   children,
-  userName = "Investor",
+  firstName = "",
+  lastName = "",
   isFirstVisit = false,
 }: DashboardLayoutClientProps) {
   return (
     <>
-      <WelcomePopup userName={userName} isFirstVisit={isFirstVisit} />
+      <WelcomePopup firstName={firstName} lastName={lastName} isFirstVisit={isFirstVisit} />
       {children}
     </>
   )

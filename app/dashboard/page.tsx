@@ -9,7 +9,7 @@ import LiveChatButton from "@/components/live-chat-button"
 import { GlanceStrip } from "@/components/dashboard/glance-strip"
 import { DashboardLayoutClient } from "@/components/dashboard/dashboard-layout-client"
 import { requireAuth } from "@/lib/auth"
-import { getUserStats, generatePortfolioData, getUserActiveInvestmentsWithProfit } from "@/lib/db"
+import { getUserStats, generatePortfolioData, getUserActiveInvestmentsWithProfit, updateLastLogin } from "@/lib/db"
 import { calculateMonthlyMetrics, calculateReturnRate } from "@/lib/monthly-metrics"
 import { Suspense } from "react"
 
@@ -33,8 +33,16 @@ export default async function DashboardPage() {
   const user = await requireAuth()
   const stats = await getUserStats(user.id)
 
+  // Determine if this is the user's first dashboard visit
+  const isFirstDashboardVisit = !user.lastLogin
+
+  // Update last login for first-time visitors
+  if (isFirstDashboardVisit) {
+    await updateLastLogin(user.id)
+  }
+
   return (
-    <DashboardLayoutClient userName={user.firstName || user.email || "Investor"} isFirstVisit={false}>
+    <DashboardLayoutClient firstName={user.firstName || ""} lastName={user.lastName || ""} isFirstVisit={isFirstDashboardVisit}>
       <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
         <DashboardHero user={user} stats={stats} />
 

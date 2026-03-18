@@ -145,10 +145,6 @@ export default function SettingsPage() {
     phone: "",
     phoneCountry: "US",
     dateOfBirth: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "",
     timezone: "EST",
   })
   const [loadingUser, setLoadingUser] = useState(true)
@@ -167,16 +163,12 @@ export default function SettingsPage() {
         const user = data.user
         setUserSettings((prev) => ({
           ...prev,
-          firstName: user?.first_name || "",
-          lastName: user?.last_name || "",
+          firstName: user?.firstName || "",
+          lastName: user?.lastName || "",
           email: user?.email || "",
           phone: user?.phone || "",
           phoneCountry: user?.phoneCountry || "US",
-          dateOfBirth: user?.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : "",
-          city: user?.city || "",
-          state: user?.state || "",
-          zipCode: user?.zip_code || "",
-          country: user?.country || "",
+          dateOfBirth: user?.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : "",
         }))
       } catch (e: any) {
         setUserError(e.message || "Failed to fetch user info")
@@ -359,6 +351,20 @@ export default function SettingsPage() {
               />
             </div>
             <p className="text-xs text-muted-foreground mt-1">Phone and country are changeable</p>
+          </div>
+
+          {/* Date of Birth - Read Only */}
+          <div>
+            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Input
+              id="dateOfBirth"
+              type="date"
+              value={userSettings.dateOfBirth}
+              readOnly
+              disabled
+              className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Date of birth cannot be changed</p>
           </div>
 
           <Button 

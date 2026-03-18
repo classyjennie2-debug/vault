@@ -881,7 +881,7 @@ export interface UserRow {
 
 export async function getUserByEmail(email: string): Promise<UserRow | undefined> {
   // Map PostgreSQL snake_case to camelCase for code consistency
-  const query = "SELECT id, name, email, password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", avatar, first_name as \"firstName\", last_name as \"lastName\", phone, date_of_birth as \"dateOfBirth\" FROM users WHERE email = $1"
+  const query = "SELECT id, name, email, password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", avatar, first_name as \"firstName\", last_name as \"lastName\", phone, phone_country as \"phoneCountry\", date_of_birth as \"dateOfBirth\" FROM users WHERE email = $1"
   
   const row = (await get(query, [email])) as UserRow | undefined
   if (row) {
@@ -891,19 +891,44 @@ export async function getUserByEmail(email: string): Promise<UserRow | undefined
 }
 
 export async function getUserById(id: string): Promise<UserRow | undefined> {
-  const query = "SELECT id, name, first_name as \"firstName\", last_name as \"lastName\", email, phone, date_of_birth as \"dateOfBirth\", password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", last_login as \"lastLogin\", avatar, created_at as \"createdAt\", updated_at as \"updatedAt\" FROM users WHERE id = $1"
+  const query = "SELECT id, name, first_name as \"firstName\", last_name as \"lastName\", email, phone, phone_country as \"phoneCountry\", date_of_birth as \"dateOfBirth\", password_hash as \"passwordHash\", verified, role, balance, joined_at as \"joinedAt\", last_login as \"lastLogin\", avatar, created_at as \"createdAt\", updated_at as \"updatedAt\" FROM users WHERE id = $1"
   
   const row = (await get(query, [id])) as UserRow | undefined
   if (row) {
     row.verified = !!row.verified
+    
+    // If firstName/lastName are null/empty, parse from name field
+    if (!row.firstName || !row.lastName) {
+      const nameParts = (row.name || "").trim().split(" ")
+      if (!row.firstName && nameParts.length > 0) {
+        row.firstName = nameParts[0]
+      }
+      if (!row.lastName && nameParts.length > 1) {
+        row.lastName = nameParts.slice(1).join(" ")
+      }
+    }
   }
   return row
 }
 
 export async function getAllUsers(): Promise<UserRow[]> {
-  return all<UserRow>(
-    "SELECT id, name, first_name as \"firstName\", last_name as \"lastName\", email, phone, date_of_birth as \"dateOfBirth\", verified, role, balance, joined_at as \"joinedAt\", last_login as \"lastLogin\", avatar, created_at as \"createdAt\", updated_at as \"updatedAt\" FROM users"
+  const users = await all<UserRow>(
+    "SELECT id, name, first_name as \"firstName\", last_name as \"lastName\", email, phone, phone_country as \"phoneCountry\", date_of_birth as \"dateOfBirth\", verified, role, balance, joined_at as \"joinedAt\", last_login as \"lastLogin\", avatar, created_at as \"createdAt\", updated_at as \"updatedAt\" FROM users"
   )
+  
+  // Parse firstName/lastName from name field if null
+  return users.map(user => {
+    if (!user.firstName || !user.lastName) {
+      const nameParts = (user.name || "").trim().split(" ")
+      if (!user.firstName && nameParts.length > 0) {
+        user.firstName = nameParts[0]
+      }
+      if (!user.lastName && nameParts.length > 1) {
+        user.lastName = nameParts.slice(1).join(" ")
+      }
+    }
+    return user
+  })
 }
 
 export async function createUser(user: {
@@ -1388,7 +1413,7 @@ export async function getRecentActivities(userId: string) {
     : "SELECT * FROM transactions WHERE userId = $1 ORDER BY date DESC LIMIT 10"
   const transactions = await all(txQuery, [userId])
   
-  // Get activity log entries (if table exists)
+  // Get activity log entries from activity_logs table
   let activityLogs: any[] = []
   try {
     const logQuery = usePostgres
@@ -1397,7 +1422,7 @@ export async function getRecentActivities(userId: string) {
     activityLogs = await all(logQuery, [userId])
   } catch (err) {
     // activity_logs table might not exist, continue without it
-    console.debug("Activity logs table not available")
+    console.debug("Activity logs table not available:", err)
   }
   
   // Transform transactions to activities format
@@ -1867,17 +1892,22 @@ export async function createNotification(notification: {
 
 export async function logActivity(userId: string, type: string, description: string, metadata?: any) {
   const activityId = `act_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  await run(
-    "INSERT INTO activity_log (id, userId, type, description, metadata, timestamp) VALUES ($1, $2, $3, $4, $5, $6)",
-    [
-      activityId,
-      userId,
-      type,
-      description,
-      metadata ? JSON.stringify(metadata) : null,
-      new Date().toISOString(),
-    ]
-  )
+  try {
+    await run(
+      "INSERT INTO activity_logs (id, user_id, type, description, metadata, created_at) VALUES ($1, $2, $3, $4, $5, $6)",
+      [
+        activityId,
+        userId,
+        type,
+        description,
+        metadata ? JSON.stringify(metadata) : null,
+        new Date().toISOString(),
+      ]
+    )
+  } catch (err) {
+    console.error("Failed to log activity:", err)
+    // Don't throw - logging shouldn't break the main operation
+  }
   return activityId
 }
 
