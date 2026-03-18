@@ -139,31 +139,46 @@ export default function SettingsPage() {
   }
 
   const [userSettings, setUserSettings] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
+    phoneCountry: "US",
     dateOfBirth: "",
     address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
     timezone: "EST",
   })
   const [loadingUser, setLoadingUser] = useState(true)
   const [userError, setUserError] = useState("")
+  const [saveLoading, setSaveLoading] = useState(false)
 
   useEffect(() => {
     const fetchUser = async () => {
       setLoadingUser(true)
       setUserError("")
       try {
-        const res = await fetch("/api/user/balance")
+        const res = await fetch("/api/user/current")
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || "Failed to fetch user info")
+        
+        const user = data.user
         setUserSettings((prev) => ({
           ...prev,
-          fullName: data?.user?.name || "",
-          email: data?.user?.email || "",
-          phone: data?.user?.phone || "",
-          dateOfBirth: data?.user?.dateOfBirth || "",
-          address: data?.user?.address || "",
+          firstName: user?.first_name || "",
+          lastName: user?.last_name || "",
+          email: user?.email || "",
+          phone: user?.phone || "",
+          phoneCountry: user?.phoneCountry || "US",
+          dateOfBirth: user?.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : "",
+          address: user?.address || "",
+          city: user?.city || "",
+          state: user?.state || "",
+          zipCode: user?.zip_code || "",
+          country: user?.country || "",
         }))
       } catch (e: any) {
         setUserError(e.message || "Failed to fetch user info")
@@ -269,18 +284,86 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-
-          <div>
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input
-              id="fullName"
-              value={userSettings.fullName}
-              readOnly
-              disabled
-              className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-            />
+          {/* Name Fields - Read Only */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                value={userSettings.firstName}
+                readOnly
+                disabled
+                className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={userSettings.lastName}
+                readOnly
+                disabled
+                className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+              />
+            </div>
           </div>
 
+          {/* Email - Editable */}
+          <div>
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              value={userSettings.email}
+              onChange={(e) =>
+                setUserSettings({ ...userSettings, email: e.target.value })
+              }
+              className="mt-1"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Email is changeable</p>
+          </div>
+
+          {/* Phone - Editable */}
+          <div>
+            <Label htmlFor="phone">Phone Number</Label>
+            <div className="flex gap-2 mt-1">
+              <select
+                value={userSettings.phoneCountry}
+                onChange={(e) => setUserSettings({ ...userSettings, phoneCountry: e.target.value })}
+                className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="US">🇺🇸 +1</option>
+                <option value="CA">🇨🇦 +1</option>
+                <option value="GB">🇬🇧 +44</option>
+                <option value="AU">🇦🇺 +61</option>
+                <option value="IN">🇮🇳 +91</option>
+                <option value="BR">🇧🇷 +55</option>
+                <option value="DE">🇩🇪 +49</option>
+                <option value="FR">🇫🇷 +33</option>
+                <option value="ES">🇪🇸 +34</option>
+                <option value="IT">🇮🇹 +39</option>
+                <option value="MX">🇲🇽 +52</option>
+                <option value="JP">🇯🇵 +81</option>
+                <option value="CN">🇨🇳 +86</option>
+                <option value="ZA">🇿🇦 +27</option>
+                <option value="NG">🇳🇬 +234</option>
+                <option value="KE">🇰🇪 +254</option>
+              </select>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="Enter phone number"
+                value={userSettings.phone}
+                onChange={(e) =>
+                  setUserSettings({ ...userSettings, phone: e.target.value })
+                }
+                className="flex-1"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Phone is changeable</p>
+          </div>
+
+          {/* Date of Birth - Read Only */}
           <div>
             <Label htmlFor="dateOfBirth">Date of Birth</Label>
             <Input
@@ -293,6 +376,7 @@ export default function SettingsPage() {
             />
           </div>
 
+          {/* Address Info - Read Only */}
           <div>
             <Label htmlFor="address">Address</Label>
             <Input
@@ -305,53 +389,57 @@ export default function SettingsPage() {
             />
           </div>
 
-
-          <div>
-            <Label htmlFor="email">Email Address</Label>
-            <Input
-              id="email"
-              type="email"
-              value={userSettings.email}
-              onChange={(e) =>
-                setUserSettings({ ...userSettings, email: e.target.value })
-              }
-              className="mt-1"
-            />
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                value={userSettings.city}
+                readOnly
+                disabled
+                className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <Label htmlFor="state">State/Province</Label>
+              <Input
+                id="state"
+                value={userSettings.state}
+                readOnly
+                disabled
+                className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <Label htmlFor="zipCode">Zip/Postal Code</Label>
+              <Input
+                id="zipCode"
+                value={userSettings.zipCode}
+                readOnly
+                disabled
+                className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
+              />
+            </div>
           </div>
 
-
           <div>
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="country">Country</Label>
             <Input
-              id="phone"
-              type="tel"
-              value={userSettings.phone}
+              id="country"
+              value={userSettings.country}
               readOnly
               disabled
               className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
             />
           </div>
 
-          <div>
-            <Label htmlFor="timezone">Timezone</Label>
-            <Select value={userSettings.timezone} disabled>
-              <SelectTrigger className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="PST">PST (Pacific)</SelectItem>
-                <SelectItem value="MST">MST (Mountain)</SelectItem>
-                <SelectItem value="CST">CST (Central)</SelectItem>
-                <SelectItem value="EST">EST (Eastern)</SelectItem>
-                <SelectItem value="GMT">GMT (London)</SelectItem>
-                <SelectItem value="CET">CET (Central Europe)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button onClick={handleSaveSettings} className="flex items-center gap-2" disabled={loadingUser}>
+          <Button 
+            onClick={handleSaveSettings} 
+            className="flex items-center gap-2" 
+            disabled={loadingUser || saveLoading}
+          >
             <Save className="h-4 w-4" />
-            {loadingUser ? "Loading..." : "Save Changes"}
+            {loadingUser || saveLoading ? "Saving..." : "Save Changes"}
           </Button>
 
           {userError && (

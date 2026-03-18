@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { MessageSquare, Loader2, X } from "lucide-react"
 import { loadTawkChat } from "./tawk-chat"
@@ -15,20 +15,40 @@ export default function LiveChatButton() {
   const [loading, setLoading] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
 
+  // Listen for widget state changes from Tawk API
+  useEffect(() => {
+    const checkWidgetState = () => {
+      if (window.Tawk_API?.isWidgetVisible) {
+        const isVisible = window.Tawk_API.isWidgetVisible()
+        setIsChatOpen(isVisible === true)
+      }
+    }
+
+    // Check every 500ms to sync state with Tawk widget
+    const interval = setInterval(checkWidgetState, 500)
+    return () => clearInterval(interval)
+  }, [])
+
   const handleToggleChat = async () => {
     if (isChatOpen) {
       // Close the chat
-      if (window.Tawk_API?.minimizeWidget) {
-        window.Tawk_API.minimizeWidget()
+      try {
+        if (window.Tawk_API?.minimizeWidget) {
+          window.Tawk_API.minimizeWidget()
+        } else if (window.Tawk_API?.hideWidget) {
+          window.Tawk_API.hideWidget()
+        }
+        setIsChatOpen(false)
+      } catch (error) {
+        console.error("Error closing chat:", error)
       }
-      setIsChatOpen(false)
     } else {
       // Open the chat
       setLoading(true)
       try {
         await loadTawkChat()
         
-        // Wait a moment for Tawk to be ready
+        // Wait for Tawk to be ready
         await new Promise(resolve => setTimeout(resolve, 300))
         
         // Open the chat widget

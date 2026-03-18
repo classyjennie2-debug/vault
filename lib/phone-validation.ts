@@ -18,6 +18,37 @@ export const COUNTRY_CODES = {
   MX: { code: '+52', flag: '🇲🇽', name: 'Mexico', pattern: /^\d{10}$/, format: 'XXX XXX XXXX' },
   JP: { code: '+81', flag: '🇯🇵', name: 'Japan', pattern: /^\d{9,10}$/, format: 'XX-XXXX-XXXX' },
   CN: { code: '+86', flag: '🇨🇳', name: 'China', pattern: /^\d{11}$/, format: 'XXXX XXXX XXXX' },
+  HK: { code: '+852', flag: '🇭🇰', name: 'Hong Kong', pattern: /^\d{8}$/, format: 'XXXX XXXX' },
+  MY: { code: '+60', flag: '🇲🇾', name: 'Malaysia', pattern: /^\d{9,10}$/, format: 'X XXXX XXXX' },
+  TH: { code: '+66', flag: '🇹🇭', name: 'Thailand', pattern: /^\d{9}$/, format: 'XX XXX XXXX' },
+  VN: { code: '+84', flag: '🇻🇳', name: 'Vietnam', pattern: /^\d{9,10}$/, format: 'XXX XXX XXXX' },
+  PH: { code: '+63', flag: '🇵🇭', name: 'Philippines', pattern: /^\d{10}$/, format: 'XXX XXX XXXX' },
+  ID: { code: '+62', flag: '🇮🇩', name: 'Indonesia', pattern: /^\d{10,11}$/, format: 'XXX XXXX XXXX' },
+  PK: { code: '+92', flag: '🇵🇰', name: 'Pakistan', pattern: /^\d{10}$/, format: 'XXX XXX XXXX' },
+  BD: { code: '+880', flag: '🇧🇩', name: 'Bangladesh', pattern: /^\d{10}$/, format: 'XXXX XXXXXX' },
+  LK: { code: '+94', flag: '🇱🇰', name: 'Sri Lanka', pattern: /^\d{9}$/, format: 'XXX XXX XXX' },
+  AE: { code: '+971', flag: '🇦🇪', name: 'United Arab Emirates', pattern: /^\d{9}$/, format: 'XXX XXX XXX' },
+  SA: { code: '+966', flag: '🇸🇦', name: 'Saudi Arabia', pattern: /^\d{9}$/, format: 'X XXX XXXX' },
+  QA: { code: '+974', flag: '🇶🇦', name: 'Qatar', pattern: /^\d{8}$/, format: 'XXXX XXXX' },
+  EG: { code: '+20', flag: '🇪🇬', name: 'Egypt', pattern: /^\d{10}$/, format: 'XXX XXX XXXX' },
+  MA: { code: '+212', flag: '🇲🇦', name: 'Morocco', pattern: /^\d{9}$/, format: 'XXX XXX XXX' },
+  RU: { code: '+7', flag: '🇷🇺', name: 'Russia', pattern: /^\d{10}$/, format: 'XXX XXX XX XX' },
+  PL: { code: '+48', flag: '🇵🇱', name: 'Poland', pattern: /^\d{9}$/, format: 'XXX XXX XXX' },
+  SE: { code: '+46', flag: '🇸🇪', name: 'Sweden', pattern: /^\d{9}$/, format: 'XX XXX XXXX' },
+  NO: { code: '+47', flag: '🇳🇴', name: 'Norway', pattern: /^\d{8}$/, format: 'XXXX XXXX' },
+  NL: { code: '+31', flag: '🇳🇱', name: 'Netherlands', pattern: /^\d{9}$/, format: 'X XXX XXXXX' },
+  BE: { code: '+32', flag: '🇧🇪', name: 'Belgium', pattern: /^\d{9}$/, format: 'XXX XXX XXX' },
+  AT: { code: '+43', flag: '🇦🇹', name: 'Austria', pattern: /^\d{10}$/, format: 'XXX XXXXXXX' },
+  CH: { code: '+41', flag: '🇨🇭', name: 'Switzerland', pattern: /^\d{9}$/, format: 'XX XXX XXXX' },
+  GR: { code: '+30', flag: '🇬🇷', name: 'Greece', pattern: /^\d{10}$/, format: 'XXX XXXX XXXX' },
+  PT: { code: '+351', flag: '🇵🇹', name: 'Portugal', pattern: /^\d{9}$/, format: 'XXX XXX XXX' },
+  TR: { code: '+90', flag: '🇹🇷', name: 'Turkey', pattern: /^\d{10}$/, format: 'XXX XXX XX XX' },
+  IL: { code: '+972', flag: '🇮🇱', name: 'Israel', pattern: /^\d{9}$/, format: 'XX XXX XXXX' },
+  CO: { code: '+57', flag: '🇨🇴', name: 'Colombia', pattern: /^\d{10}$/, format: 'XXX XXX XXXX' },
+  AR: { code: '+54', flag: '🇦🇷', name: 'Argentina', pattern: /^\d{10}$/, format: 'XXX XXXX XXXX' },
+  CL: { code: '+56', flag: '🇨🇱', name: 'Chile', pattern: /^\d{9}$/, format: 'X XXXX XXXX' },
+  PE: { code: '+51', flag: '🇵🇪', name: 'Peru', pattern: /^\d{9}$/, format: 'XXX XXX XXX' },
+  EC: { code: '+593', flag: '🇪🇨', name: 'Ecuador', pattern: /^\d{9}$/, format: 'XXX XXX XXXX' },
 }
 
 export type CountryCode = keyof typeof COUNTRY_CODES
@@ -45,6 +76,8 @@ export function formatPhone(phoneNumber: string, countryCode: CountryCode): stri
     formatted = `+${country.code} (${cleanNumber.slice(0, 3)}) ${cleanNumber.slice(3, 6)}-${cleanNumber.slice(6)}`
   } else if (countryCode === 'GB') {
     formatted = `+${country.code} ${cleanNumber.slice(0, 4)} ${cleanNumber.slice(4)}`
+  } else if (countryCode === 'IN') {
+    formatted = `+${country.code} ${cleanNumber.slice(0, 5)} ${cleanNumber.slice(5)}`
   }
   
   return formatted
