@@ -108,6 +108,8 @@ export async function sendVerificationCode(email: string) {
   const expiresAt = new Date(Date.now() + 1000 * 60 * 10).toISOString()
   const { v4: uuidv4 } = await import("uuid")
 
+  console.log(`[Auth] Sending verification code to ${email}, code: ${code}, expires: ${expiresAt}`)
+
   await insertVerificationCode({
     id: uuidv4(),
     email,

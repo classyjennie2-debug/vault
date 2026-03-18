@@ -990,11 +990,27 @@ export async function insertVerificationCode(codeObj: {
 export async function consumeVerificationCode(code: string): Promise<boolean> {
   // Trim the code to ensure whitespace doesn't cause issues
   const trimmedCode = code.trim()
+  const now = new Date().toISOString()
+  
+  // Log for debugging
+  console.log(`[Verify] Looking for code: ${trimmedCode}, current time: ${now}`)
+  
   const row = await get(
-    "SELECT * FROM verification_codes WHERE code = $1 AND used = FALSE AND expiresAt > $2",
-    [trimmedCode, new Date().toISOString()]
+    "SELECT * FROM verification_codes WHERE code = $1 AND used = FALSE AND expiresAt::text > $2",
+    [trimmedCode, now]
   )
-  if (!row) return false
+  
+  if (!row) {
+    // Check if code exists but is expired
+    const expiredRow = await get(
+      "SELECT * FROM verification_codes WHERE code = $1",
+      [trimmedCode]
+    )
+    console.log(`[Verify] Code lookup result - exists: ${!!expiredRow}, row:`, expiredRow)
+    return false
+  }
+  
+  console.log(`[Verify] Code found and valid, marking as used`)
   await run("UPDATE verification_codes SET used = TRUE WHERE code = $1", [trimmedCode])
   return true
 }
