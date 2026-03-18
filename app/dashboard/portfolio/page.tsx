@@ -9,41 +9,50 @@ import { AlertCircle } from "lucide-react"
 
 export default function PortfolioPage() {
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [portfolioData, setPortfolioData] = useState({
-    totalBalance: 25000,
-    totalInvested: 20000,
-    totalReturns: 2500,
-    totalFees: 100,
+    totalBalance: 0,
+    totalInvested: 0,
+    totalReturns: 0,
+    totalFees: 0,
     portfolioData: [
-      { date: "Jan", balance: 20000, returns: 0 },
-      { date: "Feb", balance: 20500, returns: 500 },
-      { date: "Mar", balance: 21200, returns: 1200 },
-      { date: "Apr", balance: 21800, returns: 1800 },
-      { date: "May", balance: 22500, returns: 2500 },
+      { date: "Jan", balance: 0, returns: 0 },
     ],
-    allocations: [
-      { name: "Conservative Plan", value: 8000, color: "#3b82f6" },
-      { name: "Growth Plan", value: 7000, color: "#10b981" },
-      { name: "High Yield Plan", value: 5000, color: "#f59e0b" },
-    ],
+    allocations: [] as Array<{
+      name: string
+      value: number
+      color: string
+    }>,
   })
 
   useEffect(() => {
-    // TODO: Fetch real data from API
-    // const fetchPortfolioData = async () => {
-    //   try {
-    //     const response = await fetch("/api/investments")
-    //     const data = await response.json()
-    //     setPortfolioData(data)
-    //   } catch (error) {
-    //     console.error("Failed to fetch portfolio data:", error)
-    //   } finally {
-    //     setLoading(false)
-    //   }
-    // }
-    // fetchPortfolioData()
-    
-    setLoading(false)
+    const fetchPortfolioData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await fetch("/api/portfolio/data")
+        if (!response.ok) {
+          throw new Error("Failed to fetch portfolio data")
+        }
+        const data = await response.json()
+        setPortfolioData({
+          totalBalance: data.totalBalance || 0,
+          totalInvested: data.totalInvested || 0,
+          totalReturns: data.totalReturns || 0,
+          totalFees: data.totalFees || 0,
+          portfolioData: data.portfolioData || [
+            { date: "Jan", balance: 0, returns: 0 },
+          ],
+          allocations: data.allocations || [],
+        })
+      } catch (error) {
+        console.error("Failed to fetch portfolio data:", error)
+        setError(error instanceof Error ? error.message : "Failed to load portfolio data")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPortfolioData()
   }, [])
 
   if (loading) {
@@ -67,6 +76,15 @@ export default function PortfolioPage() {
           View your complete investment portfolio and performance metrics
         </p>
       </div>
+
+      {error && (
+        <Alert className="border-red-200 bg-red-50 dark:bg-red-950 dark:border-red-800">
+          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+          <AlertDescription className="text-red-700 dark:text-red-300">
+            {error}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Alert>
         <AlertCircle className="h-4 w-4" />
