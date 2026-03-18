@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import Footer from "@/components/layout/footer"
 
@@ -109,7 +110,7 @@ const faqs: FAQItem[] = [
   {
     category: "support",
     question: "How can I contact support?",
-    answer: "You can reach our support team 24/7 via email (support@vaultcapital.bond), live chat on our website, or phone (+1 800-123-4567). Response time is typically under 15 minutes.",
+    answer: "You can reach our support team 24/7 via email (support@vaultcapital.bond) or live chat on our website. Response time is typically under 15 minutes.",
   },
   {
     category: "support",
@@ -144,7 +145,18 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors group"
+          >
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            Back to Home
+          </Link>
+        </div>
+      </div>
+      <div className="container mx-auto px-4 pb-16">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">

@@ -1,4 +1,5 @@
-import { Check } from "lucide-react"
+import { Check, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 import Footer from "@/components/layout/footer"
 
 const plans = [
@@ -73,8 +74,19 @@ const comparisonFeatures = [
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors group"
+          >
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            Back to Home
+          </Link>
+        </div>
+      </div>
       {/* Header */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Investment Plans</h1>
           <p className="text-lg text-muted-foreground mb-6">

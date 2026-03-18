@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { X, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 import Footer from "@/components/layout/footer"
 
 interface Article {
@@ -17,7 +18,7 @@ interface Article {
 const articles: Article[] = [
   {
     title: "2026 Investment Outlook: Market Trends to Watch",
-    author: "Sarah Chen",
+    author: "Dorothy Winters",
     date: "March 15, 2026",
     category: "Market Analysis",
     excerpt: "As we move through 2026, several key trends are shaping investment opportunities. From AI-driven automation to sustainable investing, discover what might drive market performance this year.",
@@ -26,7 +27,7 @@ const articles: Article[] = [
   },
   {
     title: "How AI is Revolutionizing Portfolio Management",
-    author: "Marcus Johnson",
+    author: "Wallace Fitzgerald",
     date: "March 12, 2026",
     category: "Technology",
     excerpt: "Artificial intelligence is changing how investments are managed. Learn how machine learning algorithms optimize portfolios, reduce risk, and improve returns in real-time.",
@@ -35,7 +36,7 @@ const articles: Article[] = [
   },
   {
     title: "The Complete Guide to Risk Management",
-    author: "Priya Patel",
+    author: "Harriet Coleman",
     date: "March 8, 2026",
     category: "Education",
     excerpt: "Risk management isn't about avoiding risk—it's about understanding it. Explore proven strategies to protect your investments while still pursuing growth opportunities.",
@@ -44,7 +45,7 @@ const articles: Article[] = [
   },
   {
     title: "Diversification Done Right",
-    author: "James Wilson",
+    author: "Bernard Hopkins",
     date: "March 5, 2026",
     category: "Strategy",
     excerpt: "A well-diversified portfolio is the foundation of long-term wealth. Discover how to spread your investments across asset classes for maximum protection.",
@@ -53,7 +54,7 @@ const articles: Article[] = [
   },
   {
     title: "Understanding Cryptocurrency Investments",
-    author: "Alex Rodriguez",
+    author: "Edwin Foster",
     date: "March 1, 2026",
     category: "Crypto",
     excerpt: "Cryptocurrencies represent a new asset class with unique characteristics. Learn how to evaluate crypto investments and manage volatility effectively.",
@@ -62,7 +63,7 @@ const articles: Article[] = [
   },
   {
     title: "Behavioral Investing: Master Your Emotions",
-    author: "Emma Thompson",
+    author: "Margaret Quinn",
     date: "February 25, 2026",
     category: "Psychology",
     excerpt: "The biggest enemy of investment success isn't market conditions—it's your own psychology. Learn to recognize and overcome common behavioral mistakes.",
@@ -72,7 +73,7 @@ const articles: Article[] = [
   // 2025 posts
   {
     title: "Predicting Market Movements: Technical Analysis Fundamentals",
-    author: "David Kim",
+    author: "Victor Hartley",
     date: "December 10, 2025",
     category: "Market Analysis",
     excerpt: "Technical analysis helps investors identify patterns and predict potential market movements. Learn the essential tools and indicators every investor should know.",
@@ -81,7 +82,7 @@ const articles: Article[] = [
   },
   {
     title: "ESG Investing: Making Money While Making a Difference",
-    author: "Lisa Anderson",
+    author: "Constance Mills",
     date: "November 5, 2025",
     category: "Strategy",
     excerpt: "Environmental, Social, and Governance (ESG) criteria are reshaping investment strategies. Discover how to align your portfolio with your values.",
@@ -90,7 +91,7 @@ const articles: Article[] = [
   },
   {
     title: "The Fed's Interest Rate Decisions: What They Mean for Your Portfolio",
-    author: "Robert Davis",
+    author: "George Patterson",
     date: "October 20, 2025",
     category: "Market Analysis",
     excerpt: "Understanding Federal Reserve policy is crucial for investors. Learn how interest rate changes impact different asset classes and your investment strategy.",
@@ -99,7 +100,7 @@ const articles: Article[] = [
   },
   {
     title: "Real Estate Investment Trusts (REITs): Passive Income for Everyone",
-    author: "Jennifer Lee",
+    author: "Alice Richardson",
     date: "September 15, 2025",
     category: "Education",
     excerpt: "REITs offer real estate exposure without the hassle of property management. Explore how these instruments can diversify your portfolio and generate income.",
@@ -108,7 +109,7 @@ const articles: Article[] = [
   },
   {
     title: "Cryptocurrency Regulation: Navigating the Changing Landscape",
-    author: "Michael Zhang",
+    author: "Clarence Bennett",
     date: "August 22, 2025",
     category: "Crypto",
     excerpt: "Global regulatory frameworks for crypto are evolving rapidly. Stay informed about how new regulations affect your digital asset investments.",
@@ -117,7 +118,7 @@ const articles: Article[] = [
   },
   {
     title: "Index Funds vs Active Management: Which Strategy Wins?",
-    author: "Sarah Chen",
+    author: "Dorothy Winters",
     date: "July 18, 2025",
     category: "Strategy",
     excerpt: "The age-old debate continues: passive indexing or active stock picking? We break down the data to help you decide what's best for your goals.",
@@ -127,7 +128,7 @@ const articles: Article[] = [
   // 2024 posts
   {
     title: "Inflation's Impact on Your Investments: Strategies to Protect Your Wealth",
-    author: "Marcus Johnson",
+    author: "Wallace Fitzgerald",
     date: "June 10, 2024",
     category: "Education",
     excerpt: "Inflation erodes purchasing power, but certain investments can hedge against it. Learn which assets perform well during inflationary periods.",
@@ -136,7 +137,7 @@ const articles: Article[] = [
   },
   {
     title: "The Psychology of Trading: Why Most Investors Fail",
-    author: "Emma Thompson",
+    author: "Margaret Quinn",
     date: "May 15, 2024",
     category: "Psychology",
     excerpt: "Emotional decision-making is the biggest obstacle to investment success. Discover proven techniques to control your emotions and make rational decisions.",
@@ -145,7 +146,7 @@ const articles: Article[] = [
   },
   {
     title: "Bond Market Fundamentals: Fixed Income Investing 101",
-    author: "Priya Patel",
+    author: "Harriet Coleman",
     date: "April 8, 2024",
     category: "Education",
     excerpt: "Bonds are essential to a balanced portfolio. Learn how to evaluate bonds, understand yield curves, and build a fixed income strategy.",
@@ -325,7 +326,18 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors group"
+          >
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            Back to Home
+          </Link>
+        </div>
+      </div>
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16">

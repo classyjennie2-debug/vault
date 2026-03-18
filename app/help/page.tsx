@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { BookOpen, Users, Zap, Mail, MessageCircle } from "lucide-react"
+import { BookOpen, Users, Zap, Mail, MessageCircle, ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Footer from "@/components/layout/footer"
 
@@ -88,7 +88,18 @@ const categories = [
 export default function HelpPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors group"
+          >
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            Back to Home
+          </Link>
+        </div>
+      </div>
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-16">

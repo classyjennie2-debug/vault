@@ -1,4 +1,5 @@
-import { CheckCircle2, AlertCircle, Clock } from "lucide-react"
+import { CheckCircle2, AlertCircle, Clock, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 import Footer from "@/components/layout/footer"
 
 interface ServiceStatus {
@@ -93,7 +94,18 @@ export default function StatusPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <Link 
+            href="/"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors group"
+          >
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            Back to Home
+          </Link>
+        </div>
+      </div>
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-12">
