@@ -145,7 +145,6 @@ export default function SettingsPage() {
     phone: "",
     phoneCountry: "US",
     dateOfBirth: "",
-    address: "",
     city: "",
     state: "",
     zipCode: "",
@@ -174,11 +173,11 @@ export default function SettingsPage() {
           phone: user?.phone || "",
           phoneCountry: user?.phoneCountry || "US",
           dateOfBirth: user?.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : "",
-          address: user?.address || "",
           city: user?.city || "",
           state: user?.state || "",
           zipCode: user?.zip_code || "",
           country: user?.country || "",
+        }))
         }))
       } catch (e: any) {
         setUserError(e.message || "Failed to fetch user info")
