@@ -260,9 +260,9 @@ const emailTemplates = {
         <!-- Footer -->
         <div style="background-color: #f3f4f6; padding: 30px 20px; text-align: center; border-top: 1px solid #e5e7eb;">
           <p style="color: #6b7280; font-size: 12px; margin: 0 0 10px 0;">
-            <a href="https://vault-finance.vercel.app" style="color: #3b82f6; text-decoration: none;">Visit Vault Capital</a> • 
-            <a href="https://vault-finance.vercel.app/security" style="color: #3b82f6; text-decoration: none;">Security</a> • 
-            <a href="https://vault-finance.vercel.app/contact" style="color: #3b82f6; text-decoration: none;">Support</a>
+            <a href="https://vaultcapital.bond" style="color: #daa520; text-decoration: none;">Visit Vault Capital</a> • 
+            <a href="https://vaultcapital.bond/security" style="color: #daa520; text-decoration: none;">Security</a> • 
+            <a href="https://vaultcapital.bond/contact" style="color: #daa520; text-decoration: none;">Support</a>
           </p>
           <p style="color: #9ca3af; font-size: 11px; margin: 0;">
             © 2026 Vault Capital. All rights reserved.<br/>

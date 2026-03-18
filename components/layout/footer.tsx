@@ -39,18 +39,18 @@ export default function Footer() {
             </p>
             {/* Social Links */}
             <div className="flex gap-4">
-              <a href="https://twitter.com/vaultcapitalbond" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-accent transition-colors">
+              <div className="text-muted-foreground">
                 <Twitter className="h-4 w-4" />
-              </a>
-              <a href="https://linkedin.com/company/vaultcapitalbond" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-accent transition-colors">
+              </div>
+              <div className="text-muted-foreground">
                 <Linkedin className="h-4 w-4" />
-              </a>
-              <a href="https://facebook.com/vaultcapitalbond" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-accent transition-colors">
+              </div>
+              <div className="text-muted-foreground">
                 <Facebook className="h-4 w-4" />
-              </a>
-              <a href="https://github.com/vaultcapitalbond" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-accent transition-colors">
+              </div>
+              <div className="text-muted-foreground">
                 <Github className="h-4 w-4" />
-              </a>
+              </div>
             </div>
           </div>
 

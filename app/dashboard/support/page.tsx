@@ -16,12 +16,12 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   MessageSquare,
   Mail,
-  Phone,
   Clock,
   CheckCircle,
   BookOpen,
   Zap,
 } from "lucide-react"
+import { loadTawkChat } from "@/components/tawk-chat"
 
 const faqs = [
   {
@@ -76,11 +76,23 @@ export default function SupportPage() {
   const [subject, setSubject] = useState("")
   const [message, setMessage] = useState("")
   const [submitted, setSubmitted] = useState(false)
+  const [chatLoading, setChatLoading] = useState(false)
 
   const filteredFaqs =
     selectedCategory === "All"
       ? faqs
       : faqs.filter((faq) => faq.category === selectedCategory)
+
+  const handleStartLiveChat = async () => {
+    setChatLoading(true)
+    try {
+      await loadTawkChat()
+    } catch (error) {
+      console.error("Error starting live chat:", error)
+    } finally {
+      setChatLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,7 +125,7 @@ export default function SupportPage() {
       </div>
 
       {/* Contact Options */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
@@ -125,7 +137,7 @@ export default function SupportPage() {
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
             <p className="mb-2">support@vaultcapital.bond</p>
-            <p className="text-xs">Response time: 15 minutes</p>
+            <p className="text-xs">Average response time: 5 minutes</p>
           </CardContent>
         </Card>
 
@@ -138,24 +150,20 @@ export default function SupportPage() {
               <CardTitle className="text-base">Live Chat</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            <p className="mb-2">Chat with our team</p>
-            <p className="text-xs">Mon-Fri 9AM-6PM EST</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-500/20 rounded-lg">
-                <Phone className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              <CardTitle className="text-base">Phone Support</CardTitle>
+          <CardContent className="space-y-3">
+            <div className="text-sm text-muted-foreground">
+              <p className="mb-2">Chat with our support team in real-time</p>
+              <p className="text-xs">Average response time: 5 minutes</p>
             </div>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            <p className="mb-2">+1 (800) 123-4567</p>
-            <p className="text-xs">Mon-Fri 9AM-6PM EST</p>
+            <Button 
+              onClick={handleStartLiveChat} 
+              disabled={chatLoading}
+              size="sm"
+              className="w-full"
+              variant="default"
+            >
+              {chatLoading ? "Loading..." : "Start Live Chat"}
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -283,7 +291,7 @@ export default function SupportPage() {
             <Clock className="h-5 w-5 text-primary dark:text-primary" />
             <div>
               <CardTitle className="text-base">Average Response Time</CardTitle>
-              <CardDescription>Our team responds within 24 hours</CardDescription>
+              <CardDescription>Our team responds within 5 minutes</CardDescription>
             </div>
           </div>
         </CardHeader>

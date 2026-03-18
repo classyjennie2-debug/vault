@@ -44,7 +44,9 @@ export default async function DashboardPage() {
   return (
     <DashboardLayoutClient firstName={user.firstName || ""} lastName={user.lastName || ""} isFirstVisit={isFirstDashboardVisit}>
       <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-        <DashboardHero user={user} stats={stats} />
+        <Suspense fallback={<div className="h-32 bg-card rounded-lg animate-pulse" />}>
+          <DashboardHeroAsync user={user} stats={stats} />
+        </Suspense>
 
         <Suspense fallback={<div className="h-24 bg-card rounded-lg animate-pulse" />}>
           <GlanceStripAsync userId={user.id} stats={stats} />
@@ -81,6 +83,11 @@ export default async function DashboardPage() {
       </div>
     </DashboardLayoutClient>
   )
+}
+
+// Async component for DashboardHero
+async function DashboardHeroAsync({ user, stats }: { user: any; stats: any }) {
+  return <DashboardHero user={{ ...user, id: user.id }} stats={stats} />
 }
 
 // Async component for GlanceStrip

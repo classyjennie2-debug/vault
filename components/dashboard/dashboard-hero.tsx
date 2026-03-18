@@ -1,11 +1,11 @@
-"use client"
-
 import { ArrowUpRight } from "lucide-react"
+import { calculateMonthlyMetrics, calculateReturnRate } from "@/lib/monthly-metrics"
 
 interface DashboardHeroProps {
   user: {
     name: string
     balance: number
+    id: string
   }
   stats?: {
     totalInvested: number
@@ -16,7 +16,7 @@ interface DashboardHeroProps {
   }
 }
 
-export function DashboardHero({ user, stats }: DashboardHeroProps) {
+export async function DashboardHero({ user, stats }: DashboardHeroProps) {
   // Total balance = available balance (wallet) + invested amount + profit earned
   const availableBalance = stats?.availableBalance || 0
   const totalInvested = stats?.totalInvested || 0
@@ -24,6 +24,13 @@ export function DashboardHero({ user, stats }: DashboardHeroProps) {
   const totalBalance = availableBalance + totalInvested + totalProfit
   
   const activeInvestments = stats?.activeInvestments || 0
+
+  // Calculate actual monthly metrics from user data
+  const monthlyMetrics = await calculateMonthlyMetrics(user.id)
+  const monthlyGain = monthlyMetrics.monthlyGain
+
+  // Calculate total return rate percentage
+  const totalReturnRate = totalInvested > 0 ? calculateReturnRate(totalProfit, totalInvested) : 0
 
   return (
     <div className="w-full mb-3 sm:mb-4 md:mb-6 lg:mb-8">
@@ -58,13 +65,13 @@ export function DashboardHero({ user, stats }: DashboardHeroProps) {
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Monthly Gain</p>
                   <p className="flex items-center justify-end gap-1 text-emerald-600 dark:text-emerald-500 font-semibold text-xs sm:text-sm">
                     <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4" />
-                    +$12,450
+                    {monthlyGain >= 0 ? '+' : ''}{monthlyGain > 0 ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(monthlyGain) : '$0.00'}
                   </p>
                 </div>
                 <div className="w-px h-8 sm:h-10 bg-slate-300 dark:bg-slate-600" />
                 <div className="text-right">
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Total Returns</p>
-                  <p className="text-slate-900 dark:text-white font-semibold text-xs sm:text-sm">+25.8%</p>
+                  <p className="text-slate-900 dark:text-white font-semibold text-xs sm:text-sm">{totalReturnRate >= 0 ? '+' : ''}{totalReturnRate.toFixed(1)}%</p>
                 </div>
               </div>
             </div>
