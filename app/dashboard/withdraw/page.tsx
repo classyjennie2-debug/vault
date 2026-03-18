@@ -371,10 +371,7 @@ export default function WithdrawPage() {
                     </div>
                   )}
 
-                  <div className="border-t border-border/30 pt-3 flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Status:</span>
-                    <span className="font-semibold text-amber-600 dark:text-amber-400">Pending Admin Review</span>
-                  </div>
+
                 </div>
               </div>
             )}

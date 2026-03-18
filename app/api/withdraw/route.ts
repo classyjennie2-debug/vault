@@ -51,12 +51,8 @@ export async function POST(request: NextRequest) {
       [amount, user.id, amount]
     )
 
-    // Check if the update was successful (rows affected > 0)
-    const changesResult = await get(
-      `SELECT changes() as changedRows`
-    ) as { changedRows?: number } | undefined
-    
-    if (!changesResult || changesResult.changedRows === 0) {
+    // Check if the update was successful (run() returns rowCount affected)
+    if (updateResult === 0) {
       return NextResponse.json({ error: "Insufficient available balance" }, { status: 400 })
     }
 
