@@ -2,6 +2,7 @@ import { all, pgPool } from './db'
 
 /**
  * Calculate metrics for the current month based on actual user transactions
+ * and investment returns
  */
 export async function calculateMonthlyMetrics(userId: string) {
   try {
@@ -54,9 +55,9 @@ export async function calculateMonthlyMetrics(userId: string) {
       }
     })
 
-    // FIX: Monthly gain should ONLY be investment returns, not cash flow
-    // monthlyReturns = actual profit earned from investments
-    // Deposits and withdrawals are cash movement, not profit
+    // Monthly gain = investment returns only (profit earned from active investments)
+    // Deposits, withdrawals, and investments are cash flow, not portfolio gains
+    // This represents the actual investment performance for the month
     const monthlyGain = monthlyReturns
     const monthlyNetCashFlow = monthlyDeposits - monthlyWithdrawals
 
