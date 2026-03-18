@@ -323,10 +323,26 @@ export default function AdminTransactionsPage() {
                               DEPOSIT
                             </Badge>
                           )}
+                          {tx.type === "withdrawal" && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-destructive/10 text-destructive border-destructive/30">
+                              WITHDRAWAL
+                            </Badge>
+                          )}
                         </div>
                         <p className="truncate text-sm text-muted-foreground mb-1">
                           {tx.description}
                         </p>
+                        
+                        {/* Show withdrawal details if applicable */}
+                        {tx.type === "withdrawal" && (tx.withdrawalFee || tx.method) && (
+                          <div className="flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground mt-1 mb-1">
+                            {tx.method && <span className="capitalize">Method: {tx.method}</span>}
+                            {tx.withdrawalFee && <span className="text-destructive/80">Fee: ${tx.withdrawalFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>}
+                            {tx.coin && <span>Coin: {tx.coin}</span>}
+                            {tx.coinAmount && <span>Crypto: {tx.coinAmount.toFixed(8)} {tx.coin}</span>}
+                          </div>
+                        )}
+                        
                         <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
                           {user?.email && (
                             <>

@@ -235,6 +235,14 @@ export default function TransactionsPage() {
                         <p className="truncate text-xs sm:text-sm font-medium text-card-foreground group-hover:text-accent transition-colors">
                           {tx.description}
                         </p>
+                        
+                        {/* Show withdrawal fee if applicable */}
+                        {tx.type === "withdrawal" && (tx as any).withdrawalFee && (
+                          <p className="text-xs text-destructive/80 mt-0.5">
+                            Fee: ${((tx as any).withdrawalFee).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                          </p>
+                        )}
+                        
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                           <span>{tx.date}</span>
                           <span>{"/"}</span>
@@ -323,6 +331,48 @@ export default function TransactionsPage() {
                   ${selectedTransaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </p>
               </div>
+
+              {/* Withdrawal Fee (if applicable) */}
+              {selectedTransaction.type === "withdrawal" && (selectedTransaction as any).withdrawalFee && (
+                <div className="space-y-2 p-3 rounded-lg bg-destructive/5 border border-destructive/10">
+                  <p className="text-sm font-medium text-destructive">Withdrawal Details</p>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Gross Amount:</span>
+                      <span className="font-medium">${selectedTransaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    </div>
+                    {(selectedTransaction as any).withdrawalFee && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Fee (5%):</span>
+                        <span className="font-medium text-destructive">-${((selectedTransaction as any).withdrawalFee).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+                    {(selectedTransaction as any).amountAfterFee && (
+                      <div className="flex justify-between border-t border-destructive/20 pt-1">
+                        <span className="text-muted-foreground font-medium">Net Amount:</span>
+                        <span className="font-semibold">${((selectedTransaction as any).amountAfterFee).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Cryptocurrency Details (if applicable) */}
+              {selectedTransaction.type === "withdrawal" && (selectedTransaction as any).coin && (selectedTransaction as any).coinAmount && (
+                <div className="space-y-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200/30 dark:border-blue-800/30">
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Cryptocurrency</p>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Currency:</span>
+                      <span className="font-medium">{(selectedTransaction as any).coin}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Amount:</span>
+                      <span className="font-medium font-mono">{((selectedTransaction as any).coinAmount as number).toFixed(8)} {(selectedTransaction as any).coin}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Description */}
               <div className="space-y-1">

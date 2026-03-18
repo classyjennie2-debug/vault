@@ -462,6 +462,7 @@ async function initializePostgres() {
           { name: 'method', sql: 'ALTER TABLE transactions ADD COLUMN method VARCHAR(50)' },
           { name: 'bank_account', sql: 'ALTER TABLE transactions ADD COLUMN bank_account VARCHAR(255)' },
           { name: 'crypto_address', sql: 'ALTER TABLE transactions ADD COLUMN crypto_address VARCHAR(255)' },
+          { name: 'metadata', sql: 'ALTER TABLE transactions ADD COLUMN metadata JSONB' },
         ]
         
         for (const col of requiredTxColumns) {
@@ -1273,7 +1274,8 @@ export async function getInvestmentPlanById(planId: string) {
 export async function getUserTransactions(userId: string) {
   const usePostgres = pgPool !== null
   const query = usePostgres
-    ? `SELECT id, user_id as "userId", type, amount, status, description, created_at as date 
+    ? `SELECT id, user_id as "userId", type, amount, status, description, created_at as date, 
+              method, bank_account as "bankAccount", crypto_address as "cryptoAddress", metadata
        FROM transactions 
        WHERE user_id = $1 
        ORDER BY created_at DESC`
@@ -1284,7 +1286,26 @@ export async function getUserTransactions(userId: string) {
   if (results.length > 0) {
     console.log("[getTx] First transaction:", results[0])
   }
-  return results
+  
+  // Parse metadata for withdrawal details
+  return results.map((tx: any) => {
+    let parsed = { ...tx }
+    if (tx.metadata) {
+      try {
+        const meta = typeof tx.metadata === 'string' ? JSON.parse(tx.metadata) : tx.metadata
+        parsed = {
+          ...parsed,
+          coin: meta.coin,
+          coinAmount: meta.coinAmount,
+          withdrawalFee: meta.withdrawalFee,
+          amountAfterFee: meta.amountAfterFee,
+        }
+      } catch (e) {
+        console.error("[getTx] Error parsing metadata:", e)
+      }
+    }
+    return parsed
+  })
 }
 
 export async function getUserNotifications(userId: string) {
@@ -1629,20 +1650,49 @@ export async function createTransaction(transaction: {
   const usePostgres = pgPool !== null
 
   const now = new Date().toISOString()
+  
+  // Build metadata object for withdrawal details
+  const metadata = {
+    coin: transaction.coin,
+    coinAmount: transaction.coinAmount,
+    withdrawalFee: transaction.withdrawalFee,
+    amountAfterFee: transaction.amountAfterFee,
+  }
+
   await run(
     usePostgres
-      ? `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at, date) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
-      : `INSERT INTO transactions (id, userId, type, amount, status, description, date) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [
-      id,
-      transaction.userId,
-      transaction.type,
-      transaction.amount,
-      transaction.status || "pending",
-      description,
-      now,
-      now,
-    ]
+      ? `INSERT INTO transactions (id, user_id, type, amount, status, description, created_at, date, method, bank_account, crypto_address, metadata) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
+      : `INSERT INTO transactions (id, userId, type, amount, status, description, date, method, bank_account, crypto_address, metadata) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+    usePostgres
+      ? [
+          id,
+          transaction.userId,
+          transaction.type,
+          transaction.amount,
+          transaction.status || "pending",
+          description,
+          now,
+          now,
+          transaction.method,
+          transaction.bankAccount,
+          transaction.cryptoAddress,
+          JSON.stringify(metadata),
+        ]
+      : [
+          id,
+          transaction.userId,
+          transaction.type,
+          transaction.amount,
+          transaction.status || "pending",
+          description,
+          now,
+          transaction.method,
+          transaction.bankAccount,
+          transaction.cryptoAddress,
+          JSON.stringify(metadata),
+        ]
   )
 
   return {
@@ -1657,6 +1707,9 @@ export async function createTransaction(transaction: {
     coinAmount: transaction.coinAmount,
     withdrawalFee: transaction.withdrawalFee,
     amountAfterFee: transaction.amountAfterFee,
+    method: transaction.method,
+    bankAccount: transaction.bankAccount,
+    cryptoAddress: transaction.cryptoAddress,
   }
 }
 

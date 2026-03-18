@@ -22,19 +22,41 @@ export async function GET(_req: NextRequest) {
     transactionLogger.info('Admin viewing all transactions', {}, user.id)
     const transactionsRaw = await all(
       usePostgres
-        ? `SELECT id, user_id as "userId", type, amount, status, description, created_at as date FROM transactions ORDER BY created_at DESC`
-        : "SELECT id, userId, type, amount, status, description, date FROM transactions ORDER BY date DESC"
+        ? `SELECT id, user_id as "userId", type, amount, status, description, created_at as date, 
+                  method, bank_account as "bankAccount", crypto_address as "cryptoAddress", metadata
+           FROM transactions ORDER BY created_at DESC`
+        : "SELECT id, userId, type, amount, status, description, date, method, bank_account as bankAccount, crypto_address as cryptoAddress, metadata FROM transactions ORDER BY date DESC"
     )
 
-    const transactions = transactionsRaw.map((tx: any) => ({
-      id: tx.id,
-      userId: tx.userId || tx.userid,
-      type: tx.type,
-      amount: tx.amount,
-      status: tx.status,
-      description: tx.description,
-      date: tx.date,
-    }))
+    const transactions = transactionsRaw.map((tx: any) => {
+      const transaction: any = {
+        id: tx.id,
+        userId: tx.userId || tx.userid,
+        type: tx.type,
+        amount: tx.amount,
+        status: tx.status,
+        description: tx.description,
+        date: tx.date,
+        method: tx.method,
+        bankAccount: tx.bankAccount || tx.bank_account,
+        cryptoAddress: tx.cryptoAddress || tx.crypto_address,
+      }
+      
+      // Parse metadata for withdrawal details
+      if (tx.metadata) {
+        try {
+          const meta = typeof tx.metadata === 'string' ? JSON.parse(tx.metadata) : tx.metadata
+          transaction.coin = meta.coin
+          transaction.coinAmount = meta.coinAmount
+          transaction.withdrawalFee = meta.withdrawalFee
+          transaction.amountAfterFee = meta.amountAfterFee
+        } catch (e) {
+          console.error("[Admin TxApi] Error parsing metadata:", e)
+        }
+      }
+      
+      return transaction
+    })
 
     logAuditEvent(user.id, 'view_transactions', 'admin', 'success', {
       changes: { transactionCount: { before: 0, after: transactions.length } }
