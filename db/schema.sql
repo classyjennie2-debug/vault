@@ -337,3 +337,37 @@ GROUP BY u.id, u.email;
 -- Grant permissions (adjust for your users)
 -- GRANT SELECT ON investment_plans TO app_user;
 -- GRANT USAGE ON SCHEMA public TO app_user;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Migration: Convert integer columns to boolean
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- Convert verification_codes.used from integer to boolean
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'verification_codes' 
+    AND column_name = 'used' 
+    AND data_type = 'integer'
+  ) THEN
+    ALTER TABLE verification_codes 
+    ALTER COLUMN used TYPE boolean USING (used::boolean);
+    RAISE NOTICE 'Converted verification_codes.used to boolean';
+  END IF;
+END $$;
+
+-- Convert password_reset_tokens.used from integer to boolean
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'password_reset_tokens' 
+    AND column_name = 'used' 
+    AND data_type = 'integer'
+  ) THEN
+    ALTER TABLE password_reset_tokens 
+    ALTER COLUMN used TYPE boolean USING (used::boolean);
+    RAISE NOTICE 'Converted password_reset_tokens.used to boolean';
+  END IF;
+END $$;
