@@ -1981,13 +1981,22 @@ export async function deleteUser(userId: string): Promise<void> {
     // IMPORTANT: Must handle foreign key constraints in correct order
     const usePostgres = pgPool !== null
     
-    // 1. Delete activity logs for this user (gracefully handle missing table)
+    // 1. Delete activity logs for this user - BOTH snake_case and camelCase versions
     try {
       await run(usePostgres ? "DELETE FROM activity_logs WHERE user_id = $1" : "DELETE FROM activity_logs WHERE userId = $1", [userId])
     } catch (err: unknown) {
       const msg = errMessage(err)
       if (!msg.includes('does not exist')) throw err
       console.warn('[deleteUser] activity_logs table does not exist, skipping')
+    }
+    
+    // 1b. Delete from activity_log (camelCase version if it exists)
+    try {
+      await run("DELETE FROM activity_log WHERE userId = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+      console.warn('[deleteUser] activity_log table does not exist, skipping')
     }
     
     // 2. Delete admin logs for this user (gracefully handle missing table)
