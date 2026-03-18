@@ -1942,21 +1942,48 @@ export async function deleteUser(userId: string): Promise<void> {
   try {
     // Delete all user-related data first
     // IMPORTANT: Must handle foreign key constraints in correct order
+    const usePostgres = pgPool !== null
     
-    // 1. Unassign any wallet addresses assigned to this user (FOREIGN KEY constraint)
+    // 1. Delete activity logs for this user
+    await run(usePostgres ? "DELETE FROM activity_logs WHERE user_id = $1" : "DELETE FROM activity_logs WHERE userId = $1", [userId])
+    
+    // 2. Delete admin logs for this user
+    await run(usePostgres ? "DELETE FROM admin_logs WHERE admin_id = $1" : "DELETE FROM admin_logs WHERE admin_id = $1", [userId])
+    
+    // 3. Unassign any wallet addresses assigned to this user (camelCase columns in wallets)
     await run("UPDATE wallet_addresses SET assignedTo = NULL, assignedAt = NULL WHERE assignedTo = $1", [userId])
     
-    // 2. Delete notifications linked to this user
-    await run("DELETE FROM notifications WHERE userId = $1", [userId])
+    // 4. Delete transaction receipts for this user
+    await run(usePostgres ? "DELETE FROM transaction_receipts WHERE user_id = $1" : "DELETE FROM transaction_receipts WHERE user_id = $1", [userId])
     
-    // 3. Delete transactions for this user
-    await run("DELETE FROM transactions WHERE userId = $1", [userId])
+    // 5. Delete notifications linked to this user (snake_case columns)
+    await run(usePostgres ? "DELETE FROM notifications WHERE user_id = $1" : "DELETE FROM notifications WHERE userId = $1", [userId])
     
-    // 4. Delete active investments for this user
+    // 6. Delete user settings
+    await run(usePostgres ? "DELETE FROM user_settings WHERE user_id = $1" : "DELETE FROM user_settings WHERE user_id = $1", [userId])
+    
+    // 7. Delete password reset tokens
+    await run(usePostgres ? "DELETE FROM password_reset_tokens WHERE user_id = $1" : "DELETE FROM password_reset_tokens WHERE user_id = $1", [userId])
+    
+    // 8. Delete verification codes (associated with user's email)
+    const userEmail = await get<any>(usePostgres ? "SELECT email FROM users WHERE id = $1" : "SELECT email FROM users WHERE id = $1", [userId])
+    if (userEmail?.email) {
+      await run("DELETE FROM verification_codes WHERE email = $1", [userEmail.email])
+    }
+    
+    // 9. Delete transactions for this user (snake_case columns)
+    await run(usePostgres ? "DELETE FROM transactions WHERE user_id = $1" : "DELETE FROM transactions WHERE userId = $1", [userId])
+    
+    // 10. Delete investments for this user (snake_case columns)
+    await run(usePostgres ? "DELETE FROM investments WHERE user_id = $1" : "DELETE FROM investments WHERE userId = $1", [userId])
+    
+    // 11. Delete active investments for this user (camelCase columns)
     await run("DELETE FROM active_investments WHERE userId = $1", [userId])
     
-    // 5. Finally delete the user (now safe - no foreign key violations)
+    // 12. Finally delete the user (now safe - no foreign key violations)
     await run("DELETE FROM users WHERE id = $1", [userId])
+    
+    console.log(`User ${userId} and all related data successfully deleted`)
   } catch (error) {
     console.error(`Error deleting user ${userId}:`, error)
     throw error
