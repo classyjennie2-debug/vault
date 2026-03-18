@@ -990,23 +990,22 @@ export async function insertVerificationCode(codeObj: {
 export async function consumeVerificationCode(code: string): Promise<boolean> {
   // Trim the code to ensure whitespace doesn't cause issues
   const trimmedCode = code.trim()
-  const now = new Date().toISOString()
   
-  // Log for debugging
-  console.log(`[Verify] Looking for code: ${trimmedCode}, current time: ${now}`)
+  console.log(`[Verify] Looking for code: ${trimmedCode}`)
   
+  // Use PostgreSQL NOW() function to avoid timezone/type issues
   const row = await get(
-    "SELECT * FROM verification_codes WHERE code = $1 AND used = FALSE AND expiresAt::text > $2",
-    [trimmedCode, now]
+    "SELECT * FROM verification_codes WHERE code = $1 AND used = FALSE AND expiresAt > NOW()",
+    [trimmedCode]
   )
   
   if (!row) {
     // Check if code exists but is expired
     const expiredRow = await get(
-      "SELECT * FROM verification_codes WHERE code = $1",
+      "SELECT code, used, expiresAt FROM verification_codes WHERE code = $1",
       [trimmedCode]
     )
-    console.log(`[Verify] Code lookup result - exists: ${!!expiredRow}, row:`, expiredRow)
+    console.log(`[Verify] Code lookup result - exists: ${!!expiredRow}`, expiredRow)
     return false
   }
   
