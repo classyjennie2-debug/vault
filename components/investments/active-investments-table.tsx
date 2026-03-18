@@ -63,11 +63,24 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-500/20 text-green-700 border-green-500/30 shadow-lg shadow-green-500/10"
+        return "bg-transparent text-green-700 border-green-500/50 dark:text-green-400"
       case "completed":
-        return "bg-blue-500/20 text-blue-700 border-blue-500/30 shadow-lg shadow-blue-500/10"
+        return "bg-transparent text-blue-700 border-blue-500/50 dark:text-blue-400"
       case "withdrawn":
-        return "bg-gray-500/20 text-gray-700 border-gray-500/30 shadow-lg shadow-gray-500/10"
+        return "bg-transparent text-gray-700 border-gray-500/50 dark:text-gray-400"
+      default:
+        return ""
+    }
+  }
+
+  const getCardBorderColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "border-l-4 border-l-green-500 shadow-lg shadow-green-500/20 hover:shadow-green-500/30"
+      case "completed":
+        return "border-l-4 border-l-blue-500 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30"
+      case "withdrawn":
+        return "border-l-4 border-l-gray-500 shadow-lg shadow-gray-500/20 hover:shadow-gray-500/30"
       default:
         return ""
     }
@@ -216,7 +229,7 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
               {safeInvestments.map((investment, idx) => (
                 <div
                   key={investment.id}
-                  className="border border-border/20 rounded-lg p-4 bg-white/50 dark:bg-slate-800/30 hover:bg-white/70 dark:hover:bg-slate-800/50 transition-all duration-300 animate-in fade-in duration-500"
+                  className={`border border-border/20 rounded-lg p-4 bg-white/30 dark:bg-slate-800/20 hover:bg-white/50 dark:hover:bg-slate-800/30 transition-all duration-300 animate-in fade-in duration-500 ${getCardBorderColor(investment.status)}`}
                   style={{ animationDelay: `${idx * 50}ms` }}
                 >
                   {/* Header */}

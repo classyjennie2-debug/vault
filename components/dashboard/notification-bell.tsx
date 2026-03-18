@@ -8,6 +8,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import type { Notification } from "@/lib/types"
@@ -17,6 +25,8 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
 
   const fetchNotifications = async () => {
     try {
@@ -105,86 +115,141 @@ export function NotificationBell() {
     return date.toLocaleDateString()
   }
 
+  const handleNotificationClick = (notification: Notification) => {
+    setSelectedNotification(notification)
+    setModalOpen(true)
+  }
+
   return (
-    <Sheet open={isOpen} onOpenChange={handleSheetOpen}>
-      <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative group h-9 w-9 sm:h-11 sm:w-11 rounded-lg"
-        >
-          <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </Button>
-      </SheetTrigger>
+    <>
+      <Sheet open={isOpen} onOpenChange={handleSheetOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative group h-9 w-9 sm:h-11 sm:w-11 rounded-lg"
+          >
+            <Bell className="h-5 w-5 sm:h-6 sm:w-6" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </Button>
+        </SheetTrigger>
 
-      <SheetContent className="w-full sm:w-[420px] flex flex-col p-0">
-        <SheetHeader className="border-b px-6 py-4 sticky top-0 z-10">
-          <div className="flex items-center justify-between">
-            <SheetTitle>Notifications</SheetTitle>
-            <span className="text-xs text-muted-foreground">
-              {notifications.length} {notifications.length === 1 ? "item" : "items"}
-            </span>
-          </div>
-        </SheetHeader>
-
-        <div className="flex-1 overflow-y-auto">
-          {notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-center gap-2">
-              <Bell className="h-12 w-12 text-muted-foreground/20" />
-              <p className="text-muted-foreground text-sm">No notifications yet</p>
-              <p className="text-muted-foreground/60 text-xs">You'll see updates here</p>
+        <SheetContent className="w-full sm:w-[420px] flex flex-col p-0">
+          <SheetHeader className="border-b px-6 py-4 sticky top-0 z-10">
+            <div className="flex items-center justify-between">
+              <SheetTitle>Notifications</SheetTitle>
+              <span className="text-xs text-muted-foreground">
+                {notifications.length} {notifications.length === 1 ? "item" : "items"}
+              </span>
             </div>
-          ) : (
-            <div className="divide-y">
-              {notifications.map((notification, idx) => (
-                <div
-                  key={notification.id}
-                  className={`p-4 hover:bg-accent/30 transition-colors animate-in fade-in slide-in-from-top duration-300`}
-                  style={{ animationDelay: `${idx * 50}ms` }}
-                >
-                  <div className="flex gap-3 items-start">
-                    <div className={`p-2 rounded-lg text-sm font-semibold border flex-shrink-0 ${getTypeColor(notification.type)}`}>
-                      {notification.type === "success" && "✓"}
-                      {notification.type === "warning" && "⚠"}
-                      {notification.type === "error" && "✕"}
-                      {notification.type === "info" && "ℹ"}
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 text-center gap-2">
+                <Bell className="h-12 w-12 text-muted-foreground/20" />
+                <p className="text-muted-foreground text-sm">No notifications yet</p>
+                <p className="text-muted-foreground/60 text-xs">You'll see updates here</p>
+              </div>
+            ) : (
+              <div className="divide-y">
+                {notifications.map((notification, idx) => (
+                  <div
+                    key={notification.id}
+                    className={`p-4 hover:bg-accent/30 transition-colors animate-in fade-in slide-in-from-top duration-300 cursor-pointer`}
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    <div className="flex gap-3 items-start">
+                      <div className={`p-2 rounded-lg text-sm font-semibold border flex-shrink-0 ${getTypeColor(notification.type)}`}>
+                        {notification.type === "success" && "✓"}
+                        {notification.type === "warning" && "⚠"}
+                        {notification.type === "error" && "✕"}
+                        {notification.type === "info" && "ℹ"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm text-foreground line-clamp-1">
+                          {notification.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-muted-foreground/50 mt-2">
+                          {formatTime(notification.timestamp)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteNotification(notification.id)
+                        }}
+                        className="flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1"
+                        aria-label="Delete notification"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm text-foreground line-clamp-1">
-                        {notification.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground/50 mt-2">
-                        {formatTime(notification.timestamp)}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => deleteNotification(notification.id)}
-                      className="flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors p-1"
-                      aria-label="Delete notification"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {notifications.length > 0 && (
+            <div className="border-t px-6 py-3 text-xs text-muted-foreground/60 text-center">
+              Pull to refresh
             </div>
           )}
-        </div>
+        </SheetContent>
+      </Sheet>
 
-        {notifications.length > 0 && (
-          <div className="border-t px-6 py-3 text-xs text-muted-foreground/60 text-center">
-            Pull to refresh
+      {/* Notification Detail Modal */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className={`p-2 rounded-lg text-sm font-semibold border ${getTypeColor(selectedNotification?.type || "info")}`}>
+                {selectedNotification?.type === "success" && "✓"}
+                {selectedNotification?.type === "warning" && "⚠"}
+                {selectedNotification?.type === "error" && "✕"}
+                {selectedNotification?.type === "info" && "ℹ"}
+              </div>
+              <span>{selectedNotification?.title}</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="text-sm text-foreground whitespace-pre-wrap">
+              {selectedNotification?.message}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {selectedNotification?.timestamp && formatTime(selectedNotification.timestamp)}
+            </div>
           </div>
-        )}
-      </SheetContent>
-    </Sheet>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (selectedNotification) {
+                  deleteNotification(selectedNotification.id)
+                  setModalOpen(false)
+                }
+              }}
+              className="w-full"
+            >
+              Delete
+            </Button>
+            <DialogClose asChild>
+              <Button className="w-full">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

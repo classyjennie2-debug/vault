@@ -169,15 +169,6 @@ export function EducationTips() {
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
-
-          {/* CTA */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full text-xs sm:text-sm"
-          >
-            Learn More <ChevronRight className="h-3.5 w-3.5 ml-1.5" />
-          </Button>
         </div>
       </CardContent>
     </Card>
