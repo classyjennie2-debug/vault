@@ -45,12 +45,12 @@ CREATE TABLE IF NOT EXISTS users (
   
   -- Timestamps
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
-  INDEX idx_email (email),
-  INDEX idx_status (status),
-  INDEX idx_created_at (created_at)
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at);
 
 -- Password reset tokens
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
@@ -60,12 +60,12 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
   used BOOLEAN DEFAULT FALSE,
   used_at TIMESTAMP,
   expires_at TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
-  INDEX idx_token (token),
-  INDEX idx_user_id (user_id),
-  INDEX idx_expires_at (expires_at)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_password_reset_user_id ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_password_reset_expires_at ON password_reset_tokens(expires_at);
 
 -- Email verification codes
 CREATE TABLE IF NOT EXISTS verification_codes (
@@ -74,12 +74,12 @@ CREATE TABLE IF NOT EXISTS verification_codes (
   code VARCHAR(6) NOT NULL,
   used BOOLEAN DEFAULT FALSE,
   expiresAt TIMESTAMP NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
-  INDEX idx_email (email),
-  INDEX idx_code (code),
-  INDEX idx_expiresAt (expiresAt)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_verification_email ON verification_codes(email);
+CREATE INDEX IF NOT EXISTS idx_verification_code ON verification_codes(code);
+CREATE INDEX IF NOT EXISTS idx_verification_expiresAt ON verification_codes(expiresAt);
 
 -- Activity logs
 CREATE TABLE IF NOT EXISTS activity_logs (
@@ -93,12 +93,12 @@ CREATE TABLE IF NOT EXISTS activity_logs (
   user_agent TEXT,
   status VARCHAR(20) DEFAULT 'success', -- success, failed, pending
   metadata JSONB, -- Additional data as JSON
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
-  INDEX idx_user_id_created (user_id, created_at DESC),
-  INDEX idx_type (type),
-  INDEX idx_created_at (created_at)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_activity_user_created ON activity_logs(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_type ON activity_logs(type);
+CREATE INDEX IF NOT EXISTS idx_activity_created_at ON activity_logs(created_at);
 
 -- Investment plans
 CREATE TABLE IF NOT EXISTS investment_plans (

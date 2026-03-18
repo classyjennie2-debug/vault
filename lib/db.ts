@@ -981,9 +981,10 @@ export async function insertVerificationCode(codeObj: {
   code: string
   expiresAt: string
 }): Promise<void> {
+  const now = new Date().toISOString()
   await run(
-    "INSERT INTO verification_codes (id, email, code, expiresAt) VALUES ($1, $2, $3, $4)",
-    [codeObj.id, codeObj.email, codeObj.code, codeObj.expiresAt]
+    "INSERT INTO verification_codes (id, email, code, expiresAt, created_at) VALUES ($1, $2, $3, $4, $5)",
+    [codeObj.id, codeObj.email, codeObj.code, codeObj.expiresAt, now]
   )
 }
 
