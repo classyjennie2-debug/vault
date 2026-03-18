@@ -100,7 +100,7 @@ export async function POST(request: Request) {
         template: 'welcome',
         data: {
           fullName: firstName,
-          dashboardLink: `${process.env.NEXTAUTH_URL || 'https://vault-finance.vercel.app'}/dashboard`,
+          dashboardLink: `${process.env.NEXTAUTH_URL || 'https://vaultcapital.bond'}/dashboard`,
         }
       })
     } catch (welcomeError) {

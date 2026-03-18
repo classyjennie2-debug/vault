@@ -86,23 +86,29 @@ export default function SupportPage() {
   const handleStartLiveChat = async () => {
     setChatLoading(true)
     try {
-      console.log("User clicked Start Live Chat")
+      console.log("🔵 Support page: User clicked Start Live Chat")
       await loadTawkChat()
-      console.log("Tawk script loaded")
       
-      // Give Tawk API time to initialize
-      await new Promise(resolve => setTimeout(resolve, 800))
+      // Wait for Tawk API to fully initialize
+      let attempt = 0
+      while (!window.Tawk_API && attempt < 10) {
+        await new Promise(resolve => setTimeout(resolve, 200))
+        attempt++
+      }
       
-      console.log("Tawk API ready:", !!window.Tawk_API)
+      console.log("🔵 Support page: Tawk API ready:", !!window.Tawk_API)
       
-      // Try to show the widget
-      if (window.Tawk_API?.maximize) {
-        window.Tawk_API.maximize()
-      } else if (window.Tawk_API?.toggleWidget) {
-        window.Tawk_API.toggleWidget()
+      if (window.Tawk_API) {
+        if (typeof window.Tawk_API.maximize === 'function') {
+          window.Tawk_API.maximize()
+        } else if (typeof window.Tawk_API.toggleWidget === 'function') {
+          window.Tawk_API.toggleWidget()
+        } else if (typeof window.Tawk_API.showWidget === 'function') {
+          window.Tawk_API.showWidget()
+        }
       }
     } catch (error) {
-      console.error("Error starting live chat:", error)
+      console.error("🔴 Error starting live chat:", error)
     } finally {
       setChatLoading(false)
     }

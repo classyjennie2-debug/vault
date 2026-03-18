@@ -17,15 +17,18 @@ export function loadTawkChat() {
   return new Promise<void>((resolve) => {
     const tawkPropertyId = process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID
 
+    console.log("🔵 [Tawk] loadTawkChat called")
+    console.log("🔵 [Tawk] Property ID:", tawkPropertyId)
+
     if (!tawkPropertyId) {
-      console.warn("[Tawk] NEXT_PUBLIC_TAWK_PROPERTY_ID not configured")
+      console.warn("🔴 [Tawk] NEXT_PUBLIC_TAWK_PROPERTY_ID not configured")
       resolve()
       return
     }
 
-    // If already loaded, just resolve
+    // If already loaded, just resolve and show if not visible
     if (isTawkLoaded && window.Tawk_API) {
-      console.log("[Tawk] Already loaded, showing widget")
+      console.log("🔵 [Tawk] Already loaded, maximizing widget")
       if (window.Tawk_API?.maximize) {
         window.Tawk_API.maximize()
       } else if (window.Tawk_API?.toggleWidget) {
@@ -37,7 +40,9 @@ export function loadTawkChat() {
 
     try {
       // Initialize window properties for Tawk BEFORE loading script
-      window.Tawk_API = window.Tawk_API || {}
+      if (!window.Tawk_API) {
+        window.Tawk_API = {}
+      }
       window.Tawk_LoadStart = new Date()
 
       // Create and append the Tawk script
@@ -48,30 +53,45 @@ export function loadTawkChat() {
       script.setAttribute("crossorigin", "*")
       script.type = "text/javascript"
       
+      console.log("🔵 [Tawk] Creating script tag for:", script.src)
+      
       script.onload = () => {
-        console.log("[Tawk] Script loaded successfully")
+        console.log("🔵 [Tawk] Script loaded successfully")
         isTawkLoaded = true
         
-        // Wait a bit for Tawk API to be ready, then show widget
-        setTimeout(() => {
-          if (window.Tawk_API?.maximize) {
-            window.Tawk_API.maximize()
-          } else if (window.Tawk_API?.toggleWidget) {
-            window.Tawk_API.toggleWidget()
+        // Wait for Tawk API to be initialized by the script
+        let waitCount = 0
+        const waitForTawkAPI = setInterval(() => {
+          waitCount++
+          console.log(`🔵 [Tawk] Waiting for API initialization... attempt ${waitCount}`)
+          
+          if (window.Tawk_API && (window.Tawk_API.maximize || window.Tawk_API.toggleWidget)) {
+            clearInterval(waitForTawkAPI)
+            console.log("🔵 [Tawk] API ready, showing widget")
+            
+            if (window.Tawk_API.maximize) {
+              window.Tawk_API.maximize()
+            } else if (window.Tawk_API.toggleWidget) {
+              window.Tawk_API.toggleWidget()
+            }
+            resolve()
+          } else if (waitCount > 15) {
+            clearInterval(waitForTawkAPI)
+            console.warn("🟡 [Tawk] API not ready after waiting, resolving anyway")
+            resolve()
           }
-          resolve()
-        }, 500)
+        }, 200)
       }
 
       script.onerror = () => {
-        console.error("[Tawk] Failed to load Tawk script")
+        console.error("🔴 [Tawk] Failed to load Tawk script from:", script.src)
         resolve()
       }
 
       document.body.appendChild(script)
-      console.log("[Tawk] Script loading from:", script.src)
+      console.log("🔵 [Tawk] Script appended to document")
     } catch (error) {
-      console.error("[Tawk] Error loading script:", error)
+      console.error("🔴 [Tawk] Error loading script:", error)
       resolve()
     }
   })

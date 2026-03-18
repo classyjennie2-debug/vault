@@ -10,8 +10,8 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-// Vault Logo SVG as Data URI (Navy #3d2817 - website's professional navy)
-const LOGO_DATA_URI = 'data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTIwIDEyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB4PSIxNSIgeT0iMjAiIHdpZHRoPSI5MCIgaGVpZ2h0PSI4MCIgcng9IjEyIiByeT0iMTIiIHN0cm9rZT0iIzNkMjgxNyIgc3Ryb2tlLXdpZHRoPSIyLjUiLz48cmVjdCB4PSIyNSIgeT0iMzAiIHdpZHRoPSI3MCIgaGVpZ2h0PSI2MCIgcng9IjgiIHJ5PSI4IiBmaWxsPSIjM2QyODE3IiBmaWxsLW9wYWNpdHk9IjAuMDUiLz48Y2lyY2xlIGN4PSI2MCIgY3k9IjYwIiByPSIxOCIgc3Ryb2tlPSIjM2QyODE3IiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSI2MCIgY3k9IjYwIiByPSIxNCIgc3Ryb2tlPSIjM2QyODE3IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWRhc2hhcnJheT0iMyAzIiBvcGFjaXR5PSIwLjUiLz48Y2lyY2xlIGN4PSI2MCIgY3k9IjQ4IiByPSIyLjUiIGZpbGw9IiMzZDI4MTciLz48bGluZSB4MT0iMzUiIHkxPSI5MCIgeDI9Ijg1IiB5Mj0iOTAiIHN0cm9rZT0iIzNkMjgxNyIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNiIvPjxsaW5lIHgxPSIzNSIgeTE9IjEwMCIgeDI9Ijg1IiB5Mj0iMTAwIiBzdHJva2U9IiMzZDI4MTciIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+PHJlY3QgeD0iMTUiIHk9IjE4IiB3aWR0aD0iOTAiIGhlaWdodD0iMiIgcng9IjEiIGZpbGw9IiMzZDI4MTciLz48L3N2Zz4='
+// Vault Logo URL - uses public domain for email compatibility
+const LOGO_URL = 'https://vaultcapital.bond/vault-logo-email.svg'
 
 export interface EmailNotification {
   to: string
@@ -28,7 +28,7 @@ const emailTemplates = {
         <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3d2817 0%, #2a1c0f 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
-              <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
+              <img src="${LOGO_URL}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
               <h1 style="color: #daa520; font-size: 24px; margin: 10px 0 0 0;">Vault Capital</h1>
             </td>
           </tr>
@@ -59,7 +59,7 @@ const emailTemplates = {
         <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3d2817 0%, #2a1c0f 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
-              <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
+              <img src="${LOGO_URL}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
               <h1 style="color: #daa520; font-size: 24px; margin: 10px 0 0 0;">Deposit Confirmed</h1>
             </td>
           </tr>
@@ -102,7 +102,7 @@ const emailTemplates = {
         <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3d2817 0%, #2a1c0f 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
-              <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
+              <img src="${LOGO_URL}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
               <h1 style="color: #daa520; font-size: 24px; margin: 10px 0 0 0;">Withdrawal Submitted</h1>
             </td>
           </tr>
@@ -143,7 +143,7 @@ const emailTemplates = {
         <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3d2817 0%, #2a1c0f 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
-              <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
+              <img src="${LOGO_URL}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
               <h1 style="color: #daa520; font-size: 24px; margin: 10px 0 0 0;">Return Credited</h1>
             </td>
           </tr>
@@ -185,7 +185,7 @@ const emailTemplates = {
         <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3d2817 0%, #2a1c0f 100%); padding: 40px 20px; text-align: center;">
           <tr>
             <td>
-              <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="60" height="60" style="margin: 0 auto; display: block; margin-bottom: 20px;"/>
+              <img src="${LOGO_URL}" alt="Vault Capital" width="60" height="60" style="margin: 0 auto; display: block; margin-bottom: 20px;"/>
               <h1 style="color: #daa520; font-size: 32px; margin: 0; font-weight: 700;">Welcome to Vault Capital</h1>
               <p style="color: rgba(218,165,32,0.85); font-size: 16px; margin: 10px 0 0 0;">Your journey to financial freedom starts here</p>
             </td>
@@ -279,7 +279,7 @@ const emailTemplates = {
         <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3d2817 0%, #2a1c0f 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
-              <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
+              <img src="${LOGO_URL}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
               <h1 style="color: #daa520; font-size: 24px; margin: 10px 0 0 0;">Password Recovery</h1>
             </td>
           </tr>
@@ -310,7 +310,7 @@ const emailTemplates = {
         <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
-              <img src="${LOGO_DATA_URI}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
+              <img src="${LOGO_URL}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
               <h1 style="color: white; font-size: 24px; margin: 10px 0 0 0;">Confirm Your Email</h1>
             </td>
           </tr>

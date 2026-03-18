@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { MessageSquare, Loader2, X } from "lucide-react"
 import { loadTawkChat } from "./tawk-chat"
@@ -15,26 +15,12 @@ export default function LiveChatButton() {
   const [loading, setLoading] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
 
-  // Listen for widget state changes from Tawk API
-  useEffect(() => {
-    const checkWidgetState = () => {
-      if (window.Tawk_API?.isWidgetVisible) {
-        const isVisible = window.Tawk_API.isWidgetVisible()
-        setIsChatOpen(isVisible === true)
-      }
-    }
-
-    // Check every 500ms to sync state with Tawk widget
-    const interval = setInterval(checkWidgetState, 500)
-    return () => clearInterval(interval)
-  }, [])
-
   const handleToggleChat = async () => {
     if (isChatOpen) {
       // Close the chat
       try {
-        if (window.Tawk_API?.minimizeWidget) {
-          window.Tawk_API.minimizeWidget()
+        if (window.Tawk_API?.minimize) {
+          window.Tawk_API.minimize()
         } else if (window.Tawk_API?.hideWidget) {
           window.Tawk_API.hideWidget()
         }
@@ -46,31 +32,43 @@ export default function LiveChatButton() {
       // Open the chat
       setLoading(true)
       try {
-        console.log("Starting live chat load...")
+        console.log("🔵 User clicked: Start Live Chat")
         await loadTawkChat()
         
-        // Wait for Tawk to be ready
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        console.log("Tawk API available:", !!window.Tawk_API)
-        console.log("Tawk API methods:", window.Tawk_API ? Object.keys(window.Tawk_API) : "none")
-        
-        // Open the chat widget
-        if (window.Tawk_API?.maximize) {
-          window.Tawk_API.maximize()
-          setIsChatOpen(true)
-        } else if (window.Tawk_API?.maximizeWidget) {
-          window.Tawk_API.maximizeWidget()
-          setIsChatOpen(true)
-        } else if (window.Tawk_API?.showWidget) {
-          window.Tawk_API.showWidget()
-          setIsChatOpen(true)
-        } else {
-          console.warn("No maximize method found on Tawk API. Available methods:", Object.keys(window.Tawk_API || {}))
-          setIsChatOpen(true)
+        // Wait for Tawk API to fully initialize
+        let attempt = 0
+        while (!window.Tawk_API && attempt < 10) {
+          await new Promise(resolve => setTimeout(resolve, 200))
+          attempt++
         }
+        
+        console.log("🔵 Tawk API ready:", !!window.Tawk_API)
+        
+        if (window.Tawk_API) {
+          console.log("🔵 Available Tawk methods:", Object.keys(window.Tawk_API).slice(0, 10))
+          
+          // Try different maximize methods
+          if (typeof window.Tawk_API.maximize === 'function') {
+            console.log("🔵 Calling maximize()")
+            window.Tawk_API.maximize()
+          } else if (typeof window.Tawk_API.toggleWidget === 'function') {
+            console.log("🔵 Calling toggleWidget()")
+            window.Tawk_API.toggleWidget()
+          } else if (typeof window.Tawk_API.showWidget === 'function') {
+            console.log("🔵 Calling showWidget()")
+            window.Tawk_API.showWidget()
+          } else {
+            console.warn("🔴 No show method found on Tawk API")
+            // Force show anyway
+            if (window.Tawk_API.API) {
+              window.Tawk_API.API.toggle()
+            }
+          }
+        }
+        
+        setIsChatOpen(true)
       } catch (error) {
-        console.error("Error loading chat:", error)
+        console.error("🔴 Error loading chat:", error)
       } finally {
         setLoading(false)
       }
