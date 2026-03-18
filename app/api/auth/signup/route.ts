@@ -85,11 +85,27 @@ export async function POST(request: Request) {
 
     // send verification code to email
     try {
-      await sendVerificationCode(email)
+      await sendVerificationCode(email, firstName)
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError)
       // Still allow signup - user can request code resend later
       // Return success so user can proceed to verification step
+    }
+
+    // Send welcome email to the new user
+    try {
+      const { sendNotificationEmail } = await import("@/lib/email-notifications")
+      await sendNotificationEmail({
+        to: email,
+        template: 'welcome',
+        data: {
+          fullName: firstName,
+          dashboardLink: `${process.env.NEXTAUTH_URL || 'https://vault-finance.vercel.app'}/dashboard`,
+        }
+      })
+    } catch (welcomeError) {
+      console.error("Failed to send welcome email:", welcomeError)
+      // Don't fail the signup if welcome email fails
     }
 
     return NextResponse.json({ success: true })

@@ -103,7 +103,7 @@ export async function requireAuthAPI() {
   return { ...user, role: (payload.role || user.role) as "user" | "admin" }
 }
 
-export async function sendVerificationCode(email: string) {
+export async function sendVerificationCode(email: string, fullName?: string) {
   const code = Math.floor(100000 + Math.random() * 900000).toString()
   const expiresAt = new Date(Date.now() + 1000 * 60 * 10).toISOString()
   const { v4: uuidv4 } = await import("uuid")
@@ -122,29 +122,19 @@ export async function sendVerificationCode(email: string) {
     return
   }
 
-  const nodemailer = await import("nodemailer")
-
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || "587"),
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  })
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Your Vault Verification Code",
-    text: `Your verification code is: ${code}. It expires in 10 minutes.`,
-    html: `<p>Your verification code is: <strong>${code}</strong></p><p>It expires in 10 minutes.</p>`,
-  }
-
   try {
-    const result = await transporter.sendMail(mailOptions)
-    console.log(`Verification email sent to ${email}`, { messageId: result.messageId })
+    const { sendNotificationEmail } = await import("./email-notifications")
+    
+    await sendNotificationEmail({
+      to: email,
+      template: 'verification',
+      data: {
+        fullName: fullName || email.split("@")[0],
+        code
+      }
+    })
+    
+    console.log(`Verification email sent to ${email}`)
   } catch (error) {
     console.error("Error sending verification email:", error)
   }

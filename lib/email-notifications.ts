@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 export interface EmailNotification {
   to: string
   subject?: string
-  template: 'signin' | 'deposit' | 'withdrawal' | 'return' | 'welcome' | 'recovery'
+  template: 'signin' | 'deposit' | 'withdrawal' | 'return' | 'welcome' | 'recovery' | 'verification'
   data: Record<string, string | number | boolean>
 }
 
@@ -143,6 +143,52 @@ const emailTemplates = {
       </div>
     `,
   }),
+  verification: (data: Record<string, string | number | boolean>) => ({
+    subject: 'Verify Your Vault Account',
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #3b82f6; padding: 20px; text-align: center;">
+          <tr>
+            <td>
+              <h1 style="color: white; font-size: 28px; margin: 0;">Confirm Your Email</h1>
+            </td>
+          </tr>
+        </table>
+        
+        <div style="padding: 40px 20px; background-color: white;">
+          <p style="color: #374151; font-size: 16px; margin: 0 0 20px 0;">Hi ${data.fullName || 'there'},</p>
+          
+          <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">
+            Welcome to Vault Capital! To complete your signup, please verify your email address by entering the confirmation code below.
+          </p>
+          
+          <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 8px; padding: 30px; margin: 30px 0; text-align: center;">
+            <p style="color: #e0e7ff; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 10px 0;">Your Verification Code</p>
+            <p style="font-size: 42px; font-weight: bold; color: white; margin: 0; letter-spacing: 5px; font-family: 'Courier New', monospace;">${data.code}</p>
+          </div>
+          
+          <p style="color: #9ca3af; font-size: 13px; text-align: center; margin: 0 0 30px 0;">
+            This code expires in <strong>10 minutes</strong>
+          </p>
+          
+          <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px; margin: 30px 0;">
+            <p style="color: #1e40af; font-size: 13px; margin: 0;"><strong>Tip:</strong> Never share this code with anyone. Vault staff will never ask for it.</p>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 12px; line-height: 1.6; margin: 30px 0 0 0; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+            If you didn't create a Vault account, you can safely ignore this email.
+          </p>
+        </div>
+        
+        <div style="background-color: #f3f4f6; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+          <p style="color: #9ca3af; font-size: 11px; margin: 0;">
+            © 2026 Vault Capital. All rights reserved.<br/>
+            This is an automated message. Please do not reply to this email.
+          </p>
+        </div>
+      </div>
+    `,
+  }),
 }
 
 export async function sendNotificationEmail(notification: EmailNotification) {
@@ -150,8 +196,10 @@ export async function sendNotificationEmail(notification: EmailNotification) {
     const template = emailTemplates[notification.template]
     const { subject, html } = template(notification.data)
 
+    const fromEmail = process.env.EMAIL_FROM || `${process.env.EMAIL_USER}`
+
     await transporter.sendMail({
-      from: `Vault Capital <${process.env.EMAIL_FROM}>`,
+      from: `Vault Capital <${fromEmail}>`,
       to: notification.to,
       subject,
       html,
