@@ -130,36 +130,36 @@ export function RecentTransactions() {
                   </Badge>
                 </div>
               </div>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Transaction Details</DialogTitle>
+              <DialogContent className="max-w-sm w-full max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-lg">
+                <DialogHeader className="sticky top-0 bg-card/95 backdrop-blur-sm z-10">
+                  <DialogTitle className="text-lg">Transaction Details</DialogTitle>
                 </DialogHeader>
                 {selectedTransaction && (
                   <div className="space-y-4">
                     <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Type:</span>
                         <span className="font-semibold text-card-foreground capitalize">{selectedTransaction.type}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Amount:</span>
                         <span className="font-bold text-card-foreground">
                           ${(selectedTransaction.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                         </span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Status:</span>
-                        <Badge className={statusColors[selectedTransaction.status as keyof typeof statusColors] || statusColors.approved}>
+                        <Badge className={`text-xs ${statusColors[selectedTransaction.status as keyof typeof statusColors] || statusColors.approved}`}>
                           {selectedTransaction.status === "pending" && selectedTransaction.type === "deposit" ? "initiated" : selectedTransaction.status}
                         </Badge>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Date:</span>
                         <span className="font-semibold text-card-foreground">{selectedTransaction.date}</span>
                       </div>
                       <div className="border-t border-border pt-3">
-                        <span className="text-muted-foreground block mb-2">Description:</span>
-                        <p className="text-sm text-card-foreground">{selectedTransaction.description}</p>
+                        <span className="text-muted-foreground block mb-2 text-sm">Description:</span>
+                        <p className="text-xs sm:text-sm text-card-foreground">{selectedTransaction.description}</p>
                       </div>
                     </div>
                   </div>
