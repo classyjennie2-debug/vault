@@ -18,51 +18,58 @@ export function loadTawkChat() {
     const tawkPropertyId = process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID
 
     if (!tawkPropertyId) {
+      console.warn("[Tawk] NEXT_PUBLIC_TAWK_PROPERTY_ID not configured")
       resolve()
       return
     }
 
     // If already loaded, just resolve
     if (isTawkLoaded && window.Tawk_API) {
+      console.log("[Tawk] Already loaded, showing widget")
+      if (window.Tawk_API?.maximize) {
+        window.Tawk_API.maximize()
+      } else if (window.Tawk_API?.toggleWidget) {
+        window.Tawk_API.toggleWidget()
+      }
       resolve()
       return
     }
 
     try {
-      // Initialize window properties for Tawk
-      window.Tawk_API = {
-        onLoad: function() {
-          console.log("[Tawk] Loaded successfully")
-          isTawkLoaded = true
-        },
-        onStatusChange: function(status: string) {
-          console.log("[Tawk] Status changed to:", status)
-        },
-        onAgentJoin: function(data: any) {
-          console.log("[Tawk] Agent joined:", data)
-        }
-      }
-
+      // Initialize window properties for Tawk BEFORE loading script
+      window.Tawk_API = window.Tawk_API || {}
       window.Tawk_LoadStart = new Date()
 
       // Create and append the Tawk script
       const script = document.createElement("script")
       script.async = true
-      script.src = `https://embed.tawk.to/${tawkPropertyId}/default`
+      script.src = `https://embed.tawk.to/${tawkPropertyId}`
       script.charset = "UTF-8"
       script.setAttribute("crossorigin", "*")
       script.type = "text/javascript"
       
       script.onload = () => {
+        console.log("[Tawk] Script loaded successfully")
         isTawkLoaded = true
-        resolve()
+        
+        // Wait a bit for Tawk API to be ready, then show widget
+        setTimeout(() => {
+          if (window.Tawk_API?.maximize) {
+            window.Tawk_API.maximize()
+          } else if (window.Tawk_API?.toggleWidget) {
+            window.Tawk_API.toggleWidget()
+          }
+          resolve()
+        }, 500)
       }
 
       script.onerror = () => {
+        console.error("[Tawk] Failed to load Tawk script")
         resolve()
       }
 
       document.body.appendChild(script)
+      console.log("[Tawk] Script loading from:", script.src)
     } catch (error) {
       console.error("[Tawk] Error loading script:", error)
       resolve()

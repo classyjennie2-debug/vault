@@ -46,17 +46,27 @@ export default function LiveChatButton() {
       // Open the chat
       setLoading(true)
       try {
+        console.log("Starting live chat load...")
         await loadTawkChat()
         
         // Wait for Tawk to be ready
-        await new Promise(resolve => setTimeout(resolve, 300))
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        console.log("Tawk API available:", !!window.Tawk_API)
+        console.log("Tawk API methods:", window.Tawk_API ? Object.keys(window.Tawk_API) : "none")
         
         // Open the chat widget
-        if (window.Tawk_API?.maximizeWidget) {
+        if (window.Tawk_API?.maximize) {
+          window.Tawk_API.maximize()
+          setIsChatOpen(true)
+        } else if (window.Tawk_API?.maximizeWidget) {
           window.Tawk_API.maximizeWidget()
           setIsChatOpen(true)
         } else if (window.Tawk_API?.showWidget) {
           window.Tawk_API.showWidget()
+          setIsChatOpen(true)
+        } else {
+          console.warn("No maximize method found on Tawk API. Available methods:", Object.keys(window.Tawk_API || {}))
           setIsChatOpen(true)
         }
       } catch (error) {
