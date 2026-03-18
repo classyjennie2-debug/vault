@@ -1619,6 +1619,10 @@ export async function createTransaction(transaction: {
   method?: string
   bankAccount?: string
   cryptoAddress?: string
+  coin?: string
+  coinAmount?: number
+  withdrawalFee?: number
+  amountAfterFee?: number
 }) {
   const id = `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   const description = transaction.description || `${transaction.type} of $${transaction.amount.toLocaleString()}`
@@ -1649,6 +1653,10 @@ export async function createTransaction(transaction: {
     status: transaction.status || "pending",
     description,
     date: new Date().toISOString(),
+    coin: transaction.coin,
+    coinAmount: transaction.coinAmount,
+    withdrawalFee: transaction.withdrawalFee,
+    amountAfterFee: transaction.amountAfterFee,
   }
 }
 
