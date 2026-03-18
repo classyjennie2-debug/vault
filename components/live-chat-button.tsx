@@ -18,8 +18,8 @@ export default function LiveChatButton() {
   const handleToggleChat = async () => {
     if (isChatOpen) {
       // Close the chat
-      if (window.Tawk_API?.hideWidget) {
-        window.Tawk_API.hideWidget()
+      if (window.Tawk_API?.minimizeWidget) {
+        window.Tawk_API.minimizeWidget()
       }
       setIsChatOpen(false)
     } else {
@@ -27,16 +27,20 @@ export default function LiveChatButton() {
       setLoading(true)
       try {
         await loadTawkChat()
+        
+        // Wait a moment for Tawk to be ready
+        await new Promise(resolve => setTimeout(resolve, 300))
+        
         // Open the chat widget
-        if (window.Tawk_API?.showWidget) {
+        if (window.Tawk_API?.maximizeWidget) {
+          window.Tawk_API.maximizeWidget()
+          setIsChatOpen(true)
+        } else if (window.Tawk_API?.showWidget) {
           window.Tawk_API.showWidget()
+          setIsChatOpen(true)
         }
-        if (window.Tawk_API?.toggle) {
-          window.Tawk_API.toggle()
-        } else if (window.Tawk_API?.popupMaximize) {
-          window.Tawk_API.popupMaximize()
-        }
-        setIsChatOpen(true)
+      } catch (error) {
+        console.error("Error loading chat:", error)
       } finally {
         setLoading(false)
       }
