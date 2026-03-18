@@ -358,77 +358,7 @@ export default function SettingsPage() {
                 className="flex-1"
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Phone is changeable</p>
-          </div>
-
-          {/* Date of Birth - Read Only */}
-          <div>
-            <Label htmlFor="dateOfBirth">Date of Birth</Label>
-            <Input
-              id="dateOfBirth"
-              type="date"
-              value={userSettings.dateOfBirth}
-              readOnly
-              disabled
-              className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-            />
-          </div>
-
-          {/* Address Info - Read Only */}
-          <div>
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              type="text"
-              value={userSettings.address}
-              readOnly
-              disabled
-              className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                value={userSettings.city}
-                readOnly
-                disabled
-                className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <Label htmlFor="state">State/Province</Label>
-              <Input
-                id="state"
-                value={userSettings.state}
-                readOnly
-                disabled
-                className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <Label htmlFor="zipCode">Zip/Postal Code</Label>
-              <Input
-                id="zipCode"
-                value={userSettings.zipCode}
-                readOnly
-                disabled
-                className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="country">Country</Label>
-            <Input
-              id="country"
-              value={userSettings.country}
-              readOnly
-              disabled
-              className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
-            />
+            <p className="text-xs text-muted-foreground mt-1">Phone and country are changeable</p>
           </div>
 
           <Button 

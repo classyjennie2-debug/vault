@@ -62,7 +62,7 @@ export default async function DashboardPage() {
           <div className="lg:col-span-3">
             <PortfolioChart 
               data={portfolioData} 
-              balance={user.balance}
+              balance={totalBalance}
               monthlyChange={stats.totalInvested > 0 ? Math.round((monthlyMetrics.monthlyGain / stats.totalInvested) * 100 * 100) / 100 : 0}
             />
           </div>
