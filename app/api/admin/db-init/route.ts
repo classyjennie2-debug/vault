@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
         { name: 'two_factor_enabled', type: 'BOOLEAN NOT NULL DEFAULT FALSE' },
         { name: 'two_factor_secret', type: 'VARCHAR(255)' },
         { name: 'backup_codes', type: 'TEXT' },
+        { name: 'phone_country', type: 'VARCHAR(10)' },
       ]
 
       for (const col of userColumns) {
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
         { name: 'method', type: 'VARCHAR(50)' },
         { name: 'bank_account', type: 'VARCHAR(255)' },
         { name: 'crypto_address', type: 'VARCHAR(255)' },
+        { name: 'metadata', type: 'JSONB' },
       ]
 
       for (const col of txColumns) {

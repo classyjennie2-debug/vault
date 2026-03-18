@@ -178,7 +178,6 @@ export default function SettingsPage() {
           zipCode: user?.zip_code || "",
           country: user?.country || "",
         }))
-        }))
       } catch (e: any) {
         setUserError(e.message || "Failed to fetch user info")
       } finally {

@@ -125,6 +125,7 @@ async function migratePostgresUsers(pool: any) {
       'email': 'ALTER TABLE users ADD COLUMN email VARCHAR(255) UNIQUE NOT NULL',
       'password_hash': 'ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)',
       'phone': 'ALTER TABLE users ADD COLUMN phone VARCHAR(20)',
+      'phone_country': 'ALTER TABLE users ADD COLUMN phone_country VARCHAR(10)',
       'date_of_birth': 'ALTER TABLE users ADD COLUMN date_of_birth DATE',
       'avatar': 'ALTER TABLE users ADD COLUMN avatar VARCHAR(500)',
       'role': 'ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT \'user\'',
@@ -246,6 +247,7 @@ async function initializePostgres() {
           method VARCHAR(50),
           bank_account VARCHAR(255),
           crypto_address VARCHAR(255),
+          metadata TEXT,
           FOREIGN KEY (user_id) REFERENCES users(id)
         )`,
         `CREATE TABLE IF NOT EXISTS investment_plans (
@@ -862,6 +864,8 @@ export interface UserRow {
   lastName?: string
   email: string
   phone?: string
+  phone_country?: string
+  phoneCountry?: string
   dateOfBirth?: string
   passwordHash?: string
   verified: boolean

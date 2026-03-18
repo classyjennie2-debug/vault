@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   phone VARCHAR(20),
+  phone_country VARCHAR(10), -- Country code for phone number (US, UK, CA, etc.)
   date_of_birth DATE,
   role VARCHAR(20) NOT NULL DEFAULT 'user',
   balance NUMERIC(15,2) NOT NULL DEFAULT 0,
@@ -169,6 +170,12 @@ CREATE TABLE IF NOT EXISTS transactions (
   status VARCHAR(20) DEFAULT 'pending', -- pending, approved, rejected, cancelled
   description TEXT,
   
+  -- Withdrawal/Deposit specific fields
+  method VARCHAR(50), -- bank, crypto
+  bank_account VARCHAR(255), -- Bank account number
+  crypto_address VARCHAR(255), -- Cryptocurrency wallet address
+  metadata JSONB, -- Additional data: coin, coinAmount, withdrawalFee, amountAfterFee
+  
   -- Related records
   investment_id UUID REFERENCES investments(id),
   reference_id VARCHAR(255), -- External transaction ID
@@ -181,6 +188,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   -- Timestamps
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  date TEXT, -- Legacy field for SQLite compatibility
   
   INDEX idx_user_id_created (user_id, created_at DESC),
   INDEX idx_status (status),
