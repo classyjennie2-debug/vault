@@ -993,16 +993,16 @@ export async function consumeVerificationCode(code: string): Promise<boolean> {
   
   console.log(`[Verify] Looking for code: ${trimmedCode}`)
   
-  // Use PostgreSQL NOW() function to avoid timezone/type issues
+  // Use CAST to explicitly convert to boolean for compatibility
   const row = await get(
-    "SELECT * FROM verification_codes WHERE code = $1 AND used = FALSE AND expiresAt > NOW()",
+    "SELECT id FROM verification_codes WHERE code = $1 AND CAST(used AS BOOLEAN) = FALSE AND expiresAt > NOW() LIMIT 1",
     [trimmedCode]
   )
   
   if (!row) {
-    // Check if code exists but is expired
+    // Check if code exists but is expired or already used
     const expiredRow = await get(
-      "SELECT code, used, expiresAt FROM verification_codes WHERE code = $1",
+      "SELECT code, CAST(used AS BOOLEAN) as used, expiresAt FROM verification_codes WHERE code = $1 LIMIT 1",
       [trimmedCode]
     )
     console.log(`[Verify] Code lookup result - exists: ${!!expiredRow}`, expiredRow)
@@ -1010,14 +1010,19 @@ export async function consumeVerificationCode(code: string): Promise<boolean> {
   }
   
   console.log(`[Verify] Code found and valid, marking as used`)
-  await run("UPDATE verification_codes SET used = TRUE WHERE code = $1", [trimmedCode])
-  return true
+  try {
+    await run("UPDATE verification_codes SET used = CAST(TRUE AS INTEGER) WHERE code = $1", [trimmedCode])
+    return true
+  } catch (err) {
+    console.error(`[Verify] Error checking code:`, err)
+    return false
+  }
 }
 
 export async function canResendVerificationCode(email: string): Promise<{ canResend: boolean; nextRetryAt?: string }> {
   // Check for the most recent unused verification code for this email
   const row = await get<{ expiresAt: string; created_at: string }>(
-    "SELECT expiresAt, created_at FROM verification_codes WHERE email = $1 AND used = FALSE ORDER BY created_at DESC LIMIT 1",
+    "SELECT expiresAt, created_at FROM verification_codes WHERE email = $1 AND CAST(used AS BOOLEAN) = FALSE ORDER BY created_at DESC LIMIT 1",
     [email]
   )
   
