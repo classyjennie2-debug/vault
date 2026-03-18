@@ -347,6 +347,43 @@ async function initializePostgres() {
           metadata TEXT,
           timestamp TEXT NOT NULL,
           FOREIGN KEY (userId) REFERENCES users(id)
+        )`,
+        `CREATE TABLE IF NOT EXISTS admin_logs (
+          id TEXT PRIMARY KEY,
+          admin_id TEXT NOT NULL,
+          action TEXT NOT NULL,
+          resource_type TEXT,
+          resource_id TEXT,
+          details TEXT,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (admin_id) REFERENCES users(id)
+        )`,
+        `CREATE TABLE IF NOT EXISTS user_settings (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL UNIQUE,
+          theme TEXT NOT NULL DEFAULT 'light',
+          language TEXT NOT NULL DEFAULT 'en',
+          timezone TEXT NOT NULL DEFAULT 'UTC',
+          email_notifications_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+          sms_notifications_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+          push_notifications_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+          two_factor_required BOOLEAN NOT NULL DEFAULT FALSE,
+          login_alerts_enabled BOOLEAN NOT NULL DEFAULT TRUE,
+          created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )`,
+        `CREATE TABLE IF NOT EXISTS transaction_receipts (
+          id TEXT PRIMARY KEY,
+          transaction_id TEXT NOT NULL,
+          user_id TEXT NOT NULL,
+          file_name TEXT,
+          file_path TEXT,
+          file_size INTEGER,
+          mime_type TEXT,
+          generated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )`
       ]
 
@@ -1944,46 +1981,105 @@ export async function deleteUser(userId: string): Promise<void> {
     // IMPORTANT: Must handle foreign key constraints in correct order
     const usePostgres = pgPool !== null
     
-    // 1. Delete activity logs for this user
-    await run(usePostgres ? "DELETE FROM activity_logs WHERE user_id = $1" : "DELETE FROM activity_logs WHERE userId = $1", [userId])
+    // 1. Delete activity logs for this user (gracefully handle missing table)
+    try {
+      await run(usePostgres ? "DELETE FROM activity_logs WHERE user_id = $1" : "DELETE FROM activity_logs WHERE userId = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+      console.warn('[deleteUser] activity_logs table does not exist, skipping')
+    }
     
-    // 2. Delete admin logs for this user
-    await run(usePostgres ? "DELETE FROM admin_logs WHERE admin_id = $1" : "DELETE FROM admin_logs WHERE admin_id = $1", [userId])
+    // 2. Delete admin logs for this user (gracefully handle missing table)
+    try {
+      await run(usePostgres ? "DELETE FROM admin_logs WHERE admin_id = $1" : "DELETE FROM admin_logs WHERE admin_id = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+      console.warn('[deleteUser] admin_logs table does not exist, skipping')
+    }
     
     // 3. Unassign any wallet addresses assigned to this user (camelCase columns in wallets)
-    await run("UPDATE wallet_addresses SET assignedTo = NULL, assignedAt = NULL WHERE assignedTo = $1", [userId])
+    try {
+      await run("UPDATE wallet_addresses SET assignedTo = NULL, assignedAt = NULL WHERE assignedTo = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+    }
     
-    // 4. Delete transaction receipts for this user
-    await run(usePostgres ? "DELETE FROM transaction_receipts WHERE user_id = $1" : "DELETE FROM transaction_receipts WHERE user_id = $1", [userId])
+    // 4. Delete transaction receipts for this user (gracefully handle missing table)
+    try {
+      await run(usePostgres ? "DELETE FROM transaction_receipts WHERE user_id = $1" : "DELETE FROM transaction_receipts WHERE user_id = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+      console.warn('[deleteUser] transaction_receipts table does not exist, skipping')
+    }
     
     // 5. Delete notifications linked to this user (snake_case columns)
-    await run(usePostgres ? "DELETE FROM notifications WHERE user_id = $1" : "DELETE FROM notifications WHERE userId = $1", [userId])
+    try {
+      await run(usePostgres ? "DELETE FROM notifications WHERE user_id = $1" : "DELETE FROM notifications WHERE userId = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+    }
     
-    // 6. Delete user settings
-    await run(usePostgres ? "DELETE FROM user_settings WHERE user_id = $1" : "DELETE FROM user_settings WHERE user_id = $1", [userId])
+    // 6. Delete user settings (gracefully handle missing table)
+    try {
+      await run(usePostgres ? "DELETE FROM user_settings WHERE user_id = $1" : "DELETE FROM user_settings WHERE user_id = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+      console.warn('[deleteUser] user_settings table does not exist, skipping')
+    }
     
     // 7. Delete password reset tokens
-    await run(usePostgres ? "DELETE FROM password_reset_tokens WHERE user_id = $1" : "DELETE FROM password_reset_tokens WHERE user_id = $1", [userId])
+    try {
+      await run(usePostgres ? "DELETE FROM password_reset_tokens WHERE user_id = $1" : "DELETE FROM password_reset_tokens WHERE userId = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+    }
     
     // 8. Delete verification codes (associated with user's email)
-    const userEmail = await get<any>(usePostgres ? "SELECT email FROM users WHERE id = $1" : "SELECT email FROM users WHERE id = $1", [userId])
-    if (userEmail?.email) {
-      await run("DELETE FROM verification_codes WHERE email = $1", [userEmail.email])
+    try {
+      const userEmail = await get<any>(usePostgres ? "SELECT email FROM users WHERE id = $1" : "SELECT email FROM users WHERE id = $1", [userId])
+      if (userEmail?.email) {
+        await run("DELETE FROM verification_codes WHERE email = $1", [userEmail.email])
+      }
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
     }
     
     // 9. Delete transactions for this user (snake_case columns)
-    await run(usePostgres ? "DELETE FROM transactions WHERE user_id = $1" : "DELETE FROM transactions WHERE userId = $1", [userId])
+    try {
+      await run(usePostgres ? "DELETE FROM transactions WHERE user_id = $1" : "DELETE FROM transactions WHERE userId = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+    }
     
     // 10. Delete investments for this user (snake_case columns)
-    await run(usePostgres ? "DELETE FROM investments WHERE user_id = $1" : "DELETE FROM investments WHERE userId = $1", [userId])
+    try {
+      await run(usePostgres ? "DELETE FROM investments WHERE user_id = $1" : "DELETE FROM investments WHERE userId = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+    }
     
     // 11. Delete active investments for this user (camelCase columns)
-    await run("DELETE FROM active_investments WHERE userId = $1", [userId])
+    try {
+      await run("DELETE FROM active_investments WHERE userId = $1", [userId])
+    } catch (err: unknown) {
+      const msg = errMessage(err)
+      if (!msg.includes('does not exist')) throw err
+    }
     
     // 12. Finally delete the user (now safe - no foreign key violations)
     await run("DELETE FROM users WHERE id = $1", [userId])
     
-    console.log(`User ${userId} and all related data successfully deleted`)
+    console.log(`User ${userId} and related data successfully deleted`)
   } catch (error) {
     console.error(`Error deleting user ${userId}:`, error)
     throw error
