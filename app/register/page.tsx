@@ -99,9 +99,13 @@ export default function RegisterPage() {
         setLoading(false)
         return
       }
-      // user is logged in automatically by backend
-      // Don't disable loading - keep button locked during redirect
-      router.push("/dashboard")
+      // Show success and redirect quickly
+      setInfo("✓ Verification successful! Redirecting...")
+      // Use setTimeout to ensure smooth redirect with loading page
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 200)
+      // Don't set loading to false - keep the button locked
     } catch (_err) {
       setError("An error occurred. Please try again.")
       setLoading(false)

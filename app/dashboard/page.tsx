@@ -11,72 +11,59 @@ import { DashboardLayoutClient } from "@/components/dashboard/dashboard-layout-c
 import { requireAuth } from "@/lib/auth"
 import { getUserStats, generatePortfolioData, getUserActiveInvestmentsWithProfit } from "@/lib/db"
 import { calculateMonthlyMetrics, calculateReturnRate } from "@/lib/monthly-metrics"
+import { Suspense } from "react"
+
+// Skeleton loader for chart section
+function PortfolioChartSkeleton() {
+  return <div className="h-96 bg-card rounded-lg animate-pulse" />
+}
+
+// Skeleton loader for investments table
+function InvestmentsTableSkeleton() {
+  return <div className="h-64 bg-card rounded-lg animate-pulse" />
+}
+
+// Skeleton loader for recent transactions
+function RecentTransactionsSkeleton() {
+  return <div className="h-96 bg-card rounded-lg animate-pulse" />
+}
 
 export default async function DashboardPage() {
-  // server component can fetch user and stats
+  // Only fetch critical data immediately - user and basic stats
   const user = await requireAuth()
   const stats = await getUserStats(user.id)
-  const portfolioData = await generatePortfolioData(user.id)
-  const activeInvestments = await getUserActiveInvestmentsWithProfit(user.id)
-  const monthlyMetrics = await calculateMonthlyMetrics(user.id)
-  
-  // Calculate live profit from active investments
-  let liveProfit = 0
-  if (activeInvestments && activeInvestments.length > 0) {
-    liveProfit = activeInvestments.reduce((sum, inv) => sum + (inv.accumulatedProfit || 0), 0)
-  }
-  
-  // Use live profit if available, otherwise fallback to stats
-  const displayProfit = liveProfit > 0 ? liveProfit : stats.totalProfit
-  const totalReturnRate = calculateReturnRate(displayProfit, stats.totalInvested)
-  const totalBalance = stats.availableBalance + stats.totalInvested + displayProfit
-  const weeklyChange =
-    stats.totalInvested > 0
-      ? ((monthlyMetrics.monthlyReturns / Math.max(stats.totalInvested, 1)) * 100) / 4
-      : 0
 
   return (
     <DashboardLayoutClient userName={user.firstName || user.email || "Investor"} isFirstVisit={false}>
       <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
         <DashboardHero user={user} stats={stats} />
 
-        <GlanceStrip totalBalance={totalBalance} monthlyGain={monthlyMetrics.monthlyGain} />
+        <Suspense fallback={<div className="h-24 bg-card rounded-lg animate-pulse" />}>
+          <GlanceStripAsync userId={user.id} stats={stats} />
+        </Suspense>
 
         <QuickActions />
 
-        <DashboardCards
-          totalBalance={totalBalance}
-          totalInvested={stats.totalInvested}
-          totalProfit={displayProfit}
-          availableBalance={stats.availableBalance}
-          activeInvestments={stats.activeInvestments}
-          pendingDeposits={stats.pendingDeposits}
-          totalWithdrawn={stats.totalWithdrawn}
-          monthlyGain={monthlyMetrics.monthlyGain}
-          monthlyReturns={monthlyMetrics.monthlyReturns}
-          totalReturnRate={totalReturnRate}
-          weeklyChange={weeklyChange}
-        />
+        <Suspense fallback={<div className="h-32 bg-card rounded-lg animate-pulse" />}>
+          <DashboardCardsAsync userId={user.id} stats={stats} />
+        </Suspense>
 
         <div className="grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-5">
           <div className="lg:col-span-3">
-            <PortfolioChart 
-              data={portfolioData} 
-              balance={totalBalance}
-              monthlyChange={stats.totalInvested > 0 ? Math.round((monthlyMetrics.monthlyGain / stats.totalInvested) * 100 * 100) / 100 : 0}
-            />
+            <Suspense fallback={<PortfolioChartSkeleton />}>
+              <PortfolioChartAsync userId={user.id} stats={stats} />
+            </Suspense>
           </div>
           <div className="lg:col-span-2">
-            <RecentTransactions />
+            <Suspense fallback={<RecentTransactionsSkeleton />}>
+              <RecentTransactions />
+            </Suspense>
           </div>
         </div>
 
-        {activeInvestments && activeInvestments.length > 0 && (
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">Active Investment Plans</h2>
-            <ActiveInvestmentsTable investments={activeInvestments} />
-          </div>
-        )}
+        <Suspense fallback={<div className="h-64 bg-card rounded-lg animate-pulse" />}>
+          <ActiveInvestmentsAsync userId={user.id} />
+        </Suspense>
 
         <EducationTips />
 
@@ -85,5 +72,83 @@ export default async function DashboardPage() {
         </div>
       </div>
     </DashboardLayoutClient>
+  )
+}
+
+// Async component for GlanceStrip
+async function GlanceStripAsync({ userId, stats }: { userId: string; stats: any }) {
+  const monthlyMetrics = await calculateMonthlyMetrics(userId)
+  return <GlanceStrip totalBalance={stats.availableBalance + stats.totalInvested} monthlyGain={monthlyMetrics.monthlyGain} />
+}
+
+// Async component for DashboardCards
+async function DashboardCardsAsync({ userId, stats }: { userId: string; stats: any }) {
+  const monthlyMetrics = await calculateMonthlyMetrics(userId)
+  const activeInvestments = await getUserActiveInvestmentsWithProfit(userId)
+  
+  let liveProfit = 0
+  if (activeInvestments && activeInvestments.length > 0) {
+    liveProfit = activeInvestments.reduce((sum, inv) => sum + (inv.accumulatedProfit || 0), 0)
+  }
+  
+  const displayProfit = liveProfit > 0 ? liveProfit : stats.totalProfit
+  const totalReturnRate = calculateReturnRate(displayProfit, stats.totalInvested)
+  const totalBalance = stats.availableBalance + stats.totalInvested + displayProfit
+  const weeklyChange = stats.totalInvested > 0 ? ((monthlyMetrics.monthlyReturns / Math.max(stats.totalInvested, 1)) * 100) / 4 : 0
+
+  return (
+    <DashboardCards
+      totalBalance={totalBalance}
+      totalInvested={stats.totalInvested}
+      totalProfit={displayProfit}
+      availableBalance={stats.availableBalance}
+      activeInvestments={stats.activeInvestments}
+      pendingDeposits={stats.pendingDeposits}
+      totalWithdrawn={stats.totalWithdrawn}
+      monthlyGain={monthlyMetrics.monthlyGain}
+      monthlyReturns={monthlyMetrics.monthlyReturns}
+      totalReturnRate={totalReturnRate}
+      weeklyChange={weeklyChange}
+    />
+  )
+}
+
+// Async component for PortfolioChart
+async function PortfolioChartAsync({ userId, stats }: { userId: string; stats: any }) {
+  const portfolioData = await generatePortfolioData(userId)
+  const monthlyMetrics = await calculateMonthlyMetrics(userId)
+  const activeInvestments = await getUserActiveInvestmentsWithProfit(userId)
+  
+  let liveProfit = 0
+  if (activeInvestments && activeInvestments.length > 0) {
+    liveProfit = activeInvestments.reduce((sum, inv) => sum + (inv.accumulatedProfit || 0), 0)
+  }
+  
+  const displayProfit = liveProfit > 0 ? liveProfit : stats.totalProfit
+  const totalBalance = stats.availableBalance + stats.totalInvested + displayProfit
+  const monthlyChange = stats.totalInvested > 0 ? Math.round((monthlyMetrics.monthlyGain / stats.totalInvested) * 100 * 100) / 100 : 0
+
+  return (
+    <PortfolioChart 
+      data={portfolioData} 
+      balance={totalBalance}
+      monthlyChange={monthlyChange}
+    />
+  )
+}
+
+// Async component for ActiveInvestments
+async function ActiveInvestmentsAsync({ userId }: { userId: string }) {
+  const activeInvestments = await getUserActiveInvestmentsWithProfit(userId)
+
+  if (!activeInvestments || activeInvestments.length === 0) {
+    return null
+  }
+
+  return (
+    <div>
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">Active Investment Plans</h2>
+      <ActiveInvestmentsTable investments={activeInvestments} />
+    </div>
   )
 }
