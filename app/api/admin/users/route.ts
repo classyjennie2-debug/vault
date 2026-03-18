@@ -37,18 +37,29 @@ export async function GET() {
         // Get total invested
         const investmentResult = await all(
           usePostgres
-            ? "SELECT SUM(amount) as totalInvested FROM investments WHERE user_id = $1 AND status = 'active'"
+            ? "SELECT SUM(amount) as \"totalInvested\" FROM investments WHERE user_id = $1 AND status = 'active'"
             : "SELECT SUM(amount) as totalInvested FROM active_investments WHERE userId = $1",
           [enrichedUser.id]
         )
         if (investmentResult && investmentResult.length > 0) {
           enrichedUser.totalInvested = Number(investmentResult[0]?.totalInvested) || 0
         }
+        
+        // If no active investments found, also check active_investments table (backup)
+        if (!enrichedUser.totalInvested && usePostgres) {
+          const activeInvestResult = await all(
+            "SELECT SUM(amount) as \"totalInvested\" FROM active_investments WHERE userId = $1",
+            [enrichedUser.id]
+          )
+          if (activeInvestResult && activeInvestResult.length > 0) {
+            enrichedUser.totalInvested = Number(activeInvestResult[0]?.totalInvested) || 0
+          }
+        }
 
         // Get active investment count
         const countResult = await all(
           usePostgres
-            ? "SELECT COUNT(*) as count FROM investments WHERE user_id = $1 AND status = 'active'"
+            ? "SELECT COUNT(*) as \"count\" FROM investments WHERE user_id = $1 AND status = 'active'"
             : "SELECT COUNT(*) as count FROM active_investments WHERE userId = $1 AND status = 'active'",
           [enrichedUser.id]
         )
@@ -56,11 +67,11 @@ export async function GET() {
           enrichedUser.activeInvestmentsCount = Number(countResult[0]?.count) || 0
         }
 
-        // Get total deposits
+        // Get total deposits (approved and pending)
         const depositsResult = await all(
           usePostgres
-            ? "SELECT SUM(amount) as totalDeposits FROM transactions WHERE user_id = $1 AND type = 'deposit' AND status = 'approved'"
-            : "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = $1 AND type = 'deposit' AND status = 'approved'",
+            ? "SELECT SUM(amount) as \"totalDeposits\" FROM transactions WHERE user_id = $1 AND type = 'deposit' AND status IN ('approved', 'pending')"
+            : "SELECT SUM(amount) as totalDeposits FROM transactions WHERE userId = $1 AND type = 'deposit' AND status IN ('approved', 'pending')",
           [enrichedUser.id]
         )
         if (depositsResult && depositsResult.length > 0) {
@@ -70,12 +81,23 @@ export async function GET() {
         // Get accumulated profit
         const profitResult = await all(
           usePostgres
-            ? "SELECT SUM(CAST(projected_return AS DECIMAL)) as totalProfit FROM investments WHERE user_id = $1 AND status = 'active'"
+            ? "SELECT SUM(CAST(projected_return AS DECIMAL)) as \"totalProfit\" FROM investments WHERE user_id = $1 AND status = 'active'"
             : "SELECT SUM(CAST(expectedProfit AS REAL) * CAST(progressPercentage AS REAL) / 100) as totalProfit FROM active_investments WHERE userId = $1",
           [enrichedUser.id]
         )
         if (profitResult && profitResult.length > 0) {
           enrichedUser.totalProfit = Number(profitResult[0]?.totalProfit) || 0
+        }
+        
+        // If no profit in investments, check active_investments (backup)
+        if (!enrichedUser.totalProfit && usePostgres) {
+          const activeProfitResult = await all(
+            "SELECT SUM(CAST(\"expectedProfit\" AS DECIMAL) * CAST(\"progressPercentage\" AS DECIMAL) / 100) as \"totalProfit\" FROM active_investments WHERE userId = $1",
+            [enrichedUser.id]
+          )
+          if (activeProfitResult && activeProfitResult.length > 0) {
+            enrichedUser.totalProfit = Number(activeProfitResult[0]?.totalProfit) || 0
+          }
         }
 
         // Update totalBalance
