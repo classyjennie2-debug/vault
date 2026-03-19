@@ -12,13 +12,20 @@ export function validateOrigin(req: NextRequest): NextResponse | null {
   const allowed = getAllowedOrigins()
 
   // In development or if no origins configured, allow all
-  if (process.env.NODE_ENV === 'development' || allowed.length === 0) return null
+  if (process.env.NODE_ENV === 'development' || allowed.length === 0) {
+    console.log("[CSRF] Development mode or no origins - allowing all")
+    return null
+  }
 
-  if (!origin) return null // allow requests without origin (some clients don't send it)
+  if (!origin) {
+    console.log("[CSRF] No origin header - allowing (mobile/desktop apps)")
+    return null
+  }
 
   const ok = allowed.some((o) => origin.toLowerCase().startsWith(o.toLowerCase()))
   if (!ok) {
-    console.warn(`[CSRF] Origin not allowed: ${origin}. Allowed: ${allowed.join(", ")}`) 
+    console.warn(`[CSRF] Origin blocked: ${origin}. Allowed: ${allowed.join(", ")}`) 
+    console.warn("[CSRF] Hint: Set NEXT_PUBLIC_APP_URL in Vercel environment variables")
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

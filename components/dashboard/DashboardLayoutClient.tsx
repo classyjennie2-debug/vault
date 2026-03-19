@@ -28,6 +28,9 @@ interface Props {
     avatar: string
     balance: number
   }
+  firstName?: string
+  lastName?: string
+  isFirstVisit?: boolean
 }
 
 const navItems = [
@@ -40,7 +43,7 @@ const navItems = [
 
 const desktopNavItems = navItems // Keep original length for desktop sidebar
 
-export default function DashboardLayoutClient({ children, user }: Props) {
+export default function DashboardLayoutClient({ children, user, firstName = "", lastName = "", isFirstVisit = false }: Props) {
   const pathname = usePathname()
 
   return (
@@ -124,9 +127,9 @@ export default function DashboardLayoutClient({ children, user }: Props) {
       
       {/* Welcome Popup for first-time dashboard visitors */}
       <WelcomePopup 
-        firstName={user.name?.split(' ')[0]} 
-        lastName={user.name?.split(' ').slice(1).join(' ')}
-        isFirstVisit={true}
+        firstName={firstName || user.name?.split(' ')[0]} 
+        lastName={lastName || user.name?.split(' ').slice(1).join(' ')}
+        isFirstVisit={isFirstVisit}
       />
     </div>
   )
