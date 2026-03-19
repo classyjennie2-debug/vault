@@ -1,12 +1,12 @@
 import { DashboardHeroSynced } from "@/components/dashboard/dashboard-hero-synced"
 import { DashboardCardsSynced } from "@/components/dashboard/dashboard-cards-synced"
+import { GlanceStripSynced } from "@/components/dashboard/glance-strip-synced"
 import { PortfolioChart } from "@/components/dashboard/portfolio-chart"
 import { RecentTransactionsSynced } from "@/components/dashboard/recent-transactions-synced"
 import { EducationTips } from "@/components/dashboard/education-tips"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
 import LiveChatButton from "@/components/live-chat-button"
-import { GlanceStrip } from "@/components/dashboard/glance-strip"
 import { DashboardLayoutClient } from "@/components/dashboard/dashboard-layout-client"
 import { requireAuth } from "@/lib/auth"
 import { getUserStats, generatePortfolioData, getUserActiveInvestmentsWithProfit, updateLastLogin } from "@/lib/db"
@@ -47,9 +47,8 @@ export default async function DashboardPage() {
         {/* Real-time Dashboard Hero with auto-syncing balance and stats */}
         <DashboardHeroSynced />
 
-        <Suspense fallback={<div className="h-24 bg-card rounded-lg animate-pulse" />}>
-          <GlanceStripAsync userId={user.id} stats={stats} />
-        </Suspense>
+        {/* Real-time Net Balance with auto-syncing */}
+        <GlanceStripSynced />
 
         <QuickActions />
 
@@ -82,12 +81,6 @@ export default async function DashboardPage() {
       </div>
     </DashboardLayoutClient>
   )
-}
-
-// Async component for GlanceStrip
-async function GlanceStripAsync({ userId, stats }: { userId: string; stats: any }) {
-  const monthlyMetrics = await calculateMonthlyMetrics(userId)
-  return <GlanceStrip totalBalance={stats.availableBalance + stats.totalInvested} monthlyGain={monthlyMetrics.monthlyGain} />
 }
 
 // Async component for PortfolioChart
