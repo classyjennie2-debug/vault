@@ -53,21 +53,21 @@ const emailTemplates = {
     `,
   }),
   deposit: (data: Record<string, string | number | boolean>) => ({
-    subject: `Deposit Confirmed - $${data.amount}`,
+    subject: `Deposit Successful - $${data.amount}`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #3d2817 0%, #2a1c0f 100%); padding: 20px; text-align: center;">
           <tr>
             <td>
               <img src="${LOGO_URL}" alt="Vault Capital" width="40" height="40" style="margin: 0 auto; display: block; margin-bottom: 10px;"/>
-              <h1 style="color: #daa520; font-size: 24px; margin: 10px 0 0 0;">Deposit Confirmed</h1>
+              <h1 style="color: #daa520; font-size: 24px; margin: 10px 0 0 0;">Deposit Successful</h1>
             </td>
           </tr>
         </table>
         
         <div style="padding: 40px 20px; background-color: white;">
           <p style="margin: 0 0 20px 0;">Hi ${data.fullName},</p>
-          <p style="color: #6b7280;">Your deposit has been successfully processed!</p>
+          <p style="color: #6b7280; font-size: 16px; line-height: 1.5;">Great news! Your deposit of <strong style="color: #daa520;">$${data.amount}</strong> has been successfully processed and is now available in your account.</p>
           <table style="width: 100%; border-collapse: collapse; margin: 30px 0;">
             <tr style="border-bottom: 1px solid #e5e7eb;">
               <td style="padding: 12px 0;"><strong style="color: #1f2937;">Amount:</strong></td>

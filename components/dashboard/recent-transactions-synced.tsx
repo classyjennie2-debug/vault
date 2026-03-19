@@ -3,6 +3,7 @@
 import { useDashboard } from "@/contexts/dashboard-context"
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react"
 import { useState } from "react"
+import { Badge } from "@/components/ui/badge"
 import { TransactionDetailModal } from "./transaction-detail-modal"
 import { formatTransactionStatus } from "@/lib/transaction-utils"
 
@@ -59,7 +60,19 @@ export function RecentTransactionsSynced() {
                 </div>
                 <div className="min-w-0">
                   <p className="font-medium text-sm capitalize group-hover:text-primary transition-colors">{tx.type}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{formatTransactionStatus(tx.status)}</p>
+                  <div className="mt-1">
+                    <Badge
+                      className={`text-xs font-medium ${
+                        tx.status === 'approved'
+                          ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900'
+                          : tx.status === 'pending'
+                            ? 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900'
+                            : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900'
+                      }`}
+                    >
+                      {formatTransactionStatus(tx.status)}
+                    </Badge>
+                  </div>
                 </div>
               </div>
               <div className="text-right">
