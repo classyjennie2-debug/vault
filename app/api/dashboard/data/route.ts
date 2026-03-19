@@ -27,21 +27,26 @@ export async function GET(req: NextRequest) {
     // Limit to last 5 transactions for dashboard
     const recentTransactions = transactions.slice(0, 5)
 
-    // Calculate derived data
-    const totalBalance = stats.availableBalance + stats.totalInvested + stats.totalProfit
-    const totalReturnRate = stats.totalInvested > 0 
-      ? ((stats.totalProfit / totalBalance) * 100).toFixed(1)
-      : "0"
-
-    // Live profit from active investments
-    let liveProfit = 0
+    // Calculate live profit from active investments (accumulated profit)
+    let accumulatedProfit = 0
     if (activeInvestments && activeInvestments.length > 0) {
-      liveProfit = activeInvestments.reduce((sum, inv) => sum + (inv.accumulatedProfit || 0), 0)
+      accumulatedProfit = activeInvestments.reduce((sum, inv) => sum + (inv.accumulatedProfit || 0), 0)
     }
 
-    const displayProfit = liveProfit > 0 ? liveProfit : stats.totalProfit
+    // Total profit = approved returns + accumulated profit from active investments
+    const totalProfitIncludingAccumulated = stats.totalProfit + accumulatedProfit
+
+    // Total balance = available + invested + total profit (including accumulated)
+    const totalBalance = stats.availableBalance + stats.totalInvested + totalProfitIncludingAccumulated
+
+    // ROI = (total profit / total invested) * 100
+    const totalReturnRate = stats.totalInvested > 0 
+      ? ((totalProfitIncludingAccumulated / stats.totalInvested) * 100).toFixed(1)
+      : "0"
+
+    // Weekly change = (monthly returns / 4 weeks) / total invested * 100
     const weeklyChange = stats.totalInvested > 0 
-      ? ((monthlyMetrics.monthlyReturns / Math.max(stats.totalInvested, 1)) * 100) / 4 
+      ? ((monthlyMetrics.monthlyReturns / 4) / stats.totalInvested * 100)
       : 0
 
     return NextResponse.json({
@@ -53,7 +58,7 @@ export async function GET(req: NextRequest) {
       },
       stats: {
         totalInvested: stats.totalInvested,
-        totalProfit: stats.totalProfit,
+        totalProfit: totalProfitIncludingAccumulated,
         availableBalance: stats.availableBalance,
         activeInvestments: stats.activeInvestments,
         pendingDeposits: stats.pendingDeposits,

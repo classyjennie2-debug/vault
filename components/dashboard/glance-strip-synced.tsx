@@ -49,17 +49,11 @@ export function GlanceStripSynced() {
           ? "border-emerald-400/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5"
           : "border-rose-400/40 text-rose-600 dark:text-rose-400 bg-rose-500/5",
     },
-    {
-      label: "Notifications",
-      value: unread.toString(),
-      icon: Bell,
-      tone: "border-orange-400/40 text-orange-600 dark:text-orange-400 bg-orange-500/5",
-    },
   ]
 
   return (
     <div className="w-full">
-      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 auto-rows-min">
+      <div className="grid gap-2 sm:gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 auto-rows-min">
         {items.map((item, idx) => {
           const Icon = item.icon
           return (

@@ -98,7 +98,7 @@ export function DashboardHeroSynced() {
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2 sm:p-3 md:p-4 lg:p-5 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md">
           <p className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 line-clamp-1">ROI</p>
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-accent mt-0.5 sm:mt-1.5 transition-colors duration-300">
-            {stats.totalProfit >= 0 ? ((stats.totalProfit / Math.max(totalBalance, 1)) * 100).toFixed(1) : "0"}%
+            {stats.totalInvested > 0 ? ((stats.totalProfit / stats.totalInvested) * 100).toFixed(1) : "0"}%
           </p>
           <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1.5 line-clamp-1">Return on investment</p>
         </div>

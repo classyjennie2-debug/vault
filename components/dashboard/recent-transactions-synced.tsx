@@ -40,13 +40,15 @@ export function RecentTransactionsSynced() {
             >
               <div className="flex items-center gap-3 flex-1">
                 <div className={`p-2 rounded-lg transition-transform group-hover:scale-110 ${
-                  tx.type === 'deposit' || tx.type === 'investment'
-                    ? 'bg-emerald-100 dark:bg-emerald-900'
-                    : tx.type === 'withdrawal'
-                      ? 'bg-blue-100 dark:bg-blue-900'
-                      : tx.type === 'return'
-                        ? 'bg-amber-100 dark:bg-amber-900'
-                        : 'bg-purple-100 dark:bg-purple-900'
+                  tx.status === 'pending'
+                    ? 'bg-yellow-100 dark:bg-yellow-900'
+                    : tx.type === 'deposit' || tx.type === 'investment'
+                      ? 'bg-emerald-100 dark:bg-emerald-900'
+                      : tx.type === 'withdrawal'
+                        ? 'bg-blue-100 dark:bg-blue-900'
+                        : tx.type === 'return'
+                          ? 'bg-amber-100 dark:bg-amber-900'
+                          : 'bg-purple-100 dark:bg-purple-900'
                 }`}>
                   {tx.type === 'withdrawal' ? (
                     <ArrowDownLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -68,7 +70,7 @@ export function RecentTransactionsSynced() {
                   {tx.type === 'withdrawal' ? '-' : '+'}${tx.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {new Date(tx.date || tx.created_at).toLocaleDateString()}
+                  {new Date(tx.date || tx.created_at).toLocaleDateString()}, {new Date(tx.date || tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
             </button>

@@ -21,12 +21,18 @@ export function DashboardCardsSynced() {
     )
   }
 
+  // Calculate ROI: (total profit / total invested) * 100
+  const roi = stats.totalInvested > 0 ? ((stats.totalProfit / stats.totalInvested) * 100).toFixed(1) : "0"
+  
+  // Calculate weekly change: (monthly returns / (4 weeks)) / total invested * 100
+  const weeklyChangePercent = stats.totalInvested > 0 ? ((metrics.monthlyReturns / 4) / stats.totalInvested * 100).toFixed(2) : "0"
+  
   const cards = [
     {
       icon: TrendingUp,
       label: "Total Invested",
       value: `$${stats.totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
-      change: "+12.5%",
+      change: `${stats.activeInvestments} active plans`,
       color: "text-blue-600 dark:text-blue-500",
       bgColor: "bg-blue-50 dark:bg-blue-950",
     },
@@ -40,17 +46,17 @@ export function DashboardCardsSynced() {
     },
     {
       icon: PieChart,
-      label: "Weekly Change",
-      value: `${metrics.weeklyChange.toFixed(2)}%`,
-      change: metrics.weeklyChange >= 0 ? "↑ Positive" : "↓ Negative",
-      color: "text-amber-600 dark:text-amber-500",
-      bgColor: "bg-amber-50 dark:bg-amber-950",
+      label: "ROI",
+      value: `${roi}%`,
+      change: stats.totalProfit > 0 ? "↑ Growing" : "Tracking",
+      color: stats.totalProfit > 0 ? "text-amber-600 dark:text-amber-500" : "text-slate-600 dark:text-slate-400",
+      bgColor: stats.totalProfit > 0 ? "bg-amber-50 dark:bg-amber-950" : "bg-slate-50 dark:bg-slate-950",
     },
     {
       icon: Zap,
-      label: "Pending Deposits",
-      value: stats.pendingDeposits.toString(),
-      change: `${stats.totalWithdrawn > 0 ? stats.totalWithdrawn : 0} withdrawn`,
+      label: "Weekly Change",
+      value: `${weeklyChangePercent}%`,
+      change: metrics.monthlyReturns >= 0 ? "↑ Active" : "Pending",
       color: "text-purple-600 dark:text-purple-500",
       bgColor: "bg-purple-50 dark:bg-purple-950",
     },
