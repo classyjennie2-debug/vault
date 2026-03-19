@@ -42,7 +42,7 @@ export function WelcomePopup({ firstName = "", lastName = "", isFirstVisit = tru
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-sm sm:max-w-md md:max-w-lg border-2 border-amber-700/20 shadow-2xl bg-gradient-to-b from-white to-amber-50/30 p-4 sm:p-6 rounded-2xl">
+      <DialogContent className="fixed inset-0 z-[200] max-w-sm sm:max-w-md md:max-w-lg border-2 border-amber-700/20 shadow-2xl bg-gradient-to-b from-white to-amber-50/30 p-4 sm:p-6 rounded-2xl">
         <DialogHeader className="space-y-3 sm:space-y-4">
           {/* Animated Icon */}
           <div className="flex items-center justify-center mb-1 sm:mb-2">

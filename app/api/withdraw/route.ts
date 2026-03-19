@@ -106,36 +106,29 @@ export async function POST(request: NextRequest) {
         actionUrl: "/dashboard/transactions"
       })
 
-      // Send to admin for approval - create admin notification
+      // Send admin email notification about withdrawal
       try {
-        // Get all admin users
-        const usePostgres = pgPool !== null
-        const adminUsers = await all(
-          usePostgres
-            ? "SELECT id FROM users WHERE role = $1"
-            : "SELECT id FROM users WHERE role = $1",
-          ['admin']
-        )
-
-        const adminMessage = method === "crypto"
-          ? `New withdrawal approval needed:\n\nUser: ${userData.name || userData.email}\nAmount: $${amount}\nWithdrawal Fee: $${withdrawalFee.toFixed(2)}\nNet Amount: $${amountAfterFee.toFixed(2)}\nCoin: ${coinAmount.toFixed(8)} ${coin}\nAddress: ${cryptoAddress}\n\nPlease review and approve/reject this withdrawal.`
-          : `New withdrawal approval needed:\n\nUser: ${userData.name || userData.email}\nAmount: $${amount}\nWithdrawal Fee: $${withdrawalFee.toFixed(2)}\nNet Amount: $${amountAfterFee.toFixed(2)}\nBank Account: ${bankAccount}\n\nPlease review and approve/reject this withdrawal.`
-
-        for (const adminUser of adminUsers) {
-          try {
-            await createNotification({
-              userId: (adminUser as any).id,
-              title: "Withdrawal Approval Required",
-              message: adminMessage,
-              type: "info",
-              actionUrl: "/admin/transactions"
-            })
-          } catch (err) {
-            console.error("Failed to notify admin:", err)
-          }
-        }
-      } catch (err) {
-        console.error("Failed to send admin notification:", err)
+        const { sendAdminNotification } = await import("@/lib/auth")
+        const withdrawalEmailHtml = `
+          <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+              <h2 style="color: #2563eb;">New Withdrawal Request</h2>
+              <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+              <p><strong>User:</strong> ${userData.name || userData.email}</p>
+              <p><strong>Amount:</strong> $${amount.toLocaleString()}</p>
+              <p><strong>Withdrawal Fee:</strong> $${withdrawalFee.toFixed(2)}</p>
+              <p><strong>Net Amount:</strong> $${amountAfterFee.toFixed(2)}</p>
+              ${method === 'crypto' ? `<p><strong>Crypto:</strong> ${coinAmount.toFixed(8)} ${coin}</p>
+              <p><strong>Address:</strong> ${cryptoAddress}</p>` : `<p><strong>Bank Account:</strong> ${bankAccount}</p>`}
+              <p><strong>Status:</strong> Pending Approval</p>
+              <hr />
+              <p style="font-size: 12px; color: #666;">This is an automated notification from Vault Investment Platform</p>
+            </body>
+          </html>
+        `
+        await sendAdminNotification(`Withdrawal Request - ${userData.name || userData.email}`, withdrawalEmailHtml, "transaction")
+      } catch (emailErr) {
+        console.error("Failed to send withdrawal notification email:", emailErr)
       }
 
       return NextResponse.json({

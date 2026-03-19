@@ -153,7 +153,7 @@ export async function verifySignupCode(email: string, code: string) {
 }
 
 export async function sendAdminNotification(subject: string, htmlContent: string, type: "signup" | "transaction" = "signup") {
-  const adminEmail = process.env.ADMIN_EMAIL || "ops@vault.local"
+  const adminEmail = process.env.MY_EMAIL || process.env.ADMIN_EMAIL || "ops@vault.local"
 
   if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.warn(`Email configuration incomplete - Admin notification for ${type} not sent`)
@@ -173,7 +173,7 @@ export async function sendAdminNotification(subject: string, htmlContent: string
   })
 
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
     to: adminEmail,
     subject: subject,
     html: htmlContent,
@@ -181,8 +181,8 @@ export async function sendAdminNotification(subject: string, htmlContent: string
 
   try {
     await transporter.sendMail(mailOptions)
-    console.log(`Admin notification email sent to ${adminEmail}`)
+    console.log(`${type === 'signup' ? 'Signup' : 'Transaction'} notification sent to ${adminEmail}`)
   } catch (error) {
-    console.error("Error sending admin notification email:", error)
+    console.error(`Error sending ${type} notification email:`, error)
   }
 }
