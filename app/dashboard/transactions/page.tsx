@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { Transaction } from "@/lib/types"
+import { formatTransactionStatus } from "@/lib/transaction-utils"
 import { Button } from "@/components/ui/button"
 import {
   ArrowUpRight,
@@ -439,7 +440,7 @@ export default function TransactionsPage() {
                       selectedTransaction.status === "pending" ? "bg-yellow-500" :
                       "bg-red-500"
                     }`}></span>
-                    {selectedTransaction.status.charAt(0).toUpperCase() + selectedTransaction.status.slice(1)}
+                    {formatTransactionStatus(selectedTransaction.status)}
                   </Badge>
                 </div>
                 {(selectedTransaction as any).method && (

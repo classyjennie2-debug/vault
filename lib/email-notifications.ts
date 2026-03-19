@@ -79,7 +79,7 @@ const emailTemplates = {
             </tr>
             <tr>
               <td style="padding: 12px 0;"><strong style="color: #1f2937;">Status:</strong></td>
-              <td style="padding: 12px 0;"><span style="color: #daa520; font-weight: bold;">✓ Approved</span></td>
+              <td style="padding: 12px 0;"><span style="color: #daa520; font-weight: bold;">✓ Successful</span></td>
             </tr>
           </table>
           <div style="text-align: center;">

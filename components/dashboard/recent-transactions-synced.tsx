@@ -4,6 +4,7 @@ import { useDashboard } from "@/contexts/dashboard-context"
 import { ArrowUpRight, ArrowDownLeft } from "lucide-react"
 import { useState } from "react"
 import { TransactionDetailModal } from "./transaction-detail-modal"
+import { formatTransactionStatus } from "@/lib/transaction-utils"
 
 export function RecentTransactionsSynced() {
   const { recentTransactions, isLoading } = useDashboard()
@@ -58,7 +59,7 @@ export function RecentTransactionsSynced() {
                 </div>
                 <div className="min-w-0">
                   <p className="font-medium text-sm capitalize group-hover:text-primary transition-colors">{tx.type}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{tx.status}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{formatTransactionStatus(tx.status)}</p>
                 </div>
               </div>
               <div className="text-right">

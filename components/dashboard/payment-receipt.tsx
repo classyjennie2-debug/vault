@@ -2,8 +2,10 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Download, Copy, Check } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Download, Copy, Check, X } from "lucide-react"
 import { useState } from "react"
+import { formatTransactionStatus } from "@/lib/transaction-utils"
 
 interface TransactionDetails {
   id: string
@@ -130,8 +132,8 @@ export function PaymentReceipt({ transaction }: PaymentReceiptProps) {
           <div className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">Status</p>
-              <p className={`font-semibold capitalize ${getStatusColor(transaction.status)}`}>
-                {transaction.status}
+              <p className={`font-semibold ${getStatusColor(transaction.status)}`}>
+                {formatTransactionStatus(transaction.status)}
               </p>
             </div>
             <div>

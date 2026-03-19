@@ -3,6 +3,7 @@
 import { X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { formatTransactionStatus } from "@/lib/transaction-utils"
 import type { Transaction } from "@/lib/types"
 
 const typeIcons = {
@@ -196,7 +197,7 @@ export function TransactionDetailModal({ transaction, onClose }: TransactionDeta
                     transaction.status === "pending" ? "bg-yellow-500" :
                     "bg-red-500"
                   }`}></span>
-                  {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                  {formatTransactionStatus(transaction.status)}
                 </Badge>
               </div>
               {(transaction as any).method && (
