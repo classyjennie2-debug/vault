@@ -21,7 +21,7 @@ import {
   BookOpen,
   Zap,
 } from "lucide-react"
-import { loadTawkChat } from "@/components/tawk-chat"
+import { loadCrispChat } from "@/components/crisp-chat"
 
 const faqs = [
   {
@@ -86,11 +86,11 @@ export default function SupportPage() {
   const handleStartLiveChat = async () => {
     setChatLoading(true)
     try {
-      console.log("[Tawk] Support page: User clicked Start Live Chat")
-      await loadTawkChat()
-      console.log("[Tawk] Support page: Tawk loaded and toggled")
+      console.log("[Crisp] Support page: User clicked Start Live Chat")
+      await loadCrispChat()
+      console.log("[Crisp] Support page: Crisp loaded and opened")
     } catch (error) {
-      console.error("[Tawk] Error starting live chat:", error)
+      console.error("[Crisp] Error starting live chat:", error)
     } finally {
       setChatLoading(false)
     }

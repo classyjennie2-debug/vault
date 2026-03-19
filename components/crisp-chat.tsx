@@ -85,8 +85,8 @@ export function loadCrispChat() {
   })
 }
 
-export default function TawkChat() {
-  // This component is no longer needed since Tawk loads on-demand
+export default function CrispChat() {
+  // This component is no longer needed since Crisp loads on-demand
   // Kept for compatibility
   return null
 }

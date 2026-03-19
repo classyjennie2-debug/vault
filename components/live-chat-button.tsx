@@ -3,11 +3,11 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { MessageSquare, Loader2, X } from "lucide-react"
-import { loadTawkChat } from "./tawk-chat"
+import { loadCrispChat } from "./crisp-chat"
 
 declare global {
   interface Window {
-    Tawk_API?: Record<string, any>
+    $crisp?: any
   }
 }
 
@@ -18,17 +18,17 @@ export default function LiveChatButton() {
   const handleToggleChat = async () => {
     setLoading(true)
     try {
-      console.log("[Tawk] User clicked: Start Live Chat")
+      console.log("[Crisp] User clicked: Start Live Chat")
       
-      // Load and initialize Tawk
-      await loadTawkChat()
+      // Load and initialize Crisp
+      await loadCrispChat()
       
-      // Tawk should now be open, update state
+      // Crisp should now be open, update state
       setIsChatOpen(true)
       
-      console.log("[Tawk] Live chat toggled successfully")
+      console.log("[Crisp] Live chat opened successfully")
     } catch (error) {
-      console.error("[Tawk] Error toggling chat:", error)
+      console.error("[Crisp] Error opening chat:", error)
     } finally {
       setLoading(false)
     }
@@ -36,17 +36,17 @@ export default function LiveChatButton() {
 
   const handleCloseChat = () => {
     try {
-      console.log("[Tawk] User clicked: Close Live Chat")
+      console.log("[Crisp] User clicked: Close Live Chat")
       
-      // Close the chat by toggling it again
-      if (window.Tawk_API && typeof window.Tawk_API.toggle === 'function') {
-        window.Tawk_API.toggle()
+      // Close the chat
+      if (window.$crisp && typeof window.$crisp.push === 'function') {
+        window.$crisp.push(["do", "chat:close"])
       }
       
       setIsChatOpen(false)
-      console.log("[Tawk] Chat closed")
+      console.log("[Crisp] Chat closed")
     } catch (error) {
-      console.error("[Tawk] Error closing chat:", error)
+      console.error("[Crisp] Error closing chat:", error)
       setIsChatOpen(false)
     }
   }
