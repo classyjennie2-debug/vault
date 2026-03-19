@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAuthAPI } from "@/lib/auth"
 import { sendAdminNotification } from "@/lib/auth"
-import { createTransaction, run, logActivity, getUserById } from "@/lib/db"
+import { createTransaction, run, logActivity, getUserById, get } from "@/lib/db"
 import { apiLogger } from "@/lib/logging"
 
 export async function POST(req: NextRequest) {
@@ -20,24 +20,29 @@ export async function POST(req: NextRequest) {
       coinAmount?: string;
       walletId: string 
     }
-    console.log("[DEPOSIT] Step 2 SUCCESS: Body parsed", { coin, network, amount, walletId })
+    console.log("[DEPOSIT] Step 2 SUCCESS: Body parsed", { coin, network, amount })
 
-    if (!coin || !network || !amount || !walletId) {
-      console.log("[DEPOSIT] VALIDATION FAILED: Missing required fields", { coin, network, amount, walletId })
+    if (!coin || !network || !amount) {
+      console.log("[DEPOSIT] VALIDATION FAILED: Missing required fields", { coin, network, amount })
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    // Assign the wallet to the user
-    console.log("[DEPOSIT] Step 3: Assigning wallet to user...")
+    // NOTE: Wallet is NOT assigned to the user
+    // Multiple users can deposit to the same wallet addresses
+    // Just verify the wallet exists and is active
+    console.log("[DEPOSIT] Step 3: Verifying wallet...")
     try {
-      const result = await run(
-        "UPDATE wallet_addresses SET assignedTo = $1, assignedAt = $2 WHERE id = $3",
-        [user.id, new Date().toISOString(), walletId]
+      const walletData = await get(
+        "SELECT * FROM wallet_addresses WHERE id = $1 AND status = $2",
+        [walletId, "active"]
       )
-      console.log("[DEPOSIT] Step 3 SUCCESS: Wallet assigned", { rowsUpdated: result })
+      if (!walletData) {
+        return NextResponse.json({ error: "Selected wallet is not available" }, { status: 400 })
+      }
+      console.log("[DEPOSIT] Step 3 SUCCESS: Wallet verified")
     } catch (err) {
-      console.error("[DEPOSIT] Step 3 FAILED: Wallet assignment error:", err)
-      throw new Error(`Wallet assignment failed: ${err instanceof Error ? err.message : String(err)}`)
+      console.error("[DEPOSIT] Step 3 FAILED: Wallet verification error:", err)
+      throw new Error(`Wallet verification failed: ${err instanceof Error ? err.message : String(err)}`)
     }
 
     // Create a pending deposit transaction

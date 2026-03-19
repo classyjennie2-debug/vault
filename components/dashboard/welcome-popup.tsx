@@ -32,10 +32,15 @@ export function WelcomePopup({ firstName = "", lastName = "", isFirstVisit = tru
       if (!hasShown && isFirstVisit) {
         // Small delay to ensure dashboard has rendered
         const timer = setTimeout(() => {
+          console.log("[Welcome] Showing welcome popup for first-time visitor")
           setOpen(true)
           localStorage.setItem("vault-welcome-shown", "true")
         }, 500)
         return () => clearTimeout(timer)
+      } else if (!hasShown) {
+        console.log("[Welcome] Not first visit, skipping popup")
+      } else {
+        console.log("[Welcome] Welcome popup already shown before")
       }
     }
   }, [isFirstVisit])
