@@ -49,7 +49,7 @@ const faqs: FAQItem[] = [
   {
     category: "investing",
     question: "Can I withdraw my money anytime?",
-    answer: "Yes! You can request a withdrawal anytime through your dashboard. Most withdrawals are processed within 2-3 business days. Certain investment plans may have lock-up periods mentioned in their terms.",
+    answer: "Yes! You can request a withdrawal anytime through your dashboard. Most withdrawals are processed instantly. Certain investment plans may have lock-up periods mentioned in their terms.",
   },
   {
     category: "investing",
@@ -93,12 +93,12 @@ const faqs: FAQItem[] = [
   {
     category: "payments",
     question: "Are there fees for deposits and withdrawals?",
-    answer: "Deposits are typically free, while withdrawals may have minimal processing fees depending on your chosen method. Cryptocurrency transfers have network-based fees. Check our fees page for complete details.",
+    answer: "Deposits are free! Withdrawals may have minimal processing fees depending on your chosen method. Cryptocurrency transfers have network-based fees. Check our fees page for complete details.",
   },
   {
     category: "payments",
     question: "How long does it take to withdraw funds?",
-    answer: "Standard bank transfers typically take 2-3 business days. Cryptocurrency withdrawals are usually processed within 24 hours. Urgent withdrawals can be prioritized for an additional fee.",
+    answer: "Cryptocurrency withdrawals are processed instantly. Your funds are available immediately once you request withdrawal through your dashboard.",
   },
   {
     category: "payments",

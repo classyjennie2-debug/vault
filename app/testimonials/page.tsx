@@ -8,7 +8,7 @@ const testimonials = [
     name: "Herbert Whitmore",
     role: "Portfolio Manager",
     location: "New York, USA",
-    image: "https://i.pravatar.cc/150?img=56",
+    image: "https://images.unsplash.com/photo-1560136565-c4350aad864d?w=150&h=150&fit=crop",
     text: "Vault's platform transformed how I manage my crypto investments. The analytics dashboard is exceptional, and the 14% monthly returns have exceeded my expectations.",
     returns: "+$45,000",
     period: "8 months",
@@ -18,7 +18,7 @@ const testimonials = [
     name: "Constance Wallace",
     role: "Entrepreneur",
     location: "Mumbai, India",
-    image: "https://i.pravatar.cc/150?img=49",
+    image: "https://images.unsplash.com/photo-1557804506-669714d2e9d8?w=150&h=150&fit=crop",
     text: "As someone new to investing, Vault made everything incredibly simple. The AI-driven recommendations and professional support team helped me achieve my financial goals faster.",
     returns: "+$28,500",
     period: "6 months",
@@ -28,7 +28,7 @@ const testimonials = [
     name: "Douglas Vernon",
     role: "Financial Advisor",
     location: "Singapore",
-    image: "https://i.pravatar.cc/150?img=64",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
     text: "I recommend Vault to all my clients. The transparency, security features, and consistent returns make it the best choice in the market. Their customer service is outstanding.",
     returns: "+$156,800",
     period: "12 months",
@@ -38,7 +38,7 @@ const testimonials = [
     name: "Beatrice Newman",
     role: "Investment Advisor",
     location: "London, UK",
-    image: "https://i.pravatar.cc/150?img=51",
+    image: "https://images.unsplash.com/photo-1438761680033-6461ffad8d80?w=150&h=150&fit=crop",
     text: "The diversity of investment options is fantastic. I've built a well-balanced portfolio mixing crypto, traditional assets, and their AI strategies. Returns are consistently beating the market.",
     returns: "+$67,200",
     period: "10 months",
@@ -48,7 +48,7 @@ const testimonials = [
     name: "Clarence Bennett",
     role: "Business Owner",
     location: "Dubai, UAE",
-    image: "https://i.pravatar.cc/150?img=67",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop",
     text: "Five stars doesn't do justice to what Vault offers. The platform is secure, user-friendly, and most importantly, it delivers results. My passive income has increased substantially.",
     returns: "+$89,450",
     period: "9 months",
@@ -58,7 +58,7 @@ const testimonials = [
     name: "Rosemary Fletcher",
     role: "Retired Executive",
     location: "Barcelona, Spain",
-    image: "https://i.pravatar.cc/150?img=53",
+    image: "https://images.unsplash.com/photo-1516534775068-bb57ad1cb677?w=150&h=150&fit=crop",
     text: "Starting my investment journey after retirement, Vault made the process seamless. Now I'm earning consistent returns that supplement my pension. Highly recommend for anyone at any age.",
     returns: "+$42,300",
     period: "8 months",
@@ -139,7 +139,11 @@ export default function TestimonialsPage() {
 
                 {/* Author */}
                 <div className="flex items-center gap-3">
-                  <div className="text-4xl">{testimonial.image}</div>
+                  <img 
+                    src={testimonial.image} 
+                    alt={testimonial.name}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-accent/20"
+                  />
                   <div>
                     <p className="font-semibold">{testimonial.name}</p>
                     <p className="text-sm text-muted-foreground">{testimonial.role}</p>
