@@ -38,13 +38,13 @@ export default function LiveChatButton() {
     try {
       console.log("[Crisp] User clicked: Close Live Chat")
       
-      // Close the chat
+      // Hide the chat widget
       if (window.$crisp && typeof window.$crisp.push === 'function') {
-        window.$crisp.push(["do", "chat:close"])
+        window.$crisp.push(["do", "chat:hide"])
       }
       
       setIsChatOpen(false)
-      console.log("[Crisp] Chat closed")
+      console.log("[Crisp] Chat hidden")
     } catch (error) {
       console.error("[Crisp] Error closing chat:", error)
       setIsChatOpen(false)

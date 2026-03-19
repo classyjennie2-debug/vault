@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import React from "react"
 import { Analytics } from "@vercel/analytics/next"
-import TawkChat from "@/components/tawk-chat"
 import "./globals.css"
 
 // Note: Google Fonts imports removed to prevent build errors during network issues
@@ -92,9 +91,10 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
+        {/* Preload Crisp script for faster chat loading */}
+        <script async defer src="https://client.crisp.chat/l.js" />
         {children}
         <Analytics />
-        <TawkChat />
       </body>
     </html>
   )

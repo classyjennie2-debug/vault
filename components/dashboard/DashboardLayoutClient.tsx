@@ -16,6 +16,7 @@ import { UserMenu } from "@/components/dashboard/user-menu"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { Logo } from "@/components/ui/logo"
 import { BottomNavBar } from "@/components/dashboard/bottom-nav-bar"
+import { WelcomePopup } from "@/components/dashboard/welcome-popup"
 
 interface Props {
   children: React.ReactNode
@@ -120,6 +121,13 @@ export default function DashboardLayoutClient({ children, user }: Props) {
 
       {/* Mobile Bottom Navigation */}
       <BottomNavBar />
+      
+      {/* Welcome Popup for first-time dashboard visitors */}
+      <WelcomePopup 
+        firstName={user.name?.split(' ')[0]} 
+        lastName={user.name?.split(' ').slice(1).join(' ')}
+        isFirstVisit={true}
+      />
     </div>
   )
 }

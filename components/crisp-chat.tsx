@@ -10,8 +10,8 @@ declare global {
 let isCrispLoaded = false
 
 /**
- * Utility function to load Crisp chat script on-demand
- * Called when user clicks "Start Live Chat"
+ * Utility function to open Crisp chat
+ * Script is preloaded in the main layout for faster access
  */
 export function loadCrispChat() {
   return new Promise<void>((resolve) => {
@@ -26,62 +26,41 @@ export function loadCrispChat() {
       return
     }
 
-    // If already loaded, just open it
-    if (isCrispLoaded && window.$crisp) {
-      console.log("[Crisp] Already loaded, opening widget")
-      window.$crisp.push(["do", "chat:open"])
-      resolve()
-      return
+    // Initialize Crisp variables if not already set
+    if (!window.$crisp) {
+      window.$crisp = []
+    }
+    if (!window.CRISP_WEBSITE_ID) {
+      window.CRISP_WEBSITE_ID = crispWebsiteId
     }
 
-    try {
-      // Initialize Crisp variables BEFORE loading script
-      window.$crisp = []
-      window.CRISP_WEBSITE_ID = crispWebsiteId
-
-      // Create and append the Crisp script
-      const script = document.createElement("script")
-      script.async = true
-      script.src = "https://client.crisp.chat/l.js"
-      script.type = "text/javascript"
+    // Wait for Crisp API to become available
+    let waitCount = 0
+    const maxWaitTime = 30 // 6 seconds max wait
+    
+    const checkCrispReady = setInterval(() => {
+      waitCount++
       
-      console.log("[Crisp] Creating script tag")
-      
-      script.onload = () => {
-        console.log("[Crisp] Script loaded successfully")
+      // Check if Crisp API is ready
+      if (window.$crisp && typeof window.$crisp.push === 'function') {
+        clearInterval(checkCrispReady)
+        console.log("[Crisp] API ready, opening chat")
+        window.$crisp.push(["do", "chat:show"])
+        window.$crisp.push(["do", "chat:open"])
         isCrispLoaded = true
-        
-        // Wait for Crisp API to be ready
-        let waitCount = 0
-        const waitForCrispAPI = setInterval(() => {
-          waitCount++
-          
-          // Check if Crisp API is ready
-          if (window.$crisp && typeof window.$crisp.push === 'function') {
-            clearInterval(waitForCrispAPI)
-            console.log("[Crisp] API ready, opening chat")
-            window.$crisp.push(["do", "chat:open"])
-            resolve()
-          } else if (waitCount > 20) {
-            // Give up after 4 seconds
-            clearInterval(waitForCrispAPI)
-            console.warn("[Crisp] API not ready after 4 seconds")
-            resolve()
-          }
-        }, 200)
-      }
-
-      script.onerror = () => {
-        console.error("[Crisp] Failed to load Crisp script")
+        resolve()
+      } else if (waitCount > maxWaitTime) {
+        // Give up after 6 seconds
+        clearInterval(checkCrispReady)
+        console.warn("[Crisp] API not ready after 6 seconds, attempting anyway")
+        if (window.$crisp && typeof window.$crisp.push === 'function') {
+          window.$crisp.push(["do", "chat:show"])
+          window.$crisp.push(["do", "chat:open"])
+        }
+        isCrispLoaded = true
         resolve()
       }
-
-      document.head.appendChild(script)
-      console.log("[Crisp] Script appended to document head")
-    } catch (error) {
-      console.error("[Crisp] Error loading script:", error)
-      resolve()
-    }
+    }, 200)
   })
 }
 
