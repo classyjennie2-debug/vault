@@ -1,6 +1,7 @@
 "use client"
 
 import { WelcomePopup } from "@/components/dashboard/welcome-popup"
+import { DashboardProvider } from "@/contexts/dashboard-context"
 import { ReactNode } from "react"
 
 interface DashboardLayoutClientProps {
@@ -17,9 +18,9 @@ export function DashboardLayoutClient({
   isFirstVisit = false,
 }: DashboardLayoutClientProps) {
   return (
-    <>
+    <DashboardProvider>
       <WelcomePopup firstName={firstName} lastName={lastName} isFirstVisit={isFirstVisit} />
       {children}
-    </>
+    </DashboardProvider>
   )
 }

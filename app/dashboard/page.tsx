@@ -1,7 +1,7 @@
-import { DashboardHero } from "@/components/dashboard/dashboard-hero"
-import { DashboardCards } from "@/components/dashboard/dashboard-cards"
+import { DashboardHeroSynced } from "@/components/dashboard/dashboard-hero-synced"
+import { DashboardCardsSynced } from "@/components/dashboard/dashboard-cards-synced"
 import { PortfolioChart } from "@/components/dashboard/portfolio-chart"
-import { RecentTransactions } from "@/components/dashboard/recent-transactions"
+import { RecentTransactionsSynced } from "@/components/dashboard/recent-transactions-synced"
 import { EducationTips } from "@/components/dashboard/education-tips"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
@@ -44,9 +44,8 @@ export default async function DashboardPage() {
   return (
     <DashboardLayoutClient firstName={user.firstName || ""} lastName={user.lastName || ""} isFirstVisit={isFirstDashboardVisit}>
       <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-        <Suspense fallback={<div className="h-32 bg-card rounded-lg animate-pulse" />}>
-          <DashboardHeroAsync user={user} stats={stats} />
-        </Suspense>
+        {/* Real-time Dashboard Hero with auto-syncing balance and stats */}
+        <DashboardHeroSynced />
 
         <Suspense fallback={<div className="h-24 bg-card rounded-lg animate-pulse" />}>
           <GlanceStripAsync userId={user.id} stats={stats} />
@@ -54,9 +53,8 @@ export default async function DashboardPage() {
 
         <QuickActions />
 
-        <Suspense fallback={<div className="h-32 bg-card rounded-lg animate-pulse" />}>
-          <DashboardCardsAsync userId={user.id} stats={stats} />
-        </Suspense>
+        {/* Real-time Dashboard Cards with auto-syncing data */}
+        <DashboardCardsSynced />
 
         <div className="grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-5">
           <div className="lg:col-span-3">
@@ -65,8 +63,9 @@ export default async function DashboardPage() {
             </Suspense>
           </div>
           <div className="lg:col-span-2">
+            {/* Real-time Recent Transactions with auto-syncing */}
             <Suspense fallback={<RecentTransactionsSkeleton />}>
-              <RecentTransactions />
+              <RecentTransactionsSynced />
             </Suspense>
           </div>
         </div>
@@ -85,47 +84,10 @@ export default async function DashboardPage() {
   )
 }
 
-// Async component for DashboardHero
-async function DashboardHeroAsync({ user, stats }: { user: any; stats: any }) {
-  return <DashboardHero user={{ ...user, id: user.id }} stats={stats} />
-}
-
 // Async component for GlanceStrip
 async function GlanceStripAsync({ userId, stats }: { userId: string; stats: any }) {
   const monthlyMetrics = await calculateMonthlyMetrics(userId)
   return <GlanceStrip totalBalance={stats.availableBalance + stats.totalInvested} monthlyGain={monthlyMetrics.monthlyGain} />
-}
-
-// Async component for DashboardCards
-async function DashboardCardsAsync({ userId, stats }: { userId: string; stats: any }) {
-  const monthlyMetrics = await calculateMonthlyMetrics(userId)
-  const activeInvestments = await getUserActiveInvestmentsWithProfit(userId)
-  
-  let liveProfit = 0
-  if (activeInvestments && activeInvestments.length > 0) {
-    liveProfit = activeInvestments.reduce((sum, inv) => sum + (inv.accumulatedProfit || 0), 0)
-  }
-  
-  const displayProfit = liveProfit > 0 ? liveProfit : stats.totalProfit
-  const totalReturnRate = calculateReturnRate(displayProfit, stats.totalInvested)
-  const totalBalance = stats.availableBalance + stats.totalInvested + displayProfit
-  const weeklyChange = stats.totalInvested > 0 ? ((monthlyMetrics.monthlyReturns / Math.max(stats.totalInvested, 1)) * 100) / 4 : 0
-
-  return (
-    <DashboardCards
-      totalBalance={totalBalance}
-      totalInvested={stats.totalInvested}
-      totalProfit={displayProfit}
-      availableBalance={stats.availableBalance}
-      activeInvestments={stats.activeInvestments}
-      pendingDeposits={stats.pendingDeposits}
-      totalWithdrawn={stats.totalWithdrawn}
-      monthlyGain={monthlyMetrics.monthlyGain}
-      monthlyReturns={monthlyMetrics.monthlyReturns}
-      totalReturnRate={totalReturnRate}
-      weeklyChange={weeklyChange}
-    />
-  )
 }
 
 // Async component for PortfolioChart
