@@ -202,7 +202,7 @@ export default function WithdrawPage() {
             Withdraw Crypto
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Select a coin, enter your address, and amount to withdraw. A 5% withdrawal fee applies.
+            Select a coin, enter your address, and amount to withdraw. A 0.3% withdrawal fee applies.
           </p>
         </div>
       </div>
@@ -336,7 +336,7 @@ export default function WithdrawPage() {
                 <Alert className="border-blue-500/30 bg-blue-50/50 dark:bg-blue-950/20">
                   <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                   <AlertDescription className="text-blue-800 dark:text-blue-200 text-xs">
-                    A 5% withdrawal fee is applied to all withdrawals.
+                    A 0.3% withdrawal fee is applied to all withdrawals.
                   </AlertDescription>
                 </Alert>
 
@@ -348,7 +348,7 @@ export default function WithdrawPage() {
                   </div>
                   
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Withdrawal Fee (5%):</span>
+                    <span className="text-muted-foreground">Withdrawal Fee (0.3%):</span>
                     <span className="font-semibold text-red-600 dark:text-red-400">-${withdrawalFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   </div>
 

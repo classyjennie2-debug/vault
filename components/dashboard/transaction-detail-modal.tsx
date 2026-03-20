@@ -99,7 +99,7 @@ export function TransactionDetailModal({ transaction, onClose }: TransactionDeta
                     <span className="font-semibold">${transaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="flex justify-between items-center py-1">
-                    <span className="text-muted-foreground">Withdrawal Fee (5%):</span>
+                    <span className="text-muted-foreground">Withdrawal Fee (0.3%):</span>
                     <span className="font-semibold text-destructive">-${((transaction as any).withdrawalFee).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   </div>
                   {(transaction as any).amountAfterFee && (
