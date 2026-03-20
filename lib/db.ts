@@ -1519,6 +1519,12 @@ export async function getUserStats(userId: string) {
         : "SELECT SUM(amount) as sum FROM transactions WHERE userId = $1 AND type = $2 AND status = $3",
       [userId, 'withdrawal', 'approved']
     )
+    const pendingWithdrawalsRow: { cnt: number } | undefined = await get(
+      usePostgres
+        ? "SELECT COUNT(*) as cnt FROM transactions WHERE user_id = $1 AND type = $2 AND status = $3"
+        : "SELECT COUNT(*) as cnt FROM transactions WHERE userId = $1 AND type = $2 AND status = $3",
+      [userId, 'withdrawal', 'pending']
+    )
     const activeCountRow: { cnt: number } | undefined = await get(
       usePostgres
         ? "SELECT COUNT(*) as cnt FROM investments WHERE user_id = $1 AND status = $2"
@@ -1545,6 +1551,7 @@ export async function getUserStats(userId: string) {
       availableBalance,
       pendingDeposits: pendingDepositsRow?.cnt || 0,
       totalWithdrawn: totalWithdrawnRow?.sum || 0,
+      pendingWithdrawals: pendingWithdrawalsRow?.cnt || 0,
       activeInvestments: activeCountRow?.cnt || 0,
     }
   } catch (error: unknown) {
@@ -1556,6 +1563,7 @@ export async function getUserStats(userId: string) {
       availableBalance: 0,
       pendingDeposits: 0,
       totalWithdrawn: 0,
+      pendingWithdrawals: 0,
       activeInvestments: 0,
     }
   }

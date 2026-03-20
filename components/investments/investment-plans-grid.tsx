@@ -63,6 +63,13 @@ const currencyFormatter = new Intl.NumberFormat(undefined, { style: "currency", 
 export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
 
+  // Sort plans by minimum amount (lowest first)
+  const sortedPlans = [...plans].sort((a, b) => {
+    const minA = a.minAmount || 0
+    const minB = b.minAmount || 0
+    return minA - minB
+  })
+
   const isPopular = (index: number) => index === 1
 
   return (
@@ -97,7 +104,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
       )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {plans.map((plan, index) => {
+        {sortedPlans.map((plan, index) => {
           const minAmount = safeNumber(plan.minAmount, 100)
           const annualRate = getPlanAnnualRate(plan.planType || "Conservative Bond Fund")
           const risk = plan.risk || "Medium"

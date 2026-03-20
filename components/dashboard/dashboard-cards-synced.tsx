@@ -24,9 +24,6 @@ export function DashboardCardsSynced() {
   // Calculate ROI: (total profit / total invested) * 100
   const roi = stats.totalInvested > 0 ? ((stats.totalProfit / stats.totalInvested) * 100).toFixed(1) : "0"
   
-  // Calculate weekly change: (monthly returns / (4 weeks)) / total invested * 100
-  const weeklyChangePercent = stats.totalInvested > 0 ? ((metrics.monthlyReturns / 4) / stats.totalInvested * 100).toFixed(2) : "0"
-  
   const cards = [
     {
       icon: TrendingUp,
@@ -54,9 +51,9 @@ export function DashboardCardsSynced() {
     },
     {
       icon: Zap,
-      label: "Weekly Change",
-      value: `${weeklyChangePercent}%`,
-      change: metrics.monthlyReturns >= 0 ? "↑ Active" : "Pending",
+      label: "Total Withdrawal",
+      value: `$${stats.totalWithdrawn.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+      change: stats.pendingWithdrawals > 0 ? `${stats.pendingWithdrawals} pending` : "No pending",
       color: "text-purple-600 dark:text-purple-500",
       bgColor: "bg-purple-50 dark:bg-purple-950",
     },

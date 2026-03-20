@@ -34,6 +34,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
   const safePlans = Array.isArray(plans) ? plans : []
   const safeInvestments = Array.isArray(investments) ? investments : []
   
+  // Sort plans by minimum amount (lowest first)
+  const sortedPlans = [...safePlans].sort((a, b) => {
+    const minA = a.minAmount || 0
+    const minB = b.minAmount || 0
+    return minA - minB
+  })
+  
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("plans")
   const router = useRouter()
@@ -242,7 +249,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {safePlans.map((plan, index) => (
+                  {sortedPlans.map((plan, index) => (
                     <Dialog key={plan.id} open={selectedPlan === plan.id} onOpenChange={(open) => {
                       if (open) setSelectedPlan(plan.id)
                       else setSelectedPlan(null)

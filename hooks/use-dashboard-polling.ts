@@ -16,6 +16,7 @@ export interface DashboardDataSnapshot {
     activeInvestments: number
     pendingDeposits: number
     totalWithdrawn: number
+    pendingWithdrawals: number
     totalBalance: number
     totalReturnRate: number
   }

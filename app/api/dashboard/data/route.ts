@@ -63,6 +63,7 @@ export async function GET(req: NextRequest) {
         activeInvestments: stats.activeInvestments,
         pendingDeposits: stats.pendingDeposits,
         totalWithdrawn: stats.totalWithdrawn,
+        pendingWithdrawals: stats.pendingWithdrawals || 0,
         totalBalance,
         totalReturnRate: parseFloat(totalReturnRate as string),
       },

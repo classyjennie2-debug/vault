@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Crypto address required" }, { status: 400 })
     }
 
-    // Calculate 5% withdrawal fee
-    const withdrawalFee = Math.round(amount * 0.05 * 100) / 100 // 5% fee
+    // Calculate 0.3% withdrawal fee
+    const withdrawalFee = Math.round(amount * 0.003 * 100) / 100 // 0.3% fee
     const amountAfterFee = Math.round((amount - withdrawalFee) * 100) / 100
 
     // Convert to crypto amount if withdrawal method is crypto

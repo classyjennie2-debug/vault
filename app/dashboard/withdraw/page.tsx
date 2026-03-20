@@ -37,7 +37,7 @@ export default function WithdrawPage() {
   const [isConverting, setIsConverting] = useState(false)
   const router = useRouter()
 
-  const WITHDRAWAL_FEE_PERCENT = 0.05 // 5%
+  const WITHDRAWAL_FEE_PERCENT = 0.003 // 0.3%
 
   useEffect(() => {
     async function fetchBalance() {
