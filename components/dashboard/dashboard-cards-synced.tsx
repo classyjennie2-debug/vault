@@ -3,9 +3,9 @@
 import { useDashboard } from "@/contexts/dashboard-context"
 import {
   TrendingUp,
-  Target,
   PieChart,
-  Zap,
+  Wallet,
+  LogOut,
 } from "lucide-react"
 
 export function DashboardCardsSynced() {
@@ -26,20 +26,20 @@ export function DashboardCardsSynced() {
   
   const cards = [
     {
+      icon: Wallet,
+      label: "Available Balance",
+      value: `$${stats.availableBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+      change: stats.pendingDeposits > 0 ? `${stats.pendingDeposits} pending` : "Ready to invest",
+      color: "text-emerald-600 dark:text-emerald-500",
+      bgColor: "bg-emerald-50 dark:bg-emerald-950",
+    },
+    {
       icon: TrendingUp,
       label: "Total Invested",
       value: `$${stats.totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
       change: `${stats.activeInvestments} active plans`,
       color: "text-blue-600 dark:text-blue-500",
       bgColor: "bg-blue-50 dark:bg-blue-950",
-    },
-    {
-      icon: Target,
-      label: "Available Balance",
-      value: `$${stats.availableBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
-      change: stats.pendingDeposits > 0 ? `${stats.pendingDeposits} pending` : "All verified",
-      color: "text-emerald-600 dark:text-emerald-500",
-      bgColor: "bg-emerald-50 dark:bg-emerald-950",
     },
     {
       icon: PieChart,
@@ -50,12 +50,12 @@ export function DashboardCardsSynced() {
       bgColor: stats.totalProfit > 0 ? "bg-amber-50 dark:bg-amber-950" : "bg-slate-50 dark:bg-slate-950",
     },
     {
-      icon: Zap,
+      icon: LogOut,
       label: "Total Withdrawal",
       value: `$${stats.totalWithdrawn.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
       change: stats.pendingWithdrawals > 0 ? `${stats.pendingWithdrawals} pending` : "No pending",
-      color: "text-purple-600 dark:text-purple-500",
-      bgColor: "bg-purple-50 dark:bg-purple-950",
+      color: "text-red-600 dark:text-red-500",
+      bgColor: "bg-red-50 dark:bg-red-950",
     },
   ]
 
