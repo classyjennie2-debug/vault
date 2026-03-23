@@ -31,7 +31,7 @@ export default function ReferralPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6 max-w-4xl" key={key}>
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6 w-full max-w-6xl" key={key}>
       {/* Quick Action Button */}
       {stats?.stats.canWithdraw && stats?.stats.referralBalance > 0 && (
         <div className="flex justify-end">

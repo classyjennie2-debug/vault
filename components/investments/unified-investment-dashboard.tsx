@@ -238,14 +238,14 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
               <div className="space-y-6 sm:space-y-8">
                 <div className="text-center px-2 space-y-3">
                   <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
-                    Choose Your Investment Plan
+                    {t('choose_your_plan')}
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-                    Select from our carefully curated investment options tailored to your risk tolerance and financial goals. All plans support flexible durations from 7 days to 12 months with higher returns on longer commitments.
+                    {t('select_plans_description')}
                   </p>
                   <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      <strong>💡 Pro Tip:</strong> Each plan shows minimum and maximum investment limits. Select your desired investment amount and choose how long you want to invest (7 days to 12 months). Longer durations offer significantly higher returns!
+                      {t('pro_tip')}
                     </p>
                   </div>
                 </div>
@@ -327,7 +327,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                                 size="sm"
                               >
                                 <Zap className="h-4 w-4 mr-2" />
-                                Invest Now
+                                {t('invest')}
                               </Button>
                             </DialogTrigger>
                           </CardContent>
@@ -361,10 +361,10 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
-                        Your Active Investments
+                        {t('your_active_investments')}
                       </h2>
                       <p className="text-sm text-muted-foreground">
-                        Track and monitor your ongoing investment positions
+                        {t('track_monitor_positions')}
                       </p>
                     </div>
                     <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -466,13 +466,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                     <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mb-4">
                       <Target className="h-8 w-8 text-primary/60" />
                     </div>
-                    <h3 className="text-lg font-semibold text-card-foreground mb-2">No Active Investments</h3>
+                    <h3 className="text-lg font-semibold text-card-foreground mb-2">{t('no_active_investments')}</h3>
                     <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                      You don't have any active investments yet. Start by choosing a plan from the Investment Plans tab to begin growing your portfolio.
+                      {t('no_investments_description')}
                     </p>
                     <Button onClick={() => setActiveTab("plans")} className="hover:scale-105 transition-transform duration-300">
                       <BarChart3 className="h-4 w-4 mr-2" />
-                      View Investment Plans
+                      {t('view_investment_plans')}
                     </Button>
                   </div>
                 )}
@@ -484,10 +484,10 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
               <div className="max-w-2xl mx-auto space-y-6">
                 <div className="text-center space-y-3 px-2">
                   <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
-                    Investment Calculator
+                    {t('investment_calculator')}
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground">
-                    Calculate potential returns and plan your investment strategy
+                    {t('calculate_potential_returns')}
                   </p>
                 </div>
                 <InvestmentCalculator />
@@ -499,10 +499,10 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
               <div className="space-y-6 sm:space-y-8">
                 <div className="space-y-2">
                   <h2 className="text-xl sm:text-2xl font-bold text-card-foreground">
-                    Portfolio Performance
+                    {t('portfolio_performance')}
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Analyze your investment performance and growth over time
+                    {t('analyze_investment_performance')}
                   </p>
                 </div>
 
@@ -513,7 +513,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                       <CardHeader className="pb-4">
                         <CardTitle className="flex items-center gap-2 text-lg">
                           <TrendingUp className="h-5 w-5 text-accent" />
-                          Portfolio Value Over Time
+                          {t('portfolio_value_over_time')}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -525,7 +525,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                       <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300">
                         <CardContent className="p-6">
-                          <p className="text-sm text-muted-foreground mb-3">Total Invested Amount</p>
+                          <p className="text-sm text-muted-foreground mb-3">{t('total_invested_amount')}</p>
                           <p className="text-2xl font-bold text-primary">
                             ${totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                           </p>
@@ -535,7 +535,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                       <Card className="bg-success/5 border-success/20 hover:shadow-md transition-all duration-300">
                         <CardContent className="p-6">
-                          <p className="text-sm text-muted-foreground mb-3">Accumulated Profit</p>
+                          <p className="text-sm text-muted-foreground mb-3">{t('accumulated_profit')}</p>
                           <p className="text-2xl font-bold text-success">
                             +${totalAccumulatedProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                           </p>
@@ -550,26 +550,26 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                     <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                       <Card className="bg-primary/5 border-primary/20 hover:shadow-md transition-all duration-300 overflow-hidden">
                         <CardContent className="p-6 relative">
-                          <h3 className="font-semibold text-card-foreground mb-2">Ready to Invest More?</h3>
+                          <h3 className="font-semibold text-card-foreground mb-2">{t('ready_to_invest_more')}</h3>
                           <p className="text-sm text-muted-foreground mb-4">
-                            Explore our investment plans and grow your portfolio further
+                            {t('explore_plans_grow_portfolio')}
                           </p>
                           <Button onClick={() => setActiveTab("plans")} className="w-full">
                             <BarChart3 className="h-4 w-4 mr-2" />
-                            View Investment Plans
+                            {t('view_investment_plans')}
                           </Button>
                         </CardContent>
                       </Card>
 
                       <Card className="bg-accent/5 border-accent/20 hover:shadow-md transition-all duration-300 overflow-hidden">
                         <CardContent className="p-6 relative">
-                          <h3 className="font-semibold text-card-foreground mb-2">View Your Positions</h3>
+                          <h3 className="font-semibold text-card-foreground mb-2">{t('view_your_positions')}</h3>
                           <p className="text-sm text-muted-foreground mb-4">
-                            Review detailed analytics of all your active investment positions
+                            {t('review_detailed_analytics')}
                           </p>
                           <Button onClick={() => setActiveTab("active-investments")} variant="outline" className="w-full">
                             <Target className="h-4 w-4 mr-2" />
-                            View Active Investments
+                            {t('view_active_investments')}
                           </Button>
                         </CardContent>
                       </Card>
@@ -580,13 +580,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                     <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-accent/10 mb-4">
                       <TrendingUp className="h-8 w-8 text-accent/60" />
                     </div>
-                    <h3 className="text-lg font-semibold text-card-foreground mb-2">No Portfolio Data</h3>
+                    <h3 className="text-lg font-semibold text-card-foreground mb-2">{t('no_portfolio_data')}</h3>
                     <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                      Start by investing in one of our plans to build your portfolio and see performance analytics.
+                      {t('start_investing_for_portfolio')}
                     </p>
                     <Button onClick={() => setActiveTab("plans")} className="hover:scale-105 transition-transform duration-300">
                       <BarChart3 className="h-4 w-4 mr-2" />
-                      View Investment Plans
+                      {t('view_investment_plans')}
                     </Button>
                   </div>
                 )}

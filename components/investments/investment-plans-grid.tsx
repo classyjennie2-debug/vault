@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { InvestmentForm } from "@/components/investments/investment-form"
 import { safeNumber, getPlanAnnualRate } from "@/lib/investment-utils"
+import { useI18n } from "@/hooks/use-i18n"
 import { Shield, Zap, Flame, Star, Lock, FileText } from "lucide-react"
 import { useState } from "react"
 
@@ -61,6 +62,7 @@ const factsheetUrl = (plan: InvestmentPlan) => {
 const currencyFormatter = new Intl.NumberFormat(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 })
 
 export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
+  const { t } = useI18n('investments')
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
 
   // Sort plans by minimum amount (lowest first)
@@ -77,8 +79,8 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
       <div className="space-y-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-card-foreground">Investment Plans</h1>
-            <p className="text-sm text-muted-foreground mt-1">Choose a curated plan matched to your goals and risk tolerance.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-card-foreground">{t('plans_title')}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t('plans_subtitle')}</p>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 border border-border/60 px-3 py-2 rounded-lg">
             <Lock className="h-4 w-4 text-muted-foreground" />
@@ -97,9 +99,9 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
 
       {plans.length === 0 && (
         <Card className="border-dashed border-2 border-border/70 p-6 text-center space-y-2">
-          <CardTitle className="text-lg">No plans available right now</CardTitle>
-          <p className="text-sm text-muted-foreground">We’re curating new portfolios. Talk to an advisor to get matched.</p>
-          <Button size="sm" className="mt-2">Talk to an advisor</Button>
+          <CardTitle className="text-lg">{t('no_plans_available')}</CardTitle>
+          <p className="text-sm text-muted-foreground">{t('curating_portfolios')}</p>
+          <Button size="sm" className="mt-2">{t('talk_to_advisor')}</Button>
         </Card>
       )}
 
@@ -114,7 +116,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
               {isPopular(index) && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
                   <Badge className="bg-primary text-white border-0 shadow-md uppercase text-xs font-bold tracking-wider flex items-center gap-1">
-                    <Star className="h-3 w-3" /> Most Popular
+                    <Star className="h-3 w-3" /> {t('most_popular')}
                   </Badge>
                 </div>
               )}
@@ -189,12 +191,12 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       {factsheetUrl(plan) ? (
                         <a href={factsheetUrl(plan)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary font-semibold">
-                          <FileText className="h-3.5 w-3.5" /> Download factsheet
+                          <FileText className="h-3.5 w-3.5" /> {t('download_factsheet')}
                         </a>
                       ) : (
-                        <span className="flex items-center gap-1 text-muted-foreground">Factsheet not available</span>
+                        <span className="flex items-center gap-1 text-muted-foreground">{t('factsheet_not_available')}</span>
                       )}
-                      <span>No fees to fund • Withdraw anytime</span>
+                      <span>{t('no_fees_withdraw_anytime')}</span>
                     </div>
 
                     <DialogTrigger asChild className="mt-auto">
@@ -205,7 +207,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
                         size="sm"
                       >
                         <Zap className="h-4 w-4 mr-2 group-hover/btn:animate-pulse" />
-                        Review & Invest
+                        {t('review_invest')}
                       </Button>
                     </DialogTrigger>
                   </CardContent>
@@ -213,7 +215,7 @@ export function InvestmentPlansGrid({ plans }: { plans: InvestmentPlan[] }) {
 
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Invest in {plan.name || "Investment Plan"}</DialogTitle>
+                    <DialogTitle>{t('invest_in')} {plan.name || t('investment_plan')}</DialogTitle>
                   </DialogHeader>
                   <InvestmentForm plan={plan} onSuccess={() => setSelectedPlan(null)} />
                 </DialogContent>

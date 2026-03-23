@@ -61,5 +61,21 @@
   "just_now": "Justo ahora",
   "min_ago": "hace min",
   "hours_ago": "hace horas",
-  "days_ago": "hace días"
+  "days_ago": "hace días",
+  "tip_diversification_title": "El Poder de la Diversificación",
+  "tip_diversification_desc": "Distribuir inversiones en diferentes clases de activos puede reducir el riesgo hasta un 40%. Considera equilibrar planes de alto rendimiento y conservadores.",
+  "tip_compound_interest_title": "La Magia del Interés Compuesto",
+  "tip_compound_interest_desc": "Einstein lo llamó la octava maravilla del mundo. Reinvertir rendimientos puede duplicar tu portafolio cada 7-10 años con un crecimiento anual del 10%.",
+  "tip_risk_management_title": "No Pongas Todos los Huevos en una Canasta",
+  "tip_risk_management_desc": "Diversifica entre diferentes planes de inversión y duraciones. Mezcla inversiones a corto y largo plazo para crecimiento constante.",
+  "tip_auto_reinvestment_title": "Beneficios del Reinvertimiento Automático",
+  "tip_auto_reinvestment_desc": "Habilita el reinvertimiento automático para desplegar automáticamente tus rendimientos. Crecimiento compuesto pasivo sin intervención manual.",
+  "tip_dollar_cost_averaging_title": "Promedio de Costo en Dólares",
+  "tip_dollar_cost_averaging_desc": "Invierte cantidades fijas regularmente (mensual/semanal) independientemente de las condiciones del mercado. Reduce riesgo de tiempo y construye disciplina.",
+  "tip_start_early_title": "Comienza Temprano, Benefíciate Mucho",
+  "tip_start_early_desc": "Comenzar inversiones a los 25 vs 35 años puede resultar en 2-3x más riqueza al retiro. El tiempo en el mercado supera vencer el mercado.",
+  "tip_investment_strategy": "Estrategia de Inversión",
+  "tip_market_insight": "Perspectiva del Mercado",
+  "tip_risk_management": "Gestión de Riesgo",
+  "tip_product_feature": "Característica del Producto"
 }

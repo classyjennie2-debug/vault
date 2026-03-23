@@ -155,10 +155,10 @@ export function ReferralDashboard() {
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">{t('referralLink')}</p>
-              <div className="flex items-center justify-between rounded-md border px-3 py-2">
-                <span className="text-sm truncate">{stats?.referralCode?.referralLink || '—'}</span>
+              <div className="flex items-center gap-2 rounded-md border px-3 py-2 overflow-hidden">
+                <span className="text-sm truncate flex-1">{stats?.referralCode?.referralLink || '—'}</span>
                 {stats?.referralCode?.referralLink && (
-                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(stats.referralCode!.referralLink)}>
+                  <Button variant="ghost" size="sm" onClick={() => copyToClipboard(stats.referralCode!.referralLink)} className="flex-shrink-0">
                     <Share2 className="h-4 w-4 mr-1" />
                     {t('shareWithFriends')}
                   </Button>

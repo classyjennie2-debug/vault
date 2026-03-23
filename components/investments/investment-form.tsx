@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useI18n } from "@/hooks/use-i18n"
 import type { InvestmentPlan } from "@/lib/types"
 import { AlertCircle, Check } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -15,6 +16,7 @@ interface InvestmentFormProps {
 }
 
 export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
+  const { t } = useI18n('investments')
   // Safe plan values with proper null checking
   const minAmount = safeNumber(plan.minAmount, 100)
   const maxAmount = safeNumber(plan.maxAmount, Infinity)
@@ -108,10 +110,10 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
         </div>
         <div className="text-center">
           <h3 className="font-semibold text-card-foreground">
-            Investment Confirmed!
+            {t('investment_confirmed')}
           </h3>
           <p className="text-sm text-muted-foreground mt-2">
-            Your investment of ${amountNum.toLocaleString()} has been started.
+            Your investment of ${amountNum.toLocaleString()} {t('has_been_started')}.
           </p>
         </div>
       </div>
@@ -128,7 +130,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="amount">Investment Amount</Label>
+        <Label htmlFor="amount">{t('investmentAmount')}</Label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             $
@@ -151,7 +153,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="duration">Investment Duration</Label>
+        <Label htmlFor="duration">{t('duration')}</Label>
         <select
           id="duration"
           value={duration}
@@ -182,28 +184,28 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
 
       <div className="bg-accent/10 rounded-lg p-4 space-y-3">
         <h4 className="font-semibold text-sm text-card-foreground">
-          Investment Summary
+          {t('investment_summary')}
         </h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Investment Amount:</span>
+            <span className="text-muted-foreground">{t('investment_amount_label')}:</span>
             <span className="font-medium text-card-foreground">
               ${amountNum.toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Return Rate:</span>
+            <span className="text-muted-foreground">{t('return_rate')}:</span>
             <span className="font-medium text-accent">{dynamicReturnRate.toFixed(2)}%</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Duration:</span>
+            <span className="text-muted-foreground">{t('duration')}:</span>
             <span className="font-medium text-card-foreground">
               {durationNum} days
             </span>
           </div>
           <div className="border-t border-border pt-2 mt-2 flex justify-between">
             <span className="font-semibold text-card-foreground">
-              Expected Profit:
+              {t('expected_profit')}:
             </span>
             <span className="font-bold text-accent">
               ${expectedProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -211,7 +213,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
           </div>
           <div className="flex justify-between">
             <span className="font-semibold text-card-foreground">
-              Total Return:
+              {t('total_return')}:
             </span>
             <span className="font-bold text-card-foreground">
               ${totalReturn.toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -225,10 +227,10 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
         className="w-full"
         disabled={!isValid || isLoading}
       >
-        {isLoading ? "Processing..." : "Confirm Investment"}
+        {isLoading ? t('processing') : t('confirm_investment')}
       </Button>
       <p className="text-xs text-muted-foreground text-center">
-        Your investment will start immediately after confirmation.
+        {t('will_start_immediately')}
       </p>
     </form>
   )

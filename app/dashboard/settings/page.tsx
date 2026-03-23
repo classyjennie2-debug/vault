@@ -70,15 +70,15 @@ export default function SettingsPage() {
     setPasswordError("")
     setPasswordSuccess("")
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError("All fields are required.")
+      setPasswordError(t('allFieldsRequired'))
       return
     }
     if (newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters.")
+      setPasswordError(t('passwordMinimum'))
       return
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError("Passwords do not match.")
+      setPasswordError(t('passwordsDoNotMatch'))
       return
     }
     setIsUpdatingPassword(true)
@@ -90,10 +90,10 @@ export default function SettingsPage() {
     const data = await res.json()
     setIsUpdatingPassword(false)
     if (!res.ok) {
-      setPasswordError(data.error || "Failed to update password.")
+      setPasswordError(data.error || t('failedUpdatePassword'))
       return
     }
-    setPasswordSuccess("Password updated successfully.")
+    setPasswordSuccess(t('passwordUpdatedSuccess'))
     setCurrentPassword("")
     setNewPassword("")
     setConfirmPassword("")
@@ -110,7 +110,7 @@ export default function SettingsPage() {
     setDeleteError("")
 
     if (!deleteReason.trim()) {
-      setDeleteError("Please provide a reason for deleting your account.")
+      setDeleteError(t('provideReasonDeletion'))
       return
     }
 
@@ -124,16 +124,16 @@ export default function SettingsPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        setDeleteError(data.error || "Failed to request account deletion.")
+        setDeleteError(data.error || t('failedRequestDeletion'))
         return
       }
 
       // Show success and redirect
-      alert("Your account deletion request has been sent to our admin team for review. You will receive an email confirmation shortly.")
+      alert(t('deletionRequestSent'))
       setShowDeleteDialog(false)
       router.push("/")
     } catch (error) {
-      setDeleteError("An error occurred. Please try again.")
+      setDeleteError(t('errorOccurred'))
       console.error("Delete account error:", error)
     } finally {
       setIsDeletingAccount(false)
@@ -270,8 +270,8 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3">
             <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             <div>
-              <CardTitle>Account Information</CardTitle>
-              <CardDescription>Update your personal details</CardDescription>
+              <CardTitle>{t('accountInformation')}</CardTitle>
+              <CardDescription>{t('updatePersonalDetails')}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -279,7 +279,7 @@ export default function SettingsPage() {
           {/* Name Fields - Read Only */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">{t('firstName')}</Label>
               <Input
                 id="firstName"
                 value={userSettings.firstName}
@@ -289,7 +289,7 @@ export default function SettingsPage() {
               />
             </div>
             <div>
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">{t('lastName')}</Label>
               <Input
                 id="lastName"
                 value={userSettings.lastName}
@@ -302,7 +302,7 @@ export default function SettingsPage() {
 
           {/* Email - Editable */}
           <div>
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">{t('emailAddress')}</Label>
             <Input
               id="email"
               type="email"
@@ -312,12 +312,12 @@ export default function SettingsPage() {
               }
               className="mt-1"
             />
-            <p className="text-xs text-muted-foreground mt-1">Email is changeable</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('emailIsChangeable')}</p>
           </div>
 
           {/* Phone - Editable */}
           <div>
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="phone">{t('phone')}</Label>
             <div className="flex gap-2 mt-1">
               <select
                 value={userSettings.phoneCountry}
@@ -352,12 +352,12 @@ export default function SettingsPage() {
                 className="flex-1"
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Phone and country are changeable</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('phoneIsChangeable')}</p>
           </div>
 
           {/* Date of Birth - Read Only */}
           <div>
-            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Label htmlFor="dateOfBirth">{t('dateOfBirth')}</Label>
             <Input
               id="dateOfBirth"
               type="date"
@@ -366,7 +366,7 @@ export default function SettingsPage() {
               disabled
               className="mt-1 bg-gray-100 dark:bg-gray-800 cursor-not-allowed"
             />
-            <p className="text-xs text-muted-foreground mt-1">Date of birth cannot be changed</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('dateOfBirthCannotChange')}</p>
           </div>
 
           <Button 
@@ -375,7 +375,7 @@ export default function SettingsPage() {
             disabled={loadingUser || saveLoading}
           >
             <Save className="h-4 w-4" />
-            {loadingUser || saveLoading ? "Saving..." : "Save Changes"}
+            {loadingUser || saveLoading ? t('updating') : t('save')}
           </Button>
 
           {userError && (
@@ -383,7 +383,7 @@ export default function SettingsPage() {
           )}
           {saved && (
             <div className="p-3 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg text-sm">
-              ✓ Settings saved successfully
+              ✓ {t('saved')}
             </div>
           )}
         </CardContent>
@@ -395,22 +395,22 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3">
             <Lock className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             <div>
-              <CardTitle>Security Settings</CardTitle>
+              <CardTitle>{t('securitySettings')}</CardTitle>
               <CardDescription>
-                Manage your password and security preferences
+                {t('managePasswordDesc')}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
-            <h3 className="font-semibold text-sm">Authentication</h3>
+            <h3 className="font-semibold text-sm">{t('authentication')}</h3>
 
             <div className="flex items-center justify-between p-3 border border-border rounded-lg">
               <div>
-                <p className="font-medium text-sm">Two-Factor Authentication</p>
+                <p className="font-medium text-sm">{t('twoFactorAuthentication')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Add an extra layer of security
+                  {t('addExtraLayerSecurity')}
                 </p>
               </div>
               <Switch
@@ -426,9 +426,9 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between p-3 border border-border rounded-lg">
               <div>
-                <p className="font-medium text-sm">Biometric Login</p>
+                <p className="font-medium text-sm">{t('biometricLogin')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Use fingerprint or face recognition
+                  {t('useFingerprintFace')}
                 </p>
               </div>
               <Switch
@@ -445,9 +445,9 @@ export default function SettingsPage() {
 
 
           <form className="pt-4 border-t border-border space-y-4" onSubmit={handleUpdatePassword}>
-            <h3 className="font-semibold text-sm">Change Password</h3>
+            <h3 className="font-semibold text-sm">{t('changePassword')}</h3>
             <div>
-              <Label htmlFor="currentPassword">Current Password</Label>
+              <Label htmlFor="currentPassword">{t('currentPassword')}</Label>
               <div className="relative mt-1">
                 <Input
                   id="currentPassword"
@@ -471,7 +471,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <Label htmlFor="newPassword">New Password</Label>
+              <Label htmlFor="newPassword">{t('newPassword')}</Label>
               <Input
                 id="newPassword"
                 type="password"
@@ -483,7 +483,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -502,12 +502,12 @@ export default function SettingsPage() {
             )}
 
             <Button variant="outline" type="submit" disabled={isUpdatingPassword}>
-              {isUpdatingPassword ? "Updating..." : "Update Password"}
+              {isUpdatingPassword ? t('updating') : t('updatePassword')}
             </Button>
           </form>
 
           <div className="p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg text-sm">
-            Last password change: {securitySettings.passwordLastChanged}
+            {t('lastPasswordChange')}: {securitySettings.passwordLastChanged}
           </div>
         </CardContent>
       </Card>
@@ -518,9 +518,9 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3">
             <Bell className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             <div>
-              <CardTitle>Notifications</CardTitle>
+              <CardTitle>{t('notificationSettings')}</CardTitle>
               <CardDescription>
-                Control how and when you receive updates
+                {t('controlUpdates')}
               </CardDescription>
             </div>
           </div>
@@ -529,9 +529,9 @@ export default function SettingsPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 border border-border rounded-lg">
               <div>
-                <p className="font-medium text-sm">Email Notifications</p>
+                <p className="font-medium text-sm">{t('emailNotifications')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Receive updates via email
+                  {t('receiveUpdatesEmail')}
                 </p>
               </div>
               <Switch
@@ -547,9 +547,9 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between p-3 border border-border rounded-lg">
               <div>
-                <p className="font-medium text-sm">Push Notifications</p>
+                <p className="font-medium text-sm">{t('pushNotifications')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Get instant browser alerts
+                  {t('instantBrowserAlerts')}
                 </p>
               </div>
               <Switch
@@ -565,9 +565,9 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between p-3 border border-border rounded-lg">
               <div>
-                <p className="font-medium text-sm">Transaction Alerts</p>
+                <p className="font-medium text-sm">{t('transactionAlerts')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Notifications for deposits and withdrawals
+                  {t('depositsWithdrawals')}
                 </p>
               </div>
               <Switch
@@ -583,9 +583,9 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between p-3 border border-border rounded-lg">
               <div>
-                <p className="font-medium text-sm">Investment Updates</p>
+                <p className="font-medium text-sm">{t('investmentUpdates')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Updates on your active investments
+                  {t('updatesActiveInvestments')}
                 </p>
               </div>
               <Switch
@@ -601,9 +601,9 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between p-3 border border-border rounded-lg">
               <div>
-                <p className="font-medium text-sm">Marketing Emails</p>
+                <p className="font-medium text-sm">{t('marketingEmails')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Special offers and promotional content
+                  {t('specialOffersPromo')}
                 </p>
               </div>
               <Switch
@@ -623,31 +623,31 @@ export default function SettingsPage() {
       {/* Privacy Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Privacy & Data</CardTitle>
+          <CardTitle>{t('privacySettings')}</CardTitle>
           <CardDescription>
-            Manage your privacy preferences and data usage
+            {t('managePrivacy')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="profileVisibility">Profile Visibility</Label>
+            <Label htmlFor="profileVisibility">{t('profileVisibility')}</Label>
             <Select value={privacySettings.profileVisibility}>
               <SelectTrigger className="mt-1">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="private">Private (Recommended)</SelectItem>
-                <SelectItem value="friends">Friends Only</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="private">{t('privateRecommended')}</SelectItem>
+                <SelectItem value="friends">{t('friendsOnly')}</SelectItem>
+                <SelectItem value="public">{t('public')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex items-center justify-between p-3 border border-border rounded-lg">
             <div>
-              <p className="font-medium text-sm">Activity Logging</p>
+              <p className="font-medium text-sm">{t('activityLogging')}</p>
               <p className="text-xs text-muted-foreground">
-                Keep a record of your account activity
+                {t('keepRecordActivity')}
               </p>
             </div>
             <Switch
@@ -667,10 +667,10 @@ export default function SettingsPage() {
       <Card className="border-red-500/30 bg-red-500/5">
         <CardHeader>
           <CardTitle className="text-red-600 dark:text-red-400">
-            Danger Zone
+            {t('dangerZone')}
           </CardTitle>
           <CardDescription>
-            Irreversible actions that require caution
+            {t('irreversibleActions')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -680,7 +680,7 @@ export default function SettingsPage() {
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4" />
-            Logout from All Devices
+            {t('logoutAllDevices')}
           </Button>
 
           <Button
@@ -693,7 +693,7 @@ export default function SettingsPage() {
             }}
           >
             <Trash2 className="h-4 w-4" />
-            Delete Account
+            {t('deleteAccount')}
           </Button>
 
           {/* Delete Account Dialog */}
@@ -702,17 +702,17 @@ export default function SettingsPage() {
               <DialogHeader>
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-red-600" />
-                  <DialogTitle>Delete Account</DialogTitle>
+                  <DialogTitle>{t('requestDeletion')}</DialogTitle>
                 </div>
                 <DialogDescription>
-                  This action cannot be undone. We'll send your deletion request to our admin team for review.
+                  {t('deleteAccountWarning')}
                 </DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleDeleteAccount} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="delete-reason" className="text-base font-semibold">
-                    Why are you deleting your account?
+                    {t('deletionReason')}
                   </Label>
                   <Textarea
                     id="delete-reason"
@@ -741,7 +741,7 @@ export default function SettingsPage() {
                     onClick={() => setShowDeleteDialog(false)}
                     disabled={isDeletingAccount}
                   >
-                    Cancel
+                    {t('logout')}
                   </Button>
                   <Button
                     type="submit"

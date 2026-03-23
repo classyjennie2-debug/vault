@@ -61,5 +61,21 @@
   "just_now": "刚刚",
   "min_ago": "分钟前",
   "hours_ago": "小时前",
-  "days_ago": "天前"
+  "days_ago": "天前",
+  "tip_diversification_title": "多元化的力量",
+  "tip_diversification_desc": "将投资分散在不同的资产类别中可以将风险降低多达40%。考虑平衡高收益和保守计划。",
+  "tip_compound_interest_title": "复利的魔力",
+  "tip_compound_interest_desc": "爱因斯坦称之为世界第八奇迹。以年增长10%的速度，重新投资回报可以在7-10年内使您的投资组合增加一倍。",
+  "tip_risk_management_title": "不要把所有鸡蛋放在一个篮子里",
+  "tip_risk_management_desc": "在不同的投资计划和期限中进行多元化投资。混合短期和长期投资，实现稳定增长。",
+  "tip_auto_reinvestment_title": "自动再投资的好处",
+  "tip_auto_reinvestment_desc": "启用自动再投资以自动部署您的回报。被动复利增长，无需手动干预。",
+  "tip_dollar_cost_averaging_title": "美元成本平均法",
+  "tip_dollar_cost_averaging_desc": "定期投资固定金额（每月/每周），不受市场条件影响。降低时机风险并培养纪律。",
+  "tip_start_early_title": "尽早开始，受益匪浅",
+  "tip_start_early_desc": "在25岁而非35岁开始投资，退休时的财富可能会多2-3倍。市场中的时间胜过择时市场。",
+  "tip_investment_strategy": "投资策略",
+  "tip_market_insight": "市场洞察",
+  "tip_risk_management": "风险管理",
+  "tip_product_feature": "产品特性"
 }

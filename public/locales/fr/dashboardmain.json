@@ -61,5 +61,21 @@
   "just_now": "À l'instant",
   "min_ago": "min passée",
   "hours_ago": "heures passées",
-  "days_ago": "jours passés"
+  "days_ago": "jours passés",
+  "tip_diversification_title": "La Puissance de la Diversification",
+  "tip_diversification_desc": "Répartir les investissements entre différentes classes d'actifs peut réduire le risque jusqu'à 40%. Envisagez d'équilibrer les plans à haut rendement et conservateurs.",
+  "tip_compound_interest_title": "La Magie des Intérêts Composés",
+  "tip_compound_interest_desc": "Einstein l'a appelée la 8e merveille du monde. Réinvestir les rendements peut doubler votre portefeuille tous les 7-10 ans avec une croissance annuelle de 10%.",
+  "tip_risk_management_title": "Ne Mettez Pas Tous les Œufs dans le Même Panier",
+  "tip_risk_management_desc": "Diversifiez entre différents plans d'investissement et durées. Mélangez les investissements à court et long terme pour une croissance constante.",
+  "tip_auto_reinvestment_title": "Avantages du Réinvestissement Automatique",
+  "tip_auto_reinvestment_desc": "Activez le réinvestissement automatique pour déployer automatiquement vos rendements. Croissance composée passive sans intervention manuelle.",
+  "tip_dollar_cost_averaging_title": "Technique du Coût Moyen Pondéré",
+  "tip_dollar_cost_averaging_desc": "Investissez des montants fixes régulièrement (mensuellement/hebdomadairement) indépendamment des conditions du marché. Réduit le risque de timing et crée de la discipline.",
+  "tip_start_early_title": "Commencez Tôt, Bénéficiez Beaucoup",
+  "tip_start_early_desc": "Commencer les investissements à 25 ans contre 35 ans peut résulter en 2-3 fois plus de richesse à la retraite. Le temps dans le marché surpasse le timing du marché.",
+  "tip_investment_strategy": "Stratégie d'Investissement",
+  "tip_market_insight": "Perspect ive du Marché",
+  "tip_risk_management": "Gestion des Risques",
+  "tip_product_feature": "Caractéristique du Produit"
 }

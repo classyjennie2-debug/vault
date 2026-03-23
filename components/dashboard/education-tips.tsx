@@ -22,49 +22,49 @@ const educationTips = [
   {
     id: 1,
     icon: TrendingUp,
-    category: "Investment Strategy",
-    title: "Power of Diversification",
-    description: "Spreading investments across different asset classes can reduce risk by up to 40%. Consider balancing high-yield and conservative plans.",
+    categoryKey: "tip_investment_strategy",
+    titleKey: "tip_diversification_title",
+    descriptionKey: "tip_diversification_desc",
     color: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
   },
   {
     id: 2,
     icon: Zap,
-    category: "Market Insight",
-    title: "Compound Interest Magic",
-    description: "Einstein called it the 8th wonder of the world. Reinvesting returns can double your portfolio every 7-10 years at 10% annual growth.",
+    categoryKey: "tip_market_insight",
+    titleKey: "tip_compound_interest_title",
+    descriptionKey: "tip_compound_interest_desc",
     color: "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400",
   },
   {
     id: 3,
     icon: Shield,
-    category: "Risk Management",
-    title: "Don't Put All Eggs in One Basket",
-    description: "Diversify across different investment plans and durations. Mix short-term and long-term investments for steady growth.",
+    categoryKey: "tip_risk_management",
+    titleKey: "tip_risk_management_title",
+    descriptionKey: "tip_risk_management_desc",
     color: "bg-green-500/20 text-green-600 dark:text-green-400",
   },
   {
     id: 4,
     icon: BookOpen,
-    category: "Product Feature",
-    title: "Auto-Reinvestment Benefits",
-    description: "Enable auto-reinvestment to automatically deploy your returns. Passive compound growth without manual intervention.",
+    categoryKey: "tip_product_feature",
+    titleKey: "tip_auto_reinvestment_title",
+    descriptionKey: "tip_auto_reinvestment_desc",
     color: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
   },
   {
     id: 5,
     icon: TrendingUp,
-    category: "Investment Strategy",
-    title: "Dollar-Cost Averaging",
-    description: "Invest fixed amounts regularly (monthly/weekly) regardless of market conditions. Reduces timing risk and builds discipline.",
+    categoryKey: "tip_investment_strategy",
+    titleKey: "tip_dollar_cost_averaging_title",
+    descriptionKey: "tip_dollar_cost_averaging_desc",
     color: "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400",
   },
   {
     id: 6,
     icon: Zap,
-    category: "Market Insight",
-    title: "Start Early, Benefit Greatly",
-    description: "Starting investments at age 25 vs 35 can result in 2-3x more wealth at retirement. Time in market beats timing the market.",
+    categoryKey: "tip_market_insight",
+    titleKey: "tip_start_early_title",
+    descriptionKey: "tip_start_early_desc",
     color: "bg-rose-500/20 text-rose-600 dark:text-rose-400",
   },
 ]
@@ -122,12 +122,12 @@ export function EducationTips() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-semibold uppercase tracking-wide opacity-75">
-                    {tip.category}
+                    {t(tip.categoryKey)}
                   </span>
                 </div>
-                <h3 className="text-sm sm:text-base font-semibold mb-2">{tip.title}</h3>
+                <h3 className="text-sm sm:text-base font-semibold mb-2">{t(tip.titleKey)}</h3>
                 <p className="text-xs sm:text-sm opacity-90 leading-relaxed">
-                  {tip.description}
+                  {t(tip.descriptionKey)}
                 </p>
               </div>
             </div>

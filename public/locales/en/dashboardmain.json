@@ -61,5 +61,21 @@
   "just_now": "Just now",
   "min_ago": "min ago",
   "hours_ago": "hours ago",
-  "days_ago": "days ago"
+  "days_ago": "days ago",
+  "tip_diversification_title": "Power of Diversification",
+  "tip_diversification_desc": "Spreading investments across different asset classes can reduce risk by up to 40%. Consider balancing high-yield and conservative plans.",
+  "tip_compound_interest_title": "Compound Interest Magic",
+  "tip_compound_interest_desc": "Einstein called it the 8th wonder of the world. Reinvesting returns can double your portfolio every 7-10 years at 10% annual growth.",
+  "tip_risk_management_title": "Don't Put All Eggs in One Basket",
+  "tip_risk_management_desc": "Diversify across different investment plans and durations. Mix short-term and long-term investments for steady growth.",
+  "tip_auto_reinvestment_title": "Auto-Reinvestment Benefits",
+  "tip_auto_reinvestment_desc": "Enable auto-reinvestment to automatically deploy your returns. Passive compound growth without manual intervention.",
+  "tip_dollar_cost_averaging_title": "Dollar-Cost Averaging",
+  "tip_dollar_cost_averaging_desc": "Invest fixed amounts regularly (monthly/weekly) regardless of market conditions. Reduces timing risk and builds discipline.",
+  "tip_start_early_title": "Start Early, Benefit Greatly",
+  "tip_start_early_desc": "Starting investments at age 25 vs 35 can result in 2-3x more wealth at retirement. Time in market beats timing the market.",
+  "tip_investment_strategy": "Investment Strategy",
+  "tip_market_insight": "Market Insight",
+  "tip_risk_management": "Risk Management",
+  "tip_product_feature": "Product Feature"
 }

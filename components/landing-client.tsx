@@ -150,7 +150,7 @@ export function LandingClient({ plans }: LandingClientProps) {
         <div className="flex items-center gap-3">
           <LanguageSwitcher />
           <LandingCTA
-            variant="ghost"
+            variant="outline"
             size="sm"
             showText={t("nav_login")}
             showLoggedInText={t("nav_dashboard")}
