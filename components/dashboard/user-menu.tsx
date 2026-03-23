@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from "react"
+import { useI18n } from "@/hooks/use-i18n"
 
 interface UserMenuProps {
   user: {
@@ -26,6 +27,7 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter()
+  const { t } = useI18n("dashboardmain")
   const [isDark, setIsDark] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -124,7 +126,7 @@ export function UserMenu({ user }: UserMenuProps) {
               className="flex items-center gap-2 cursor-pointer"
             >
               <Settings className="h-4 w-4 text-muted-foreground" />
-              <span>Settings</span>
+              <span>{t("settings")}</span>
             </Link>
           </DropdownMenuItem>
 
@@ -135,7 +137,7 @@ export function UserMenu({ user }: UserMenuProps) {
               ) : (
                 <Moon className="h-4 w-4 text-muted-foreground" />
               )}
-              <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+              <span>{isDark ? t("light_mode") : t("dark_mode")}</span>
             </div>
           </DropdownMenuItem>
 
@@ -145,7 +147,7 @@ export function UserMenu({ user }: UserMenuProps) {
               className="flex items-center gap-2 cursor-pointer"
             >
               <HelpCircle className="h-4 w-4 text-muted-foreground" />
-              <span>Support</span>
+              <span>{t("support")}</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -155,7 +157,7 @@ export function UserMenu({ user }: UserMenuProps) {
         {/* Sign Out */}
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="h-4 w-4 text-muted-foreground" />
-          <span className="text-red-600 dark:text-red-400 font-medium">Sign out</span>
+          <span className="text-red-600 dark:text-red-400 font-medium">{t("sign_out")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

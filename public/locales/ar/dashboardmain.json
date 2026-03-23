@@ -77,5 +77,13 @@
   "tip_investment_strategy": "استراتيجية الاستثمار",
   "tip_market_insight": "نظرة السوق",
   "tip_risk_management": "إدارة المخاطر",
-  "tip_product_feature": "ميزة المنتج"
+  "tip_product_feature": "ميزة المنتج",
+  "settings": "الإعدادات",
+  "light_mode": "الوضع الفاتح",
+  "dark_mode": "الوضع الداكن",
+  "support": "الدعم",
+  "sign_out": "تسجيل الخروج",
+  "total_invested_label": "إجمالي الاستثمار",
+  "accumulated_profit_label": "الأرباح المتراكمة",
+  "active_investments_label": "الاستثمارات النشطة"
 }

@@ -71,7 +71,26 @@
   "total_return": "Total Return",
   "processing": "Processing...",
   "confirm_investment": "Confirm Investment",
-  "will_start_immediately": "Your investment will start immediately after confirmation."
+  "will_start_immediately": "Your investment will start immediately after confirmation.",
+  "plans_tab": "Investment Plans",
+  "plans_tab_short": "Plans",
+  "active_investments_tab": "Active Investments",
+  "active_investments_tab_short": "Active",
+  "calculator_tab": "Calculator",
+  "calculator_tab_short": "Calc",
+  "portfolio_tab": "Portfolio",
+  "portfolio_tab_short": "Port",
+  "most_popular": "Most Popular",
+  "minimum": "Min",
+  "maximum": "Max",
+  "estimated_annual_return": "Estimated annual return",
+  "invest_in": "Invest in",
+  "low_risk": "Low Risk",
+  "medium_risk": "Medium Risk",
+  "high_risk": "High Risk",
+  "total_invested_header": "Total Invested",
+  "accumulated_profit_header": "Accumulated Profit",
+  "active_investments_count": "Active Investments"
 }
 
 

@@ -77,5 +77,13 @@
   "tip_investment_strategy": "Investment Strategy",
   "tip_market_insight": "Market Insight",
   "tip_risk_management": "Risk Management",
-  "tip_product_feature": "Product Feature"
+  "tip_product_feature": "Product Feature",
+  "settings": "Settings",
+  "light_mode": "Light Mode",
+  "dark_mode": "Dark Mode",
+  "support": "Support",
+  "sign_out": "Sign out",
+  "total_invested_label": "Total Invested",
+  "accumulated_profit_label": "Accumulated Profit",
+  "active_investments_label": "Active Investments"
 }

@@ -77,5 +77,13 @@
   "tip_investment_strategy": "投资策略",
   "tip_market_insight": "市场洞察",
   "tip_risk_management": "风险管理",
-  "tip_product_feature": "产品特性"
+  "tip_product_feature": "产品功能",
+  "settings": "设置",
+  "light_mode": "浅色模式",
+  "dark_mode": "深色模式",
+  "support": "支持",
+  "sign_out": "退出",
+  "total_invested_label": "总投资",
+  "accumulated_profit_label": "累计利润",
+  "active_investments_label": "活跃投资"
 }

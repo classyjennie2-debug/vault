@@ -162,7 +162,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
               <p className="text-lg sm:text-2xl font-bold text-card-foreground">
                 ${totalInvested.toLocaleString()}
               </p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Total Invested</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">{t('total_invested_header')}</p>
             </CardContent>
           </Card>
 
@@ -172,7 +172,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
               <p className="text-lg sm:text-2xl font-bold text-success">
                 +${totalAccumulatedProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </p>
-              <p className="text-sm text-muted-foreground">Accumulated Profit</p>
+              <p className="text-sm text-muted-foreground">{t('accumulated_profit_header')}</p>
             </CardContent>
           </Card>
 
@@ -182,7 +182,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
               <p className="text-lg sm:text-2xl font-bold text-card-foreground">
                 {safeInvestments.length}
               </p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Active Investments</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">{t('active_investments_count')}</p>
             </CardContent>
           </Card>
         </div>
@@ -203,32 +203,32 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                   className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 cursor-pointer"
                 >
                   <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">Investment Plans</span>
-                  <span className="sm:hidden">Plans</span>
+                  <span className="hidden sm:inline">{t('plans_tab')}</span>
+                  <span className="sm:hidden">{t('plans_tab_short')}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="active-investments"
                   className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 cursor-pointer"
                 >
                   <Target className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">Active Investments</span>
-                  <span className="sm:hidden">Active</span>
+                  <span className="hidden sm:inline">{t('active_investments_tab')}</span>
+                  <span className="sm:hidden">{t('active_investments_tab_short')}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="calculator"
                   className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 cursor-pointer"
                 >
                   <Calculator className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">Calculator</span>
-                  <span className="sm:hidden">Calc</span>
+                  <span className="hidden sm:inline">{t('calculator_tab')}</span>
+                  <span className="sm:hidden">{t('calculator_tab_short')}</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="portfolio"
                   className="text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 cursor-pointer"
                 >
                   <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">Portfolio</span>
-                  <span className="sm:hidden">Port</span>
+                  <span className="hidden sm:inline">{t('portfolio_tab')}</span>
+                  <span className="sm:hidden">{t('portfolio_tab_short')}</span>
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -262,7 +262,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
                             <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 shadow-lg shadow-purple-600/50 text-xs font-bold px-3 py-1.5 animate-pulse">
                               <Star className="h-3 w-3 mr-1" />
-                              Most Popular
+                              {t('most_popular')}
                             </Badge>
                           </div>
                         )}
@@ -290,13 +290,13 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                             <div className="grid grid-cols-2 gap-3 text-center">
                               <div className="bg-muted/50 rounded-lg p-3 border border-border">
-                                <p className="text-xs text-muted-foreground">Min</p>
+                                <p className="text-xs text-muted-foreground">{t('minimum')}</p>
                                 <p className="text-base sm:text-lg font-bold text-card-foreground">
                                   ${(plan.minAmount || 0).toLocaleString()}
                                 </p>
                               </div>
                               <div className="bg-muted/50 rounded-lg p-3 border border-border">
-                                <p className="text-xs text-muted-foreground">Max</p>
+                                <p className="text-xs text-muted-foreground">{t('maximum')}</p>
                                 <p className="text-base sm:text-lg font-bold text-card-foreground">
                                   ${(plan.maxAmount || 0).toLocaleString()}
                                 </p>
@@ -309,7 +309,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                                 <span>{formatDuration(plan.duration, plan.durationUnit)}</span>
                               </div>
                               <div className="flex flex-col items-end text-right">
-                                <div className="flex items-center gap-1 text-muted-foreground text-xs">Estimated annual return</div>
+                                <div className="flex items-center gap-1 text-muted-foreground text-xs">{t('estimated_annual_return')}</div>
                                 <div className="flex items-center gap-1 text-accent font-bold">
                                   <TrendingUp className="h-4 w-4" />
                                   {getPlanAnnualRate(plan.planType || "Conservative Bond Fund").toFixed(1)}%
@@ -336,7 +336,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
 
                       <DialogContent className="max-w-md">
                         <DialogHeader>
-                          <DialogTitle>Invest in {plan.name}</DialogTitle>
+                          <DialogTitle>{t('invest_in')} {plan.name}</DialogTitle>
                         </DialogHeader>
                         <InvestmentForm
                           plan={plan}
