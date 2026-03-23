@@ -31,36 +31,34 @@ export default function ReferralPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background" key={key}>
-      <div className="container max-w-6xl py-8 px-4">
-        {/* Quick Action Button */}
-        {stats?.stats.canWithdraw && stats?.stats.referralBalance > 0 && (
-          <div className="mb-6 flex justify-end">
-            <Button
-              onClick={() => setWithdrawOpen(true)}
-              size="lg"
-              className="gap-2"
-            >
-              Transfer to Main Balance
-            </Button>
-          </div>
-        )}
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6" key={key}>
+      {/* Quick Action Button */}
+      {stats?.stats.canWithdraw && stats?.stats.referralBalance > 0 && (
+        <div className="flex justify-end">
+          <Button
+            onClick={() => setWithdrawOpen(true)}
+            size="sm"
+            className="gap-2 text-xs sm:text-sm"
+          >
+            Transfer to Main Balance
+          </Button>
+        </div>
+      )}
 
-        {/* Main Dashboard */}
-        <ReferralDashboard />
+      {/* Main Dashboard */}
+      <ReferralDashboard />
 
-        {/* Withdraw Modal */}
-        <ReferralWithdrawModal
-          open={withdrawOpen}
-          onOpenChange={setWithdrawOpen}
-          referralBalance={stats?.stats.referralBalance || 0}
-          canWithdraw={stats?.stats.canWithdraw || false}
-          referralsNeeded={stats?.stats.referralsNeeded || 0}
-          onSuccess={() => {
-            refetch()
-          }}
-        />
-      </div>
+      {/* Withdraw Modal */}
+      <ReferralWithdrawModal
+        open={withdrawOpen}
+        onOpenChange={setWithdrawOpen}
+        referralBalance={stats?.stats.referralBalance || 0}
+        canWithdraw={stats?.stats.canWithdraw || false}
+        referralsNeeded={stats?.stats.referralsNeeded || 0}
+        onSuccess={() => {
+          refetch()
+        }}
+      />
     </div>
   )
 }

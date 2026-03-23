@@ -239,16 +239,14 @@ export function ReferralDashboard() {
   )
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold">{t('title')}</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-2">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">{t('title')}</h1>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-2">
           {t('description')}
         </p>
       </div>
-
-      {/* Referral Code Section - Clean and Simple */}
       {stats?.referralCode && (
         <Card>
           <CardHeader>
