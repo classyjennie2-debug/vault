@@ -9,21 +9,7 @@ import {
   CardDescription,
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {
-  Users,
-  Copy,
-  CheckCircle2,
-  TrendingUp,
-  Lock,
-  Share2,
-  LinkIcon,
-  DollarSign,
-  Activity,
-  Crown,
-  ArrowRight,
-  QrCode,
-  Mail,
-} from 'lucide-react'
+import { Users, Copy, CheckCircle2, TrendingUp, DollarSign, Share2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
 interface ReferralStats {
@@ -47,7 +33,6 @@ export function ReferralDashboard() {
   const [stats, setStats] = useState<ReferralStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [copiedCode, setCopiedCode] = useState(false)
-  const [copiedLink, setCopiedLink] = useState(false)
 
   useEffect(() => {
     fetchReferralStats()
@@ -71,39 +56,33 @@ export function ReferralDashboard() {
     }
   }
 
-  const copyToClipboard = (text: string, type: 'code' | 'link') => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    if (type === 'code') {
-      setCopiedCode(true)
-      setTimeout(() => setCopiedCode(false), 2000)
-    } else {
-      setCopiedLink(true)
-      setTimeout(() => setCopiedLink(false), 2000)
-    }
+    setCopiedCode(true)
+    setTimeout(() => setCopiedCode(false), 2000)
     toast({
       title: 'Copied!',
-      description:
-        type === 'code'
-          ? 'Referral code copied to clipboard'
-          : 'Referral link copied to clipboard',
+      description: 'Referral code copied to clipboard',
     })
   }
 
-  const shareOnTwitter = () => {
-    const text = `Join me on Vault Capital! I'm earning 10% on referral deposits. Sign up with my code: ${stats?.referralCode?.code}`
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)} ${encodeURIComponent(stats?.referralCode?.referralLink || '')}`
-    window.open(url, '_blank')
-  }
-
-  const shareOnLinkedIn = () => {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(stats?.referralCode?.referralLink || '')}`
-    window.open(url, '_blank')
-  }
-
-  const shareViaEmail = () => {
-    const subject = 'Join me on Vault Capital - Earn 10% Referral Bonuses'
-    const body = `Check out Vault Capital! Use my referral code ${stats?.referralCode?.code} or this link:\n${stats?.referralCode?.referralLink}\n\nEarn 10% commission on every deposit from your referrals!`
-    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  const handleNativeShare = () => {
+    if (navigator.share && stats?.referralCode) {
+      const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats.referralCode.code}`
+      navigator.share({
+        title: 'Join Vault Capital',
+        text: `Join me on Vault Capital and earn 10% on referral deposits. Use my code: ${stats.referralCode.code}`,
+        url: referralUrl,
+      }).catch((err) => console.log('Share dismissed:', err))
+    } else {
+      // Fallback: copy the link
+      const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats?.referralCode?.code}`
+      navigator.clipboard.writeText(referralUrl)
+      toast({
+        title: 'Link Copied',
+        description: 'Referral link copied to clipboard',
+      })
+    }
   }
 
   if (loading) {
@@ -124,212 +103,112 @@ export function ReferralDashboard() {
     currency: 'USD',
   }).format(stats?.stats.totalEarned || 0)
 
-  const conversionRate =
-    stats?.referralCode && 'clicksCount' in stats.referralCode && stats.referralCode.clicksCount > 0
-      ? ((stats.stats.totalReferrals / (stats.referralCode.clicksCount as number)) * 100).toFixed(1)
-      : '0'
-
   const progressPercentage = Math.min(
     ((stats?.stats.totalReferrals || 0) / 10) * 100,
     100
   )
 
   return (
-    <div className="space-y-8">
-      {/* Premium Header Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-accent/20 via-purple-500/10 to-accent/20 blur-3xl" />
-        <div className="relative z-10 px-6 py-12 md:py-16">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center">
-                  <Crown className="h-6 w-6 text-accent" />
-                </div>
-                <div>
-                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                    Referral Program
-                  </h1>
-                  <p className="text-muted-foreground mt-1">
-                    Grow your earnings by sharing Vault Capital
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold">Referral Program</h1>
+        <p className="text-muted-foreground mt-2">
+          Earn 10% commission on every deposit from your referrals ($100+)
+        </p>
       </div>
 
-      {/* Main Referral Code Section - Premium Card */}
+      {/* Referral Code Section - Clean and Simple */}
       {stats?.referralCode && (
-        <Card className="border-2 border-accent/50 bg-gradient-to-br from-accent/5 via-background to-background overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl -z-10" />
-          <CardHeader className="pb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <LinkIcon className="h-6 w-6 text-accent" />
-                  Your Referral Code
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  Share with friends to earn 10% on their deposits
-                </CardDescription>
-              </div>
-            </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Referral Code</CardTitle>
+            <CardDescription>
+              Share this code with friends to earn 10% on their deposits
+            </CardDescription>
           </CardHeader>
-
-          <CardContent className="space-y-6">
-            {/* Main Code Display */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Code Section */}
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-muted-foreground">
-                  REFERRAL CODE
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-accent to-purple-500 rounded-lg blur opacity-25 group-hover:opacity-40 transition" />
-                  <div className="relative bg-background p-6 rounded-lg border-2 border-accent/30 flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-4xl font-mono font-bold text-accent drop-shadow-lg">
-                        {stats.referralCode.code}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Easy to share & remember
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => copyToClipboard(stats.referralCode!.code, 'code')}
-                      size="lg"
-                      variant={copiedCode ? 'default' : 'outline'}
-                      className="gap-2 whitespace-nowrap"
-                    >
-                      {copiedCode ? (
-                        <>
-                          <CheckCircle2 className="h-5 w-5" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-5 w-5" />
-                          Copy
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Full Link Section */}
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-muted-foreground">
-                  DIRECT LINK
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-accent rounded-lg blur opacity-25 group-hover:opacity-40 transition" />
-                  <div className="relative bg-background p-6 rounded-lg border-2 border-purple-500/30 h-full flex flex-col justify-between">
-                    <p className="text-sm font-mono text-muted-foreground break-all mb-3">
-                      {stats.referralCode.referralLink}
-                    </p>
-                    <Button
-                      onClick={() => copyToClipboard(stats.referralCode!.referralLink, 'link')}
-                      variant={copiedLink ? 'default' : 'outline'}
-                      size="sm"
-                      className="w-full gap-2"
-                    >
-                      {copiedLink ? (
-                        <>
-                          <CheckCircle2 className="h-4 w-4" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4" />
-                          Copy Link
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
+          <CardContent className="space-y-4">
+            {/* Code Display - Large and Prominent */}
+            <div className="bg-muted p-6 rounded-lg border border-border">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-3">Referral Code</p>
+                <p className="text-5xl font-bold font-mono tracking-wide mb-4">
+                  {stats.referralCode.code}
+                </p>
+                <Button
+                  onClick={() => copyToClipboard(stats.referralCode!.code)}
+                  size="lg"
+                  className="gap-2 w-full"
+                >
+                  {copiedCode ? (
+                    <>
+                      <CheckCircle2 className="h-5 w-5" />
+                      Copied to Clipboard
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-5 w-5" />
+                      Copy Code
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
 
-            {/* Quick Stats Row */}
+            {/* Referral Link & Share */}
+            <div className="space-y-3">
+              <div className="p-4 border border-border rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">Referral Link (includes your code)</p>
+                <p className="text-sm font-mono break-all text-muted-foreground mb-3">
+                  {`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats.referralCode.code}`}
+                </p>
+              </div>
+
+              {/* Share Button - Opens Native Share or Copies Link */}
+              <Button
+                onClick={handleNativeShare}
+                variant="outline"
+                size="lg"
+                className="w-full gap-2"
+              >
+                <Share2 className="h-5 w-5" />
+                Share with Friends
+              </Button>
+            </div>
+
+            {/* Link Performance */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                <p className="text-xs font-semibold text-muted-foreground mb-2">LINK CLICKS</p>
+              <div className="p-4 border border-border rounded-lg text-center">
+                <p className="text-sm text-muted-foreground mb-2">Link Clicks</p>
                 <p className="text-2xl font-bold">{stats.referralCode.clicksCount}</p>
               </div>
-              <div className="bg-muted/50 rounded-lg p-4 border border-border">
-                <p className="text-xs font-semibold text-muted-foreground mb-2">
-                  CONVERSION RATE
-                </p>
-                <p className="text-2xl font-bold text-accent">{conversionRate}%</p>
-              </div>
-            </div>
-
-            {/* Sharing Buttons */}
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm font-semibold text-muted-foreground mb-4">
-                SHARE YOUR REFERRAL CODE
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Button
-                  onClick={() => copyToClipboard(stats.referralCode!.code, 'code')}
-                  variant="outline"
-                  className="gap-2 h-auto py-3"
-                >
-                  <Copy className="h-4 w-4" />
-                  <span className="text-xs">Copy Code</span>
-                </Button>
-                <Button
-                  onClick={shareViaEmail}
-                  variant="outline"
-                  className="gap-2 h-auto py-3"
-                >
-                  <Mail className="h-4 w-4" />
-                  <span className="text-xs">Email</span>
-                </Button>
-                <Button
-                  onClick={shareOnTwitter}
-                  variant="outline"
-                  className="gap-2 h-auto py-3"
-                >
-                  <Share2 className="h-4 w-4" />
-                  <span className="text-xs">Twitter</span>
-                </Button>
-                <Button
-                  onClick={shareOnLinkedIn}
-                  variant="outline"
-                  className="gap-2 h-auto py-3"
-                >
-                  <Share2 className="h-4 w-4" />
-                  <span className="text-xs">LinkedIn</span>
-                </Button>
+              <div className="p-4 border border-border rounded-lg text-center">
+                <p className="text-sm text-muted-foreground mb-2">Signups</p>
+                <p className="text-2xl font-bold">{stats?.stats.totalReferrals || 0}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Advanced Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Grid - Simple */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Total Referrals */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-2xl" />
-          <CardHeader className="pb-4 relative z-10">
-            <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-2 uppercase">
-              <Users className="h-4 w-4 text-blue-500" />
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Users className="h-4 w-4" />
               Active Referrals
             </CardTitle>
           </CardHeader>
-          <CardContent className="relative z-10">
+          <CardContent>
             <div className="space-y-3">
               <div className="text-4xl font-bold">{stats?.stats.totalReferrals || 0}</div>
 
               {/* Progress Bar */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted-foreground">Milestone</span>
+                  <span className="text-muted-foreground">To Withdraw</span>
                   <span className="font-semibold">
                     {Math.min(stats?.stats.totalReferrals || 0, 10)}/10
                   </span>
@@ -337,7 +216,7 @@ export function ReferralDashboard() {
                 <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                   <div
                     className={`h-full transition-all duration-500 ${
-                      stats?.stats.canWithdraw ? 'bg-green-500' : 'bg-blue-500'
+                      stats?.stats.canWithdraw ? 'bg-green-500' : 'bg-black'
                     }`}
                     style={{ width: `${progressPercentage}%` }}
                   />
@@ -354,205 +233,119 @@ export function ReferralDashboard() {
         </Card>
 
         {/* Total Earned */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-2xl" />
-          <CardHeader className="pb-4 relative z-10">
-            <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-2 uppercase">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
               Total Earned
             </CardTitle>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="space-y-3">
-              <div className="text-4xl font-bold text-green-600">{formattedEarned}</div>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="text-4xl font-bold">{formattedEarned}</div>
               <p className="text-xs text-muted-foreground">
-                {stats?.stats.totalReferrals || 0} successful conversions
+                {stats?.stats.totalReferrals || 0} conversions
               </p>
             </div>
           </CardContent>
         </Card>
 
         {/* Available Balance */}
-        <Card className="relative overflow-hidden border-accent/50">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-accent/10 rounded-full blur-2xl" />
-          <CardHeader className="pb-4 relative z-10">
-            <CardTitle className="text-xs font-semibold text-accent flex items-center gap-2 uppercase">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
-              Available
+              Available Balance
             </CardTitle>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="space-y-3">
-              <div className="text-4xl font-bold text-accent">{formattedBalance}</div>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="text-4xl font-bold">{formattedBalance}</div>
               <p className="text-xs text-muted-foreground">
-                {stats?.stats.canWithdraw
-                  ? 'Ready to transfer'
-                  : 'In referral pool'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Total Withdrawn */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full blur-2xl" />
-          <CardHeader className="pb-4 relative z-10">
-            <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-2 uppercase">
-              <Activity className="h-4 w-4 text-purple-500" />
-              Withdrawn
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="space-y-3">
-              <div className="text-4xl font-bold">
-                {new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                }).format(stats?.stats.totalWithdrawn || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Transferred to main balance
+                {stats?.stats.canWithdraw ? 'Ready to transfer' : 'Locked'}
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Key Metrics Section */}
+      {/* Program Info */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-accent" />
-            Program Overview
-          </CardTitle>
-          <CardDescription>
-            How your referral program is performing
-          </CardDescription>
+          <CardTitle className="text-lg">How It Works</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-muted-foreground">Commission Rate</p>
-              <p className="text-3xl font-bold text-accent">10%</p>
-              <p className="text-xs text-muted-foreground">Of deposits $100+</p>
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-black/10 text-black font-bold text-sm">
+                1
+              </div>
+              <h4 className="font-semibold">Share Your Code</h4>
+              <p className="text-sm text-muted-foreground">
+                Copy your referral code and share it with friends
+              </p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-muted-foreground">Minimum Withdrawal</p>
-              <p className="text-3xl font-bold text-accent">10</p>
-              <p className="text-xs text-muted-foreground">Active referrals required</p>
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-black/10 text-black font-bold text-sm">
+                2
+              </div>
+              <h4 className="font-semibold">They Register</h4>
+              <p className="text-sm text-muted-foreground">
+                Friends sign up using your code and deposit $100+
+              </p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-muted-foreground">Program Status</p>
-              <p className="text-3xl font-bold text-green-600">Active</p>
-              <p className="text-xs text-muted-foreground">Year-round program</p>
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-black/10 text-black font-bold text-sm">
+                3
+              </div>
+              <h4 className="font-semibold">Earn 10%</h4>
+              <p className="text-sm text-muted-foreground">
+                Automatically earn 10% commission on their deposits
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Professional Referrals Table */}
+      {/* Referrals Table */}
       {stats && stats.referrals.length > 0 && (
         <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-accent" />
-                  Your Active Referrals
-                </CardTitle>
-                <CardDescription className="mt-1">
-                  {stats.referrals.length} person{stats.referrals.length !== 1 ? 's' : ''} have
-                  joined using your referral code
-                </CardDescription>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold text-muted-foreground">Total Volume</p>
-                <p className="text-2xl font-bold text-accent">
-                  {new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  }).format(
-                    stats.referrals.reduce((sum, r) => sum + (r.lastDepositAmount || 0), 0)
-                  )}
-                </p>
-              </div>
-            </div>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Your Referrals
+            </CardTitle>
+            <CardDescription>
+              {stats.referrals.length} person{stats.referrals.length !== 1 ? 's' : ''} have joined
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-4 px-3 text-sm font-semibold text-muted-foreground">
-                      REFERRAL
-                    </th>
-                    <th className="text-left py-4 px-3 text-sm font-semibold text-muted-foreground">
-                      EMAIL
-                    </th>
-                    <th className="text-right py-4 px-3 text-sm font-semibold text-muted-foreground">
-                      DEPOSIT
-                    </th>
-                    <th className="text-right py-4 px-3 text-sm font-semibold text-muted-foreground">
-                      YOUR BONUS
-                    </th>
-                    <th className="text-center py-4 px-3 text-sm font-semibold text-muted-foreground">
-                      STATUS
-                    </th>
-                    <th className="text-left py-4 px-3 text-sm font-semibold text-muted-foreground">
-                      DATE
-                    </th>
+              <table className="w-full text-sm">
+                <thead className="border-b border-border">
+                  <tr className="text-muted-foreground">
+                    <th className="text-left py-3 px-3 font-medium">Name</th>
+                    <th className="text-left py-3 px-3 font-medium">Email</th>
+                    <th className="text-right py-3 px-3 font-medium">Deposit</th>
+                    <th className="text-right py-3 px-3 font-medium">Your Bonus</th>
+                    <th className="text-left py-3 px-3 font-medium">Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {stats.referrals.map((referral) => (
-                    <tr
-                      key={referral.id}
-                      className="hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="py-4 px-3">
-                        <div>
-                          <p className="font-medium">{referral.name || 'User'}</p>
-                          <p className="text-xs text-muted-foreground">{referral.email}</p>
-                        </div>
+                    <tr key={referral.id} className="hover:bg-muted/50">
+                      <td className="py-3 px-3">{referral.name || 'User'}</td>
+                      <td className="py-3 px-3 text-muted-foreground">{referral.email}</td>
+                      <td className="py-3 px-3 text-right">
+                        {referral.lastDepositAmount > 0
+                          ? `$${referral.lastDepositAmount.toFixed(2)}`
+                          : '-'}
                       </td>
-                      <td className="py-4 px-3">
-                        <p className="text-sm text-muted-foreground">{referral.email}</p>
+                      <td className="py-3 px-3 text-right font-semibold">
+                        {referral.earnedBonus > 0 ? `+$${referral.earnedBonus.toFixed(2)}` : '-'}
                       </td>
-                      <td className="py-4 px-3 text-right">
-                        <p className="font-semibold">
-                          {referral.lastDepositAmount > 0
-                            ? `$${referral.lastDepositAmount.toFixed(2)}`
-                            : '-'}
-                        </p>
-                      </td>
-                      <td className="py-4 px-3 text-right">
-                        {referral.earnedBonus > 0 ? (
-                          <span className="inline-flex items-center gap-1 bg-accent/10 text-accent px-3 py-1 rounded-full text-sm font-semibold">
-                            +${referral.earnedBonus.toFixed(2)}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">Pending</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-3 text-center">
-                        {referral.earnedBonus > 0 ? (
-                          <span className="inline-flex items-center gap-1 bg-green-500/10 text-green-600 px-3 py-1 rounded-full text-xs font-semibold">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Active
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 bg-yellow-500/10 text-yellow-600 px-3 py-1 rounded-full text-xs font-semibold">
-                            <Activity className="h-3 w-3" />
-                            Pending
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-4 px-3 text-sm text-muted-foreground">
-                        {new Date(referral.signupDate).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
+                      <td className="py-3 px-3 text-muted-foreground">
+                        {new Date(referral.signupDate).toLocaleDateString()}
                       </td>
                     </tr>
                   ))}
@@ -563,73 +356,22 @@ export function ReferralDashboard() {
         </Card>
       )}
 
-      {/* Empty State - Premium */}
+      {/* Empty State */}
       {stats && stats.referrals.length === 0 && (
-        <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-purple-500/5" />
-          <CardContent className="relative z-10 pt-12 pb-12 text-center">
-            <div className="inline-flex h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Users className="h-8 w-8 text-muted-foreground/50" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Ready to Start Earning?</h3>
-            <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-              Share your referral code with friends and earn 10% commission on their deposits.
-              Your first referral could be just a click away!
+        <Card>
+          <CardContent className="pt-12 pb-12 text-center">
+            <Users className="h-8 w-8 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold mb-2">No Referrals Yet</h3>
+            <p className="text-muted-foreground mb-4">
+              Start sharing your referral code to earn commissions
             </p>
-            <Button
-              onClick={() => copyToClipboard(stats?.referralCode?.code || '', 'code')}
-              size="lg"
-              className="gap-2"
-            >
-              <Copy className="h-5 w-5" />
-              Copy Your Code & Share
-              <ArrowRight className="h-5 w-5" />
+            <Button onClick={() => copyToClipboard(stats?.referralCode?.code || '')} className="gap-2">
+              <Copy className="h-4 w-4" />
+              Copy Code & Share
             </Button>
           </CardContent>
         </Card>
       )}
-
-      {/* How It Works Section */}
-      <Card className="bg-gradient-to-br from-muted/50 to-muted/25">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crown className="h-5 w-5 text-accent" />
-            How It Works
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-accent/20 text-accent font-bold text-sm">
-                1
-              </div>
-              <h4 className="font-semibold">Share Your Code</h4>
-              <p className="text-sm text-muted-foreground">
-                Copy and share your unique referral code {stats?.referralCode?.code} with
-                friends
-              </p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-accent/20 text-accent font-bold text-sm">
-                2
-              </div>
-              <h4 className="font-semibold">They Register</h4>
-              <p className="text-sm text-muted-foreground">
-                Friends sign up with your code and make a deposit of $100 or more
-              </p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-accent/20 text-accent font-bold text-sm">
-                3
-              </div>
-              <h4 className="font-semibold">Earn 10%</h4>
-              <p className="text-sm text-muted-foreground">
-                Automatically earn 10% commission on every deposit they make
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
