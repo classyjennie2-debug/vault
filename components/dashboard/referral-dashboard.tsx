@@ -239,11 +239,11 @@ export function ReferralDashboard() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold">{t('title')}</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-2">
           {t('description')}
         </p>
       </div>
@@ -252,23 +252,23 @@ export function ReferralDashboard() {
       {stats?.referralCode && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('code')}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg sm:text-xl">{t('code')}</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
               {t('inviteFriends')}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             {/* Code Display - Large and Prominent */}
-            <div className="bg-muted p-6 rounded-lg border border-border">
+            <div className="bg-muted p-3 sm:p-6 rounded-lg border border-border">
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-3">{t('code')}</p>
-                <p className="text-5xl font-bold font-mono tracking-wide mb-4">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">{t('code')}</p>
+                <p className="text-2xl sm:text-4xl lg:text-5xl font-bold font-mono tracking-wide mb-3 sm:mb-4 break-all">
                   {stats.referralCode.code}
                 </p>
                 <Button
                   onClick={() => copyToClipboard(stats.referralCode!.code)}
-                  size="lg"
-                  className="gap-2 w-full"
+                  size="sm"
+                  className="gap-2 w-full text-xs sm:text-sm"
                 >
                   {copiedCode ? (
                     <>
@@ -286,10 +286,10 @@ export function ReferralDashboard() {
             </div>
 
             {/* Referral Link & Share */}
-            <div className="space-y-3">
-              <div className="p-4 border border-border rounded-lg">
-                <p className="text-sm text-muted-foreground mb-2">{t('referralLink')}</p>
-                <p className="text-sm font-mono break-all text-muted-foreground mb-3">
+            <div className="space-y-2 sm:space-y-3">
+              <div className="p-3 sm:p-4 border border-border rounded-lg">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2">{t('referralLink')}</p>
+                <p className="text-xs sm:text-sm font-mono break-all text-muted-foreground mb-2 sm:mb-3">
                   {`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats.referralCode.code}`}
                 </p>
               </div>
@@ -298,23 +298,23 @@ export function ReferralDashboard() {
               <Button
                 onClick={handleNativeShare}
                 variant="outline"
-                size="lg"
-                className="w-full gap-2"
+                size="sm"
+                className="w-full gap-2 text-xs sm:text-sm"
               >
-                <Share2 className="h-5 w-5" />
+                <Share2 className="h-4 w-4" />
                 {t('shareWithFriends')}
               </Button>
             </div>
 
             {/* Link Performance */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 border border-border rounded-lg text-center">
-                <p className="text-sm text-muted-foreground mb-2">{t('linkClicks')}</p>
-                <p className="text-2xl font-bold">{stats.referralCode.clicksCount}</p>
+            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+              <div className="p-3 sm:p-4 border border-border rounded-lg text-center">
+                <p className="text-xs text-muted-foreground mb-1 sm:mb-2">{t('linkClicks')}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.referralCode.clicksCount}</p>
               </div>
-              <div className="p-4 border border-border rounded-lg text-center">
-                <p className="text-sm text-muted-foreground mb-2">{t('signups')}</p>
-                <p className="text-2xl font-bold">{stats?.stats.totalReferrals || 0}</p>
+              <div className="p-3 sm:p-4 border border-border rounded-lg text-center">
+                <p className="text-xs text-muted-foreground mb-1 sm:mb-2">{t('signups')}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats?.stats.totalReferrals || 0}</p>
               </div>
             </div>
           </CardContent>
