@@ -16,6 +16,7 @@ import {
   YAxis,
 } from "recharts"
 import { TrendingUp, Activity } from "lucide-react"
+import { useI18n } from "@/hooks/use-i18n"
 
 interface PortfolioChartProps {
   data: { month: string; value: number }[]
@@ -46,6 +47,8 @@ const CustomTooltip = ({ active, payload }: {
 }
 
 export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: PortfolioChartProps) {
+  const { t } = useI18n("dashboardmain")
+  
   // Calculate 30-day high, low, and average from the data
   const values = data.map(item => item.value)
   const thirtyDayHigh = values.length > 0 ? Math.max(...values) : 0
@@ -59,7 +62,7 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
           <div className="flex-1 min-w-0">
             <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
               <Activity className="h-4 w-4 text-primary flex-shrink-0" />
-              <span className="truncate">Portfolio Performance</span>
+              <span className="truncate">{t("portfolio_performance")}</span>
             </CardTitle>
             <div className="mt-2 sm:mt-3 lg:mt-4">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white">
@@ -68,7 +71,7 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
               <div className="flex items-center gap-2 mt-1 sm:mt-2">
                 <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600 dark:text-emerald-500 flex-shrink-0" />
                 <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-500">
-                  +{monthlyChange}% this month
+                  +{monthlyChange}% {t("this_month")}
                 </span>
               </div>
             </div>

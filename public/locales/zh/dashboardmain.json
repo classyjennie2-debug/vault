@@ -45,5 +45,21 @@
   "can_withdraw": "✓ 可以提取",
   "more_needed": "还需要",
   "ready_to_transfer": "准备转账",
-  "view_details": "查看详情"
+  "view_details": "查看详情",
+  "portfolio_performance": "投资组合表现",
+  "no_transactions_yet": "暂无交易",
+  "this_month": "本月",
+  "no_recent_activity": "无最近活动",
+  "activity_sign_in": "登录",
+  "activity_sign_out": "登出",
+  "activity_deposit": "存款",
+  "activity_withdrawal": "提取",
+  "activity_investment": "投资",
+  "activity_password_changed": "密码已更改",
+  "activity_profile_updated": "资料已更新",
+  "activity_deletion_request": "删除请求",
+  "just_now": "刚刚",
+  "min_ago": "分钟前",
+  "hours_ago": "小时前",
+  "days_ago": "天前"
 }

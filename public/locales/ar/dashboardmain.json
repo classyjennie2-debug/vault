@@ -45,5 +45,21 @@
   "can_withdraw": "✓ يمكن السحب",
   "more_needed": "مطلوب المزيد",
   "ready_to_transfer": "جاهز للتحويل",
-  "view_details": "عرض التفاصيل"
+  "view_details": "عرض التفاصيل",
+  "portfolio_performance": "أداء المحفظة",
+  "no_transactions_yet": "لا توجد معاملات حتى الآن",
+  "this_month": "هذا الشهر",
+  "no_recent_activity": "لا توجد أنشطة حديثة",
+  "activity_sign_in": "تسجيل الدخول",
+  "activity_sign_out": "تسجيل الخروج",
+  "activity_deposit": "إيداع",
+  "activity_withdrawal": "الانسحاب",
+  "activity_investment": "الاستثمار",
+  "activity_password_changed": "تم تغيير كلمة المرور",
+  "activity_profile_updated": "تم تحديث الملف الشخصي",
+  "activity_deletion_request": "طلب الحذف",
+  "just_now": "للتو",
+  "min_ago": "قبل دقائق",
+  "hours_ago": "قبل ساعات",
+  "days_ago": "قبل أيام"
 }

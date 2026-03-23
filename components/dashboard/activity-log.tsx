@@ -1,4 +1,5 @@
 import { ArrowUpRight, ArrowDownRight, User, Lock, Settings, Trash2, LogOut, LogIn, Globe, Smartphone } from "lucide-react"
+import { useI18n } from "@/hooks/use-i18n"
 
 export type ActivityType =
   | "login"
@@ -36,32 +37,6 @@ const activityIcons: Record<ActivityType, React.ReactNode> = {
   account_deletion_request: <Trash2 className="h-4 w-4" />,
 }
 
-const activityLabels: Record<ActivityType, string> = {
-  login: "Sign In",
-  logout: "Sign Out",
-  deposit: "Deposit",
-  withdrawal: "Withdrawal",
-  investment: "Investment",
-  password_change: "Password Changed",
-  profile_update: "Profile Updated",
-  account_deletion_request: "Deletion Request",
-}
-
-function formatTimeAgo(timestamp: string): string {
-  const now = new Date()
-  const activityTime = new Date(timestamp)
-  const diffMs = now.getTime() - activityTime.getTime()
-  const diffMins = Math.floor(diffMs / (1000 * 60))
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diffMins < 1) return "Just now"
-  if (diffMins < 60) return `${diffMins} min ago`
-  if (diffHours < 24) return `${diffHours} hours ago`
-  if (diffDays < 30) return `${diffDays} days ago`
-  return activityTime.toLocaleDateString()
-}
-
 function formatFullDateTime(timestamp: string): string {
   const date = new Date(timestamp)
   return date.toLocaleString()
@@ -74,13 +49,44 @@ interface ActivityLogProps {
 }
 
 export function ActivityLog({ activities = [], limit = 10, expanded = false }: ActivityLogProps) {
+  const { t } = useI18n("dashboardmain")
+  
+  function getActivityLabel(activityType: ActivityType): string {
+    const labelMap: Record<ActivityType, string> = {
+      login: t("activity_sign_in"),
+      logout: t("activity_sign_out"),
+      deposit: t("activity_deposit"),
+      withdrawal: t("activity_withdrawal"),
+      investment: t("activity_investment"),
+      password_change: t("activity_password_changed"),
+      profile_update: t("activity_profile_updated"),
+      account_deletion_request: t("activity_deletion_request"),
+    }
+    return labelMap[activityType]
+  }
+
+  function formatTimeAgo(timestamp: string): string {
+    const now = new Date()
+    const activityTime = new Date(timestamp)
+    const diffMs = now.getTime() - activityTime.getTime()
+    const diffMins = Math.floor(diffMs / (1000 * 60))
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffMins < 1) return t("just_now")
+    if (diffMins < 60) return `${diffMins} ${t("min_ago")}`
+    if (diffHours < 24) return `${diffHours} ${t("hours_ago")}`
+    if (diffDays < 30) return `${diffDays} ${t("days_ago")}`
+    return activityTime.toLocaleDateString()
+  }
+
   const displayActivities = (activities || []).slice(0, limit)
 
   return (
     <div className="space-y-3">
       {displayActivities.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">
-          No recent activity
+          {t("no_recent_activity")}
         </p>
       ) : (
         displayActivities.map((activity) => {
@@ -104,7 +110,7 @@ export function ActivityLog({ activities = [], limit = 10, expanded = false }: A
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground">
-                    {activityLabels[activity.type]}
+                    {getActivityLabel(activity.type)}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {activity.description}

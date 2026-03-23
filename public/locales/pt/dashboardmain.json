@@ -45,5 +45,21 @@
   "can_withdraw": "✓ Pode sacar",
   "more_needed": "mais necessários",
   "ready_to_transfer": "Pronto para transferir",
-  "view_details": "Ver Detalhes"
+  "view_details": "Ver Detalhes",
+  "portfolio_performance": "Desempenho da Carteira",
+  "no_transactions_yet": "Nenhuma transação ainda",
+  "this_month": "neste mês",
+  "no_recent_activity": "Nenhuma atividade recente",
+  "activity_sign_in": "Fazer Login",
+  "activity_sign_out": "Fazer Logout",
+  "activity_deposit": "Depósito",
+  "activity_withdrawal": "Saque",
+  "activity_investment": "Investimento",
+  "activity_password_changed": "Senha Alterada",
+  "activity_profile_updated": "Perfil Atualizado",
+  "activity_deletion_request": "Solicitação de Exclusão",
+  "just_now": "Agora mesmo",
+  "min_ago": "min atrás",
+  "hours_ago": "horas atrás",
+  "days_ago": "dias atrás"
 }

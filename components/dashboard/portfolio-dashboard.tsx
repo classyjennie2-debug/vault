@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { TrendingUp, TrendingDown, DollarSign, Target } from "lucide-react"
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts"
+import { useI18n } from "@/hooks/use-i18n"
 
 interface PortfolioDashboardProps {
   totalBalance: number
@@ -29,6 +30,7 @@ export function PortfolioDashboard({
   portfolioData,
   allocations,
 }: PortfolioDashboardProps) {
+  const { t } = useI18n("dashboardmain")
   const safePortfolioData = Array.isArray(portfolioData) ? portfolioData : []
   const safeAllocations = Array.isArray(allocations) ? allocations : []
 
@@ -43,7 +45,7 @@ export function PortfolioDashboard({
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Balance
+              {t("total_balance")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -59,7 +61,7 @@ export function PortfolioDashboard({
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Invested
+              {t("total_invested")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -127,7 +129,7 @@ export function PortfolioDashboard({
         {/* Performance Chart - Line Chart */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Portfolio Performance</CardTitle>
+            <CardTitle className="text-base">{t("portfolio_performance")}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>

@@ -5,17 +5,19 @@ import { ArrowUpRight, ArrowDownLeft } from "lucide-react"
 import { useState } from "react"
 import { TransactionDetailModal } from "./transaction-detail-modal"
 import { formatTransactionStatus } from "@/lib/transaction-utils"
+import { useI18n } from "@/hooks/use-i18n"
 
 export function RecentTransactionsSynced() {
   const { recentTransactions, isLoading } = useDashboard()
+  const { t } = useI18n("dashboardmain")
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
 
   if (!recentTransactions || recentTransactions.length === 0) {
     return (
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 md:p-6">
-        <h3 className="text-lg font-semibold mb-4">Recent Transactions</h3>
+        <h3 className="text-lg font-semibold mb-4">{t("recent_transactions")}</h3>
         <div className="text-center py-8">
-          <p className="text-slate-500 dark:text-slate-400">No transactions yet</p>
+          <p className="text-slate-500 dark:text-slate-400">{t("no_transactions_yet")}</p>
         </div>
       </div>
     )
@@ -36,10 +38,10 @@ export function RecentTransactionsSynced() {
     <>
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 md:p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center justify-between">
-          Recent Transactions
+          {t("recent_transactions")}
           {isLoading && (
             <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded">
-              Syncing...
+              {t("syncing_label")}
             </span>
           )}
         </h3>

@@ -45,5 +45,21 @@
   "can_withdraw": "✓ Can withdraw",
   "more_needed": "more needed",
   "ready_to_transfer": "Ready to transfer",
-  "view_details": "View Details"
+  "view_details": "View Details",
+  "portfolio_performance": "Portfolio Performance",
+  "no_transactions_yet": "No transactions yet",
+  "this_month": "this month",
+  "no_recent_activity": "No recent activity",
+  "activity_sign_in": "Sign In",
+  "activity_sign_out": "Sign Out",
+  "activity_deposit": "Deposit",
+  "activity_withdrawal": "Withdrawal",
+  "activity_investment": "Investment",
+  "activity_password_changed": "Password Changed",
+  "activity_profile_updated": "Profile Updated",
+  "activity_deletion_request": "Deletion Request",
+  "just_now": "Just now",
+  "min_ago": "min ago",
+  "hours_ago": "hours ago",
+  "days_ago": "days ago"
 }

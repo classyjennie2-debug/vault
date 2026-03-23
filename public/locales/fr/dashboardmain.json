@@ -45,5 +45,21 @@
   "can_withdraw": "✓ Peut retirer",
   "more_needed": "plus nécessaires",
   "ready_to_transfer": "Prêt à transférer",
-  "view_details": "Voir les Détails"
+  "view_details": "Voir les Détails",
+  "portfolio_performance": "Performance du Portefeuille",
+  "no_transactions_yet": "Aucune transaction pour le moment",
+  "this_month": "ce mois",
+  "no_recent_activity": "Aucune activité récente",
+  "activity_sign_in": "Connexion",
+  "activity_sign_out": "Déconnexion",
+  "activity_deposit": "Dépôt",
+  "activity_withdrawal": "Retrait",
+  "activity_investment": "Investissement",
+  "activity_password_changed": "Mot de Passe Modifié",
+  "activity_profile_updated": "Profil Mis à Jour",
+  "activity_deletion_request": "Demande de Suppression",
+  "just_now": "À l'instant",
+  "min_ago": "min passée",
+  "hours_ago": "heures passées",
+  "days_ago": "jours passés"
 }
