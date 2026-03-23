@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useEffect } from "react"
 import {
   Shield,
   TrendingUp,
@@ -108,7 +109,12 @@ const planDetails: Record<string, { risk: string; featured: boolean; desc: strin
 }
 
 export function LandingClient({ plans }: LandingClientProps) {
-  const { t } = useI18n("landing")
+  const { t, language } = useI18n("landing")
+  
+  // Log language changes for debugging
+  useEffect(() => {
+    console.log(`[LandingClient] Language changed to: ${language}`)
+  }, [language])
 
   return (
     <div className="min-h-screen bg-background">
