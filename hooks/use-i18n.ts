@@ -15,17 +15,22 @@ export function useI18n(namespace: string = 'common') {
   // Load language preference
   useEffect(() => {
     const saved = (typeof window !== 'undefined' && localStorage.getItem('language')) as typeof language | null
-    setLanguage(saved || 'en')
+    const lang = saved || 'en'
+    console.log(`[i18n] Loaded language from localStorage: ${lang}`)
+    setLanguage(lang)
   }, [])
 
   // Load translations for namespace/language
   useEffect(() => {
     let cancelled = false
     const load = async () => {
+      console.log(`[i18n] Loading ${language}/${namespace}...`)
       try {
         const res = await fetch(`/locales/${language}/${namespace}.json`)
+        console.log(`[i18n] Fetch response status: ${res.status} for ${language}/${namespace}`)
         if (!res.ok) throw new Error(`Failed to load ${language}/${namespace}`)
         const json = (await res.json()) as Dictionary
+        console.log(`[i18n] Loaded ${Object.keys(json).length} keys from ${language}/${namespace}`)
         if (!cancelled) setDict(json)
       } catch (error) {
         console.warn(`[i18n] ${error}. Falling back to English for ${namespace}.`)
@@ -33,9 +38,11 @@ export function useI18n(namespace: string = 'common') {
           const res = await fetch(`/locales/en/${namespace}.json`)
           if (res.ok) {
             const json = (await res.json()) as Dictionary
+            console.log(`[i18n] Fallback: Loaded ${Object.keys(json).length} keys from en/${namespace}`)
             if (!cancelled) setDict(json)
           }
         } catch (_) {
+          console.error(`[i18n] Failed to load fallback en/${namespace}`)
           if (!cancelled) setDict({})
         }
       }
