@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { Globe } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export function LanguageSwitcher() {
   const [language, setLanguage] = useState<string>('en')
@@ -28,18 +28,35 @@ export function LanguageSwitcher() {
     window.location.reload()
   }
 
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" disabled>
+        <Globe className="h-4 w-4" />
+      </Button>
+    )
+  }
+
   return (
-    <div className="flex items-center gap-1.5">
-      <Globe className="h-4 w-4 text-muted-foreground" />
-      <Select value={mounted ? language : 'en'} onValueChange={handleLanguageChange} disabled={!mounted}>
-        <SelectTrigger className="w-[100px] h-9">
-          <SelectValue placeholder="EN" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="en">English</SelectItem>
-          <SelectItem value="es">Español</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" title="Change Language">
+          <Globe className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={() => handleLanguageChange('en')}
+          className={language === 'en' ? 'bg-accent' : ''}
+        >
+          English
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => handleLanguageChange('es')}
+          className={language === 'es' ? 'bg-accent' : ''}
+        >
+          Español
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

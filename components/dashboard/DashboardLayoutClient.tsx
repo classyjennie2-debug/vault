@@ -18,6 +18,7 @@ import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { Logo } from "@/components/ui/logo"
 import { BottomNavBar } from "@/components/dashboard/bottom-nav-bar"
 import { WelcomePopup } from "@/components/dashboard/welcome-popup"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 interface Props {
   children: React.ReactNode
@@ -53,7 +54,8 @@ export default function DashboardLayoutClient({ children, user, firstName = "", 
       {/* Top Header - Desktop Only */}
       <header className="hidden lg:flex h-16 items-center justify-between border-b border-border bg-card px-8 sticky top-0 z-20">
         <div className="flex-1"></div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           <NotificationBell />
           <UserMenu user={user} />
         </div>
@@ -111,14 +113,8 @@ export default function DashboardLayoutClient({ children, user, firstName = "", 
               <Logo showText={false} size="sm" />
               <span className="font-semibold text-sm sm:text-base text-foreground font-serif truncate">Vault Capital</span>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-              <NotificationBell />
-              <UserMenu user={user} />
-            </div>
-          </header>
-
-          {/* Main content */}
-          <main className="flex-1 overflow-y-auto overflow-x-auto p-2 sm:p-3 md:p-4 lg:p-6 pb-24 lg:pb-4">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <LanguageSwitcher />
             {children}
           </main>
         </div>
