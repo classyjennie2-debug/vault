@@ -14,6 +14,15 @@ export function LanguageSwitcher() {
   const [language, setLanguage] = useState<string>('en')
   const [mounted, setMounted] = useState(false)
 
+  const languages: Record<string, string> = {
+    en: 'English',
+    es: 'Español',
+    pt: 'Português',
+    fr: 'Français',
+    zh: '中文',
+    ar: 'العربية',
+  }
+
   // Load language from localStorage on mount
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') || 'en'
@@ -44,18 +53,15 @@ export function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          onClick={() => handleLanguageChange('en')}
-          className={language === 'en' ? 'bg-accent' : ''}
-        >
-          English
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => handleLanguageChange('es')}
-          className={language === 'es' ? 'bg-accent' : ''}
-        >
-          Español
-        </DropdownMenuItem>
+        {Object.entries(languages).map(([code, label]) => (
+          <DropdownMenuItem
+            key={code}
+            onClick={() => handleLanguageChange(code)}
+            className={language === code ? 'bg-accent' : ''}
+          >
+            {label}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   )

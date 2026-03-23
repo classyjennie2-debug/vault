@@ -1,0 +1,11 @@
+{
+  "title": "لوحة التحكم",
+  "welcome": "مرحبًا بك في فولت كابيتال",
+  "balance": "الرصيد",
+  "totalEarned": "إجمالي الأرباح",
+  "transactions": "المعاملات",
+  "viewAll": "عرض الكل",
+  "recentActivity": "النشاط الأخير",
+  "noActivity": "لا يوجد نشاط حديث",
+  "loading": "جارٍ التحميل..."
+}

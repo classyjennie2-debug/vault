@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useI18n } from "@/hooks/use-i18n"
 import {
   Card,
   CardContent,
@@ -46,6 +47,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ActivityLog, type Activity } from "@/components/dashboard/activity-log"
 
 export default function SettingsPage() {
+  const { t } = useI18n('settings')
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -255,10 +257,10 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
           <SettingsIcon className="h-8 w-8" />
-          Settings
+          {t('title')}
         </h1>
         <p className="text-muted-foreground mt-2">
-          Manage your account preferences and security
+          {t('description')}
         </p>
       </div>
 

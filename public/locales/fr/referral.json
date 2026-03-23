@@ -1,0 +1,17 @@
+{
+  "title": "Programme de parrainage",
+  "description": "Gagnez 10 % de commission sur chaque dépôt de vos filleuls (100 $+)",
+  "code": "Code de parrainage",
+  "copyCode": "Copier le code",
+  "copiedCode": "Copié dans le presse-papiers",
+  "shareWithFriends": "Partager avec des amis",
+  "referralLink": "Lien de parrainage (inclut votre code)",
+  "activeReferrals": "Parrainages actifs",
+  "totalEarned": "Total gagné",
+  "availableBalance": "Solde disponible",
+  "linkClicks": "Clics sur le lien",
+  "signups": "Inscriptions",
+  "earnCommission": "Gagnez 10 % sur les dépôts",
+  "minimum": "Dépôt minimum de 100 $ pour gagner",
+  "inviteFriends": "Invitez des amis et gagnez"
+}

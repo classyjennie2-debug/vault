@@ -1,10 +1,15 @@
+"use client"
+
 import Link from "next/link"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AuthNavButtons } from "@/components/auth-nav-buttons"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { useI18n } from "@/hooks/use-i18n"
 
 export default function Header() {
+  const { t } = useI18n('common')
+
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -37,25 +42,25 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Home
+              {t('home')}
             </Link>
             <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
+              {t('pricing')}
             </Link>
             <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              About
+              {t('about')}
             </Link>
             <Link href="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              FAQ
+              {t('faq')}
             </Link>
             <Link href="/help" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Help
+              {t('help')}
             </Link>
             <Link href="/security" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Security
+              {t('security')}
             </Link>
             <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Contact
+              {t('contact')}
             </Link>
           </nav>
 

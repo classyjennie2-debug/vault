@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useI18n } from "@/hooks/use-i18n"
 import {
   type CoinType,
   coinDetails,
@@ -25,6 +26,7 @@ import Link from "next/link"
 const coins: CoinType[] = ["USDT", "BTC", "ETH", "BNB", "TRX", "SOL"]
 
 export default function WithdrawPage() {
+  const { t } = useI18n('withdraw')
   const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null)
   const [amount, setAmount] = useState<string>("")
   const [cryptoAddress, setCryptoAddress] = useState<string>("")
@@ -199,10 +201,10 @@ export default function WithdrawPage() {
         </Button>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Withdraw Crypto
+            {t('title')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Select a coin, enter your address, and amount to withdraw. A 0.3% withdrawal fee applies.
+            {t('description')}
           </p>
         </div>
       </div>
@@ -224,10 +226,10 @@ export default function WithdrawPage() {
             <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
               1
             </span>
-            Select Cryptocurrency
+            {t('selectCryptocurrency')}
           </CardTitle>
           <CardDescription>
-            Choose the cryptocurrency you want to withdraw.
+            {t('chooseWithdraw')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -272,23 +274,23 @@ export default function WithdrawPage() {
               <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                 2
               </span>
-              Withdrawal Details
+              {t('withdrawalDetails')}
             </CardTitle>
             <CardDescription>
-              Enter your {selectedCoin} address and the amount you want to withdraw.
+              {t('enterDetails')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             {/* Amount */}
             <div className="space-y-2">
               <Label htmlFor="amount" className="text-sm font-medium">
-                Withdrawal Amount (USD)
+                {t('withdrawalAmount')}
               </Label>
               <div className="space-y-1.5">
                 <Input
                   id="amount"
                   type="number"
-                  placeholder="Enter amount"
+                  placeholder={t('enterAmount')}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   max={availableBalance}
@@ -314,18 +316,18 @@ export default function WithdrawPage() {
             {/* Crypto Address */}
             <div className="space-y-2">
               <Label htmlFor="address" className="text-sm font-medium">
-                {selectedCoin} Withdrawal Address
+                {t('withdrawalAddress')}
               </Label>
               <Input
                 id="address"
                 type="text"
-                placeholder={`Enter your ${selectedCoin} address`}
+                placeholder={t('enterAddress')}
                 value={cryptoAddress}
                 onChange={(e) => setCryptoAddress(e.target.value)}
                 className="border-border font-mono text-xs"
               />
               <p className="text-xs text-muted-foreground/70">
-                Make sure this is correct. Withdrawals sent to wrong addresses cannot be recovered.
+                {t('warningAddress')}
               </p>
             </div>
 
@@ -387,7 +389,7 @@ export default function WithdrawPage() {
             asChild
             className="flex-1"
           >
-            <Link href="/dashboard">Cancel</Link>
+            <Link href="/dashboard">{t('cancel')}</Link>
           </Button>
           <Button
             type="submit"
@@ -397,10 +399,10 @@ export default function WithdrawPage() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
+                {t('processing')}
               </>
             ) : (
-              "Request Withdrawal"
+              t('withdraw')
             )}
           </Button>
         </div>

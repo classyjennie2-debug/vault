@@ -1,0 +1,11 @@
+{
+  "title": "Tableau de bord",
+  "welcome": "Bienvenue chez Vault Capital",
+  "balance": "Solde",
+  "totalEarned": "Total gagné",
+  "transactions": "Transactions",
+  "viewAll": "Voir tout",
+  "recentActivity": "Activité récente",
+  "noActivity": "Aucune activité récente",
+  "loading": "Chargement..."
+}

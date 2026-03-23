@@ -1,0 +1,23 @@
+{
+  "language": "中文",
+  "selectLanguage": "选择语言",
+  "logout": "退出登录",
+  "login": "登录",
+  "signup": "注册",
+  "email": "邮箱",
+  "password": "密码",
+  "home": "首页",
+  "about": "关于",
+  "contact": "联系",
+  "dashboard": "控制台",
+  "settings": "设置",
+  "profile": "个人资料",
+  "help": "帮助",
+  "faq": "常见问题",
+  "termsOfService": "服务条款",
+  "privacyPolicy": "隐私政策",
+  "pricing": "定价",
+  "security": "安全",
+  "testimonials": "客户评价",
+  "copyright": "© 2024 Vault Capital。保留所有权利。"
+}

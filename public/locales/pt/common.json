@@ -1,0 +1,23 @@
+{
+  "language": "Português",
+  "selectLanguage": "Selecionar idioma",
+  "logout": "Sair",
+  "login": "Entrar",
+  "signup": "Criar conta",
+  "email": "E-mail",
+  "password": "Senha",
+  "home": "Início",
+  "about": "Sobre",
+  "contact": "Contato",
+  "dashboard": "Painel",
+  "settings": "Configurações",
+  "profile": "Perfil",
+  "help": "Ajuda",
+  "faq": "Perguntas frequentes",
+  "termsOfService": "Termos de serviço",
+  "privacyPolicy": "Política de privacidade",
+  "pricing": "Preços",
+  "security": "Segurança",
+  "testimonials": "Depoimentos",
+  "copyright": "© 2024 Vault Capital. Todos os direitos reservados."
+}

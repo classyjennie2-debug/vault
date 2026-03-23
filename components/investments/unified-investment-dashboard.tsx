@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useI18n } from "@/hooks/use-i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -31,6 +32,7 @@ interface UnifiedInvestmentDashboardProps {
 }
 
 export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: UnifiedInvestmentDashboardProps) {
+  const { t } = useI18n('investments')
   const safePlans = Array.isArray(plans) ? plans : []
   const safeInvestments = Array.isArray(investments) ? investments : []
   
@@ -144,12 +146,12 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
       <div className="text-center space-y-3 sm:space-y-4 px-2 pt-4">
         <div className="inline-block">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-card-foreground bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent font-serif">
-            Investment Dashboard
+            {t('title')}
           </h1>
           <div className="h-1 w-16 bg-gradient-to-r from-primary to-accent mx-auto mt-3 rounded-full" />
         </div>
         <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-          Discover, calculate, and manage your investments all in one place
+          {t('description')}
         </p>
 
         {/* Quick Stats */}

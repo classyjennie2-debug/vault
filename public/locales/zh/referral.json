@@ -1,0 +1,17 @@
+{
+  "title": "推荐计划",
+  "description": "每位被推荐人的每笔存款可获得 10% 佣金（$100+）",
+  "code": "推荐码",
+  "copyCode": "复制推荐码",
+  "copiedCode": "已复制到剪贴板",
+  "shareWithFriends": "分享给好友",
+  "referralLink": "推荐链接（包含你的代码）",
+  "activeReferrals": "活跃推荐",
+  "totalEarned": "累计收益",
+  "availableBalance": "可用余额",
+  "linkClicks": "链接点击",
+  "signups": "注册数",
+  "earnCommission": "存款返佣 10%",
+  "minimum": "最低 $100 存款方可获得",
+  "inviteFriends": "邀请好友一起赚钱"
+}

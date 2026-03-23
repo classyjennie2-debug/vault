@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useI18n } from "@/hooks/use-i18n"
 import {
   Card,
   CardContent,
@@ -49,6 +50,7 @@ const typeLabels = {
 type FilterType = "all" | "deposit" | "withdrawal" | "investment" | "return"
 
 export default function TransactionsPage() {
+  const { t } = useI18n('transactions')
   const [filter, setFilter] = useState<FilterType>("all")
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
@@ -93,10 +95,10 @@ export default function TransactionsPage() {
     <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-          Transactions
+          {t('title')}
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground">
-          View and track all your account activity.
+          {t('description')}
         </p>
       </div>
 

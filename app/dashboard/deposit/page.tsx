@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useI18n } from "@/hooks/use-i18n"
 import {
   type CoinType,
   type NetworkType,
@@ -35,6 +36,7 @@ const networkLabels: Partial<Record<string, string>> = {
 }
 
 export default function DepositPage() {
+  const { t } = useI18n('deposit')
   const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null)
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkType | null>(null)
   const [amount, setAmount] = useState<string>("")
@@ -201,10 +203,10 @@ export default function DepositPage() {
         </Button>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            Deposit Crypto
+            {t('title')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Select a coin, network, and amount to generate your deposit address.
+            {t('description')}
           </p>
         </div>
       </div>
@@ -216,10 +218,10 @@ export default function DepositPage() {
             <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
               1
             </span>
-            Select Coin
+            {t('selectCoin')}
           </CardTitle>
           <CardDescription>
-            Choose the cryptocurrency you want to deposit.
+            {t('choosecryptocurrency')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -263,10 +265,10 @@ export default function DepositPage() {
               <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                 2
               </span>
-              Select Network
+              {t('selectNetwork')}
             </CardTitle>
             <CardDescription>
-              Choose the blockchain network for your {selectedCoin} deposit.
+              {t('chooseNetwork')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -320,10 +322,10 @@ export default function DepositPage() {
               <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                 3
               </span>
-              Enter Amount
+              {t('enterAmount')}
             </CardTitle>
             <CardDescription>
-              Specify the amount you want to deposit.
+              {t('minimumDeposit')}
               {cryptoPrice && (
                 <span className="block text-xs mt-1 text-muted-foreground/80">
                   Current {selectedCoin} price: ${cryptoPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -333,7 +335,7 @@ export default function DepositPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Deposit Amount (USD)</Label>
+              <Label htmlFor="amount">{t('enterAmount')}</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   $
@@ -355,7 +357,7 @@ export default function DepositPage() {
             {amount && coinAmount && !isCalculating && (
               <div className="rounded-lg bg-accent/5 border border-accent/30 p-4 space-y-2">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  You'll send
+                  {t('estimatedAmount')}
                 </p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -387,10 +389,10 @@ export default function DepositPage() {
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Address...
+                  {t('processing')}
                 </>
               ) : (
-                "Generate Deposit Address"
+                t('generateAddress')
               )}
             </Button>
           </CardContent>

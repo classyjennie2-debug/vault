@@ -3,9 +3,9 @@ const path = require('path')
 module.exports = {
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'es'],
+    locales: ['en', 'es', 'pt', 'fr', 'zh', 'ar'],
   },
-  ns: ['common', 'dashboard', 'referral'],
+  ns: ['common', 'dashboard', 'referral', 'home', 'pricing'],
   defaultNS: 'common',
   localePath: path.resolve('./public/locales'),
   react: {
