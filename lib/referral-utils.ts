@@ -1,4 +1,5 @@
 import { run, get, all } from '@/lib/db'
+import { ensureReferralTablesExist } from './referral-schema'
 
 // Configuration constants
 export const REFERRAL_BONUS_PERCENTAGE = 10 // 10% bonus on deposits $100+
@@ -17,38 +18,53 @@ export function generateReferralCode(): string {
 
 // Create a referral code for a user
 export async function createReferralCode(userId: string, baseUrl: string) {
-  let code = generateReferralCode()
-  let attempts = 0
-  
-  // Ensure code is unique
-  while (attempts < 10) {
+  try {
+    // Check if user already has an active code
     const existing = await get(
-      'SELECT id FROM referral_codes WHERE code = $1',
-      [code]
+      'SELECT id, code, referral_link, clicks_count FROM referral_codes WHERE user_id = $1 AND is_active = true LIMIT 1',
+      [userId]
     )
-    if (!existing) break
-    code = generateReferralCode()
-    attempts++
+    
+    if (existing) {
+      return {
+        code: (existing as any).code,
+        referralLink: (existing as any).referral_link,
+        clicksCount: (existing as any).clicks_count || 0
+      }
+    }
+
+    // Generate unique code
+    let code = generateReferralCode()
+    let attempts = 0
+    
+    while (attempts < 10) {
+      const codeExists = await get(
+        'SELECT id FROM referral_codes WHERE code = $1',
+        [code]
+      )
+      if (!codeExists) break
+      code = generateReferralCode()
+      attempts++
+    }
+    
+    if (attempts >= 10) {
+      throw new Error('Failed to generate unique referral code after 10 attempts')
+    }
+    
+    const referralLink = `${baseUrl}/register?ref=${code}`
+    
+    // Insert new code
+    await run(
+      `INSERT INTO referral_codes (user_id, code, referral_link, is_active, clicks_count)
+       VALUES ($1, $2, $3, true, 0)`,
+      [userId, code, referralLink]
+    )
+    
+    return { code, referralLink, clicksCount: 0 }
+  } catch (error) {
+    console.error('[REFERRAL] Create referral code error:', error)
+    throw error
   }
-  
-  if (attempts >= 10) {
-    throw new Error('Failed to generate unique referral code')
-  }
-  
-  const referralLink = `${baseUrl}/register?ref=${code}`
-  
-  const result = await run(
-    `INSERT INTO referral_codes (user_id, code, referral_link)
-     VALUES ($1, $2, $3)
-     ON CONFLICT (code) DO NOTHING`,
-    [userId, code, referralLink]
-  )
-  
-  if (result === 0) {
-    throw new Error('Failed to create referral code')
-  }
-  
-  return { code, referralLink, clicksCount: 0 }
 }
 
 // Get or create referral code for a user
@@ -150,12 +166,32 @@ export async function creditReferralBonus(referrerId: string, bonusAmount: numbe
 
 // Get referral dashboard stats for a user
 export async function getReferralStats(userId: string) {
+  // Ensure referral tables exist (creates them if missing)
+  await ensureReferralTablesExist()
+  
   // Get or create user's referral code (auto-generate for existing users)
   let referralCode: any = null
+  let codeError: Error | null = null
+  
   try {
+    console.log('[REFERRAL] Attempting to get/create referral code for user:', userId)
     referralCode = await getOrCreateReferralCode(userId, 'https://vaultcapital.bond')
+    console.log('[REFERRAL] Successfully got/created referral code:', referralCode?.code)
   } catch (error) {
-    console.error('[REFERRAL] Error getting/creating referral code:', error)
+    codeError = error instanceof Error ? error : new Error(String(error))
+    console.error('[REFERRAL] Error getting/creating referral code for user', userId, ':', codeError.message)
+    console.error('[REFERRAL] Full error:', codeError)
+    
+    // Retry once after a short delay
+    try {
+      console.log('[REFERRAL] Retrying code generation after error...')
+      await new Promise(resolve => setTimeout(resolve, 500))
+      referralCode = await getOrCreateReferralCode(userId, 'https://vaultcapital.bond')
+      console.log('[REFERRAL] Retry successful, created code:', referralCode?.code)
+      codeError = null
+    } catch (retryError) {
+      console.error('[REFERRAL] Retry also failed:', retryError)
+    }
   }
 
   // Initialize referral balance for existing users if not exists
@@ -167,59 +203,87 @@ export async function getReferralStats(userId: string) {
       [userId]
     )
   } catch (error) {
-    console.error('[REFERRAL] Error initializing referral balance:', error)
+    // Gracefully handle if referral_balance table doesn't exist yet
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    if (!errorMsg.includes('referral_balance')) {
+      console.error('[REFERRAL] Error initializing referral balance:', error)
+    } else {
+      console.warn('[REFERRAL] referral_balance table not found, skipping initialization')
+    }
   }
+  
   // Get total referrals
-  const referralCount = await get(
-    `SELECT COUNT(*) as count 
-     FROM referrals 
-     WHERE referrer_id = $1 AND status = 'active'`,
-    [userId]
-  )
+  let referralCount: any = { count: 0 }
+  try {
+    referralCount = await get(
+      `SELECT COUNT(*) as count 
+       FROM referrals 
+       WHERE referrer_id = $1 AND status = 'active'`,
+      [userId]
+    )
+  } catch (error) {
+    console.warn('[REFERRAL] Could not fetch referral count:', error)
+  }
   
   // Get total referral bonuses earned
-  const totalBonuses = await get(
-    `SELECT COALESCE(SUM(bonus_amount), 0) as total 
-     FROM referral_bonuses 
-     WHERE referrer_id = $1 AND status = 'credited'`,
-    [userId]
-  )
+  let totalBonuses: any = { total: 0 }
+  try {
+    totalBonuses = await get(
+      `SELECT COALESCE(SUM(bonus_amount), 0) as total 
+       FROM referral_bonuses 
+       WHERE referrer_id = $1 AND status = 'credited'`,
+      [userId]
+    )
+  } catch (error) {
+    console.warn('[REFERRAL] Could not fetch total bonuses:', error)
+  }
   
   // Get referral balance
-  const balance = await get(
-    `SELECT balance, total_earned, total_withdrawn 
-     FROM referral_balance 
-     WHERE user_id = $1`,
-    [userId]
-  )
+  let balance: any = { balance: 0, total_earned: 0, total_withdrawn: 0 }
+  try {
+    const balanceData = await get(
+      `SELECT balance, total_earned, total_withdrawn 
+       FROM referral_balance 
+       WHERE user_id = $1`,
+      [userId]
+    )
+    if (balanceData) balance = balanceData
+  } catch (error) {
+    console.warn('[REFERRAL] Could not fetch referral balance:', error)
+  }
   
   // Get active referrals with their deposit status
-  const activeReferrals = await all(
-    `SELECT 
-       r.id,
-       r.referred_user_id,
-       u.email,
-       u.name,
-       r.signup_date,
-       COALESCE(
-         (SELECT MAX(amount) FROM transactions 
-          WHERE user_id = r.referred_user_id 
-          AND type = 'deposit' 
-          AND status = 'approved'),
-         0
-       ) as last_deposit_amount,
-       COALESCE(
-         (SELECT rb.bonus_amount FROM referral_bonuses rb
-          WHERE rb.referral_id = r.id
-          LIMIT 1),
-         0
-       ) as earned_bonus
-     FROM referrals r
-     JOIN users u ON r.referred_user_id = u.id
-     WHERE r.referrer_id = $1 AND r.status = 'active'
-     ORDER BY r.created_at DESC`,
-    [userId]
-  )
+  let activeReferrals: any[] = []
+  try {
+    activeReferrals = await all(
+      `SELECT 
+         r.id,
+         r.referred_user_id,
+         u.email,
+         u.name,
+         r.signup_date,
+         COALESCE(
+           (SELECT MAX(amount) FROM transactions 
+            WHERE user_id = r.referred_user_id 
+            AND type = 'deposit' 
+            AND status = 'approved'),
+           0
+         ) as last_deposit_amount,
+         COALESCE(
+           (SELECT rb.bonus_amount FROM referral_bonuses rb
+            WHERE rb.referral_id = r.id
+            LIMIT 1),
+           0
+         ) as earned_bonus
+       FROM referrals r
+       JOIN users u ON r.referred_user_id = u.id
+       WHERE r.referrer_id = $1 AND r.status = 'active'
+       ORDER BY r.created_at DESC`,
+      [userId]
+    )
+  } catch (error) {
+    console.warn('[REFERRAL] Could not fetch active referrals:', error)
+  }
   
   const totalCount = (referralCount as any)?.count || 0
   const canWithdraw = totalCount >= REFERRAL_MIN_REFERRALS_TO_WITHDRAW
