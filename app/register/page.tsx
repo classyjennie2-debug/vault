@@ -2,7 +2,7 @@
 
 import React from "react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Lock, ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { PasswordStrengthMeter, calculatePasswordStrength } from "@/components/auth/password-strength-meter"
 import { COUNTRY_CODES_LIST, type CountryCode } from "@/lib/phone-validation"
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [firstName, setFirstName] = useState("")
@@ -403,5 +403,17 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    }>
+      <RegisterPageContent />
+    </Suspense>
   )
 }
