@@ -57,30 +57,99 @@ export function ReferralDashboard() {
   }
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopiedCode(true)
-    setTimeout(() => setCopiedCode(false), 2000)
-    toast({
-      title: 'Copied!',
-      description: 'Referral code copied to clipboard',
-    })
+    try {
+      // Check if clipboard API is available
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          setCopiedCode(true)
+          setTimeout(() => setCopiedCode(false), 2000)
+          toast({
+            title: '✓ Copied!',
+            description: 'Referral code copied to clipboard',
+          })
+        }).catch((err) => {
+          console.error('Clipboard write error:', err)
+          // Fallback to textarea method
+          copyUsingTextarea(text)
+        })
+      } else {
+        // Fallback for non-secure contexts or older browsers
+        copyUsingTextarea(text)
+      }
+    } catch (error) {
+      console.error('Copy error:', error)
+      copyUsingTextarea(text)
+    }
   }
 
-  const handleNativeShare = () => {
-    if (navigator.share && stats?.referralCode) {
-      const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats.referralCode.code}`
-      navigator.share({
-        title: 'Join Vault Capital',
-        text: `Join me on Vault Capital and earn 10% on referral deposits. Use my code: ${stats.referralCode.code}`,
-        url: referralUrl,
-      }).catch((err) => console.log('Share dismissed:', err))
-    } else {
-      // Fallback: copy the link
-      const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats?.referralCode?.code}`
-      navigator.clipboard.writeText(referralUrl)
+  const copyUsingTextarea = (text: string) => {
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    try {
+      document.execCommand('copy')
+      setCopiedCode(true)
+      setTimeout(() => setCopiedCode(false), 2000)
       toast({
-        title: 'Link Copied',
-        description: 'Referral link copied to clipboard',
+        title: '✓ Copied!',
+        description: 'Referral code copied to clipboard',
+      })
+    } catch (err) {
+      console.error('Fallback copy error:', err)
+      toast({
+        title: 'Copy Failed',
+        description: 'Please try again or share manually',
+        variant: 'destructive',
+      })
+    } finally {
+      document.body.removeChild(textarea)
+    }
+  }
+
+  const handleNativeShare = async () => {
+    try {
+      if (!stats?.referralCode) {
+        toast({
+          title: 'Error',
+          description: 'Referral code not available',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats.referralCode.code}`
+      
+      // Check if native share is available
+      if (navigator.share && window.isSecureContext) {
+        try {
+          await navigator.share({
+            title: 'Join Vault Capital',
+            text: `Join me on Vault Capital and earn 10% on referral deposits. Use my code: ${stats.referralCode.code}`,
+            url: referralUrl,
+          })
+          toast({
+            title: '✓ Shared!',
+            description: 'Referral link shared successfully',
+          })
+        } catch (err: any) {
+          // User dismissed the share dialog - this is normal
+          if (err.name !== 'AbortError') {
+            console.error('Share error:', err)
+          }
+        }
+      } else {
+        // Fallback: copy the link
+        copyUsingTextarea(referralUrl)
+      }
+    } catch (error) {
+      console.error('Share handler error:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to share referral link',
+        variant: 'destructive',
       })
     }
   }
