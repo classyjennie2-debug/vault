@@ -60,8 +60,9 @@ export default function Header() {
           </nav>
 
           {/* Right Side: Auth Links & Language Switcher */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <LanguageSwitcher />
+            <div className="w-px h-6 bg-border" />
             <AuthNavButtons />
 
             {/* Mobile Menu Button */}

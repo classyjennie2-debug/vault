@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
 import { Globe } from 'lucide-react'
 import {
   Select,
@@ -29,16 +28,12 @@ export function LanguageSwitcher() {
     window.location.reload()
   }
 
-  if (!mounted) {
-    return null // Avoid hydration mismatch
-  }
-
   return (
-    <div className="flex items-center gap-2">
-      <Globe className="h-4 w-4" />
-      <Select value={language} onValueChange={handleLanguageChange}>
-        <SelectTrigger className="w-[120px]">
-          <SelectValue placeholder="Language" />
+    <div className="flex items-center gap-1.5">
+      <Globe className="h-4 w-4 text-muted-foreground" />
+      <Select value={mounted ? language : 'en'} onValueChange={handleLanguageChange} disabled={!mounted}>
+        <SelectTrigger className="w-[100px] h-9">
+          <SelectValue placeholder="EN" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="en">English</SelectItem>
