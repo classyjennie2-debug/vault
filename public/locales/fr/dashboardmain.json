@@ -34,5 +34,16 @@
   "status": "Statut",
   "no_active_investments": "Aucun investissement actif pour le moment.",
   "start_investing": "Commencez à investir pour voir votre portefeuille croître!",
-  "track_investments": "Suivez vos positions actives et votre progrès d'investissement"
+  "track_investments": "Suivez vos positions actives et votre progrès d'investissement",
+  "syncing_label": "Synchronisation...",
+  "last_updated": "Dernière mise à jour:",
+  "net_balance": "Solde Net",
+  "monthly_delta": "Delta Mensuel",
+  "referral_program": "Programme de Parrainage",
+  "earn_on_referrals": "Gagnez sur les parrainages",
+  "active_referrals": "Parrainages Actifs",
+  "can_withdraw": "✓ Peut retirer",
+  "more_needed": "plus nécessaires",
+  "ready_to_transfer": "Prêt à transférer",
+  "view_details": "Voir les Détails"
 }

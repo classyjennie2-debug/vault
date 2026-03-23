@@ -34,5 +34,16 @@
   "status": "الحالة",
   "no_active_investments": "لا توجد استثمارات نشطة حتى الآن.",
   "start_investing": "ابدأ الاستثمار لترى محفظتك تنمو!",
-  "track_investments": "تابع مراكزك النشطة وتقدم استثمارك"
+  "track_investments": "تابع مراكزك النشطة وتقدم استثمارك",
+  "syncing_label": "جاري المزامنة...",
+  "last_updated": "آخر تحديث:",
+  "net_balance": "الرصيد الصافي",
+  "monthly_delta": "التغيير الشهري",
+  "referral_program": "برنامج الإحالة",
+  "earn_on_referrals": "اكسب من الإحالات",
+  "active_referrals": "الإحالات النشطة",
+  "can_withdraw": "✓ يمكن السحب",
+  "more_needed": "مطلوب المزيد",
+  "ready_to_transfer": "جاهز للتحويل",
+  "view_details": "عرض التفاصيل"
 }

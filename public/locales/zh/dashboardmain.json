@@ -34,5 +34,16 @@
   "status": "状态",
   "no_active_investments": "还没有活跃投资。",
   "start_investing": "开始投资，看您的投资组合增长！",
-  "track_investments": "跟踪您的活跃头寸和投资进度"
+  "track_investments": "跟踪您的活跃头寸和投资进度",
+  "syncing_label": "同步中...",
+  "last_updated": "最后更新:",
+  "net_balance": "净余额",
+  "monthly_delta": "月度变化",
+  "referral_program": "推荐计划",
+  "earn_on_referrals": "通过推荐赚取",
+  "active_referrals": "活跃推荐",
+  "can_withdraw": "✓ 可以提取",
+  "more_needed": "还需要",
+  "ready_to_transfer": "准备转账",
+  "view_details": "查看详情"
 }

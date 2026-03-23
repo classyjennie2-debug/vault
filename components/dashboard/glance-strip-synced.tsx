@@ -5,9 +5,11 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Bell, TrendingUp, DollarSign, RefreshCw } from "lucide-react"
 import { useDashboard } from "@/contexts/dashboard-context"
+import { useI18n } from "@/hooks/use-i18n"
 
 export function GlanceStripSynced() {
   const { stats, metrics, isLoading } = useDashboard()
+  const { t } = useI18n("dashboardmain")
   const [unread, setUnread] = useState<number>(0)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
@@ -35,13 +37,13 @@ export function GlanceStripSynced() {
 
   const items = [
     {
-      label: "Net Balance",
+      label: t("net_balance"),
       value: `$${stats.totalBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
       icon: DollarSign,
       tone: "border-primary/30 text-primary bg-primary/5",
     },
     {
-      label: "Monthly Delta",
+      label: t("monthly_delta"),
       value: `${metrics.monthlyGain >= 0 ? "+" : ""}$${metrics.monthlyGain.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
       icon: TrendingUp,
       tone:
@@ -81,7 +83,7 @@ export function GlanceStripSynced() {
                     {item.value}
                   </p>
                   {idx === 0 && isLoading && (
-                    <p className="text-[8px] sm:text-xs text-muted-foreground mt-1">Syncing...</p>
+                    <p className="text-[8px] sm:text-xs text-muted-foreground mt-1">{t("syncing_label")}</p>
                   )}
                 </div>
               </div>
@@ -94,7 +96,7 @@ export function GlanceStripSynced() {
       {lastUpdated && (
         <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 sm:mt-3 flex items-center gap-1">
           <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
-          Last updated: {lastUpdated.toLocaleTimeString()}
+          {t("last_updated")} {lastUpdated.toLocaleTimeString()}
         </p>
       )}
     </div>

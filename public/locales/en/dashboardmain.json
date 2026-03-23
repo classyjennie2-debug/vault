@@ -5,6 +5,10 @@
   "monthly_gain": "Monthly Gain",
   "total_return_rate": "Total Return Rate",
   "syncing": "Syncing dashboard...",
+  "syncing_label": "Syncing...",
+  "last_updated": "Last updated:",
+  "net_balance": "Net Balance",
+  "monthly_delta": "Monthly Delta",
   "active_investments": "Active Investments",
   "recent_transactions": "Recent Transactions",
   "portfolio_overview": "Portfolio Overview",
@@ -34,5 +38,12 @@
   "status": "Status",
   "no_active_investments": "No active investments yet.",
   "start_investing": "Start investing to see your portfolio grow!",
-  "track_investments": "Track your ongoing positions and investment progress"
+  "track_investments": "Track your ongoing positions and investment progress",
+  "referral_program": "Referral Program",
+  "earn_on_referrals": "Earn on referrals",
+  "active_referrals": "Active Referrals",
+  "can_withdraw": "✓ Can withdraw",
+  "more_needed": "more needed",
+  "ready_to_transfer": "Ready to transfer",
+  "view_details": "View Details"
 }

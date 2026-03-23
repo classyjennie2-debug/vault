@@ -11,10 +11,12 @@ import {
 } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useReferralStats } from '@/hooks/use-referral'
+import { useI18n } from '@/hooks/use-i18n'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export function ReferralSummaryCard() {
   const { stats, loading } = useReferralStats()
+  const { t } = useI18n("dashboardmain")
 
   if (loading) {
     return (
@@ -42,35 +44,35 @@ export function ReferralSummaryCard() {
           <div>
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Referral Program
+              {t("referral_program")}
             </CardTitle>
-            <CardDescription>Earn on referrals</CardDescription>
+            <CardDescription>{t("earn_on_referrals")}</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Active Referrals</p>
+            <p className="text-xs text-muted-foreground">{t("active_referrals")}</p>
             <p className="text-2xl font-bold">{stats?.stats.totalReferrals || 0}</p>
             <p className="text-xs text-muted-foreground">
               {stats?.stats.canWithdraw
-                ? '✓ Can withdraw'
-                : `${stats?.stats.referralsNeeded || 0} more needed`}
+                ? t("can_withdraw")
+                : `${stats?.stats.referralsNeeded || 0} ${t("more_needed")}`}
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Available Balance</p>
+            <p className="text-xs text-muted-foreground">{t("available_balance")}</p>
             <p className="text-2xl font-bold text-accent">{formattedBalance}</p>
             {stats?.stats.canWithdraw && stats?.stats.referralBalance > 0 && (
-              <p className="text-xs text-accent font-semibold">Ready to transfer</p>
+              <p className="text-xs text-accent font-semibold">{t("ready_to_transfer")}</p>
             )}
           </div>
         </div>
 
         <Link href="/dashboard/referrals">
           <Button variant="outline" size="sm" className="w-full gap-2">
-            View Details
+            {t("view_details")}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </Link>

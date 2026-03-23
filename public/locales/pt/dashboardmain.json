@@ -34,5 +34,16 @@
   "status": "Status",
   "no_active_investments": "Nenhum investimento ativo ainda.",
   "start_investing": "Comece a investir para ver seu portfólio crescer!",
-  "track_investments": "Rastreie suas posições ativas e progresso de investimento"
+  "track_investments": "Rastreie suas posições ativas e progresso de investimento",
+  "syncing_label": "Sincronizando...",
+  "last_updated": "Última atualização:",
+  "net_balance": "Saldo Líquido",
+  "monthly_delta": "Delta Mensal",
+  "referral_program": "Programa de Indicações",
+  "earn_on_referrals": "Ganhe com indicações",
+  "active_referrals": "Indicações Ativas",
+  "can_withdraw": "✓ Pode sacar",
+  "more_needed": "mais necessários",
+  "ready_to_transfer": "Pronto para transferir",
+  "view_details": "Ver Detalhes"
 }
