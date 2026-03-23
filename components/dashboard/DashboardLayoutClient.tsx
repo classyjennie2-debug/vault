@@ -115,6 +115,13 @@ export default function DashboardLayoutClient({ children, user, firstName = "", 
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <LanguageSwitcher />
+              <NotificationBell />
+              <UserMenu user={user} />
+            </div>
+          </header>
+
+          {/* Main content */}
+          <main className="flex-1 overflow-y-auto overflow-x-auto p-2 sm:p-3 md:p-4 lg:p-6 pb-24 lg:pb-4">
             {children}
           </main>
         </div>
