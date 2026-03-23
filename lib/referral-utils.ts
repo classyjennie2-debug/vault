@@ -150,15 +150,25 @@ export async function creditReferralBonus(referrerId: string, bonusAmount: numbe
 
 // Get referral dashboard stats for a user
 export async function getReferralStats(userId: string) {
-  // Get user's referral code
-  const referralCode = await get(
-    `SELECT id, code, referral_link, clicks_count 
-     FROM referral_codes 
-     WHERE user_id = $1 AND is_active = true
-     LIMIT 1`,
-    [userId]
-  )
-  
+  // Get or create user's referral code (auto-generate for existing users)
+  let referralCode: any = null
+  try {
+    referralCode = await getOrCreateReferralCode(userId, 'https://vaultcapital.bond')
+  } catch (error) {
+    console.error('[REFERRAL] Error getting/creating referral code:', error)
+  }
+
+  // Initialize referral balance for existing users if not exists
+  try {
+    await run(
+      `INSERT INTO referral_balance (user_id, balance, total_earned, total_withdrawn)
+       VALUES ($1, 0, 0, 0)
+       ON CONFLICT (user_id) DO NOTHING`,
+      [userId]
+    )
+  } catch (error) {
+    console.error('[REFERRAL] Error initializing referral balance:', error)
+  }
   // Get total referrals
   const referralCount = await get(
     `SELECT COUNT(*) as count 
@@ -216,9 +226,9 @@ export async function getReferralStats(userId: string) {
   
   return {
     referralCode: referralCode ? {
-      code: (referralCode as any).code,
-      referralLink: (referralCode as any).referral_link,
-      clicksCount: (referralCode as any).clicks_count
+      code: referralCode.code,
+      referralLink: referralCode.referralLink,
+      clicksCount: referralCode.clicksCount || 0
     } : null,
     stats: {
       totalReferrals: totalCount,
