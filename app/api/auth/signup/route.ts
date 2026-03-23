@@ -4,10 +4,11 @@ import { getUserByEmail, createUser } from "@/lib/db"
 import { hashPassword, sendVerificationCode, sendAdminNotification } from "@/lib/auth"
 import { rateLimitedResponse, rateLimitConfigs, getClientIp } from "@/lib/rate-limiting"
 import { validatePhone, stripCountryCode, COUNTRY_CODES, type CountryCode } from "@/lib/phone-validation"
+import { trackReferral, initializeReferralBalance, getReferralCodeByCode } from "@/lib/referral-utils"
 
 export async function POST(request: Request) {
   try {
-    const { firstName, lastName, email, password, phone, phoneCountry, dateOfBirth } = await request.json()
+    const { firstName, lastName, email, password, phone, phoneCountry, dateOfBirth, referralCode } = await request.json()
     const clientIp = await getClientIp(request)
 
     return await rateLimitedResponse(
@@ -54,6 +55,28 @@ export async function POST(request: Request) {
       dateOfBirth,
       verified: false 
     })
+
+    // Initialize referral balance for new user
+    try {
+      await initializeReferralBalance(id)
+    } catch (refError) {
+      console.warn("Failed to initialize referral balance:", refError)
+      // Don't fail signup if referral balance initialization fails
+    }
+
+    // Process referral if referral code was provided
+    if (referralCode) {
+      try {
+        const codeData = await getReferralCodeByCode(referralCode)
+        if (codeData) {
+          await trackReferral(codeData.user_id, id, codeData.id)
+          console.log(`[REFERRAL] New user ${id} referred by ${codeData.user_id}`)
+        }
+      } catch (refError) {
+        console.warn("Failed to track referral:", refError)
+        // Don't fail signup if referral tracking fails
+      }
+    }
 
     // Add welcome notification for the new user
     // Import createNotification from db

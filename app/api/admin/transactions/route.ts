@@ -6,6 +6,8 @@ import { mapErrorToResponse, createErrorResponse, AuthorizationError, NotFoundEr
 import { transactionLogger, logAuditEvent } from "@/lib/logging"
 import { rateLimitConfigs, checkRateLimit, getClientIp } from "@/lib/rate-limiting"
 import { validateOrigin } from "@/lib/csrf"
+import { get } from "@/lib/db"
+import { createReferralBonus, creditReferralBonus, REFERRAL_MIN_DEPOSIT } from "@/lib/referral-utils"
 
 export async function GET(_req: NextRequest) {
   try {
@@ -171,6 +173,49 @@ export async function POST(req: NextRequest) {
           { transactionId, depositAmount: txAmount, newBalance, userId: transaction.userId },
           user.id
         )
+
+        // Process referral bonus if deposit amount is >= $100 and user was referred
+        if (txAmount >= REFERRAL_MIN_DEPOSIT) {
+          try {
+            const referralData = await get(
+              'SELECT r.id, r.referrer_id FROM referrals r WHERE r.referred_user_id = $1 AND r.status = $2',
+              [transaction.userId, 'active']
+            )
+            
+            if (referralData) {
+              const referralId = (referralData as any).id
+              const referrerId = (referralData as any).referrer_id
+              
+              // Create referral bonus record
+              const bonusAmount = await createReferralBonus(
+                referrerId,
+                referralId,
+                transactionId,
+                txAmount
+              )
+              
+              // Credit the bonus to referrer's referral balance
+              await creditReferralBonus(referrerId, bonusAmount)
+              
+              // Create notification for referrer
+              await createNotification({
+                userId: referrerId,
+                title: "Referral Bonus Earned!",
+                message: `You earned $${bonusAmount.toFixed(2)} bonus from your referral's deposit of $${txAmount.toFixed(2)}. Check your referral dashboard!`,
+                type: "success",
+                actionUrl: "/dashboard/referrals"
+              }).catch(e => console.warn('Failed to create referrer notification:', e))
+              
+              transactionLogger.info('Referral bonus processed', 
+                { transactionId, referrerId, bonusAmount, txAmount, referredUserId: transaction.userId },
+                user.id
+              )
+            }
+          } catch (refError) {
+            console.warn('[REFERRAL] Failed to process referral bonus:', refError)
+            // Don't fail deposit approval if referral bonus processing fails
+          }
+        }
       } else if (!approved && transaction.type === "withdrawal") {
         // If withdrawal is REJECTED, restore the balance to the user
         const userData = await getUserById(transaction.userId)
