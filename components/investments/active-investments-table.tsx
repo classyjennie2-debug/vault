@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Calendar, DollarSign, Zap, Clock } from "lucide-react"
+import { useI18n } from "@/hooks/use-i18n"
 import type { ActiveInvestment } from "@/lib/types"
 
 export function ActiveInvestmentsTable({ investments = [] }: { investments?: ActiveInvestment[] | null }) {
+  const { t } = useI18n("dashboardmain")
   const safeInvestments = Array.isArray(investments) ? investments : []
   
   const formatDate = (date: string) => {
@@ -104,10 +106,10 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-400" />
-          Active Investments
+          {t("active_investments")}
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-1">
-          Track your ongoing positions and investment progress
+          {t("track_investments")}
         </p>
       </CardHeader>
       <CardContent className="pt-6">
@@ -115,10 +117,10 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
           <div className="text-center py-12">
             <Zap className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-muted-foreground text-base font-medium">
-              No active investments yet.
+              {t("no_active_investments")}
             </p>
             <p className="text-sm text-muted-foreground/70">
-              Start investing to see your portfolio grow!
+              {t("start_investing")}
             </p>
           </div>
         ) : (
@@ -128,17 +130,17 @@ export function ActiveInvestmentsTable({ investments = [] }: { investments?: Act
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-b border-border/30">
-                    <TableHead className="font-semibold text-muted-foreground">Plan Name</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground">{t("plan_name")}</TableHead>
                     <TableHead className="text-right font-semibold text-muted-foreground">
-                      Invested Amount
+                      {t("invested_amount")}
                     </TableHead>
                     <TableHead className="text-right font-semibold text-muted-foreground">
-                      Expected Profit
+                      {t("expected_profit")}
                     </TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">Start Date</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">End Date</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">Progress</TableHead>
-                    <TableHead className="text-right font-semibold text-muted-foreground">Status</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground">{t("start_date")}</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground">{t("end_date")}</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground">{t("progress")}</TableHead>
+                    <TableHead className="text-right font-semibold text-muted-foreground">{t("status")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

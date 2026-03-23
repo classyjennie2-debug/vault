@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Card,
   CardContent,
@@ -7,25 +9,27 @@ import {
 import { Button } from "@/components/ui/button"
 import { ArrowUpRight, ArrowDownRight, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { useI18n } from "@/hooks/use-i18n"
 
 export function QuickActions() {
+  const { t } = useI18n("dashboardmain")
   const actions = [
     {
       href: "/dashboard/investments",
       icon: TrendingUp,
-      label: "Invest Now",
+      label: t("invest_now"),
       color: "text-primary",
     },
     {
       href: "/dashboard/deposit",
       icon: ArrowUpRight,
-      label: "Deposit Funds",
+      label: t("deposit_funds"),
       color: "text-emerald-600 dark:text-emerald-500",
     },
     {
       href: "/dashboard/withdraw",
       icon: ArrowDownRight,
-      label: "Withdraw",
+      label: t("withdraw_funds"),
       color: "text-slate-600 dark:text-slate-500",
     },
   ]
@@ -34,7 +38,7 @@ export function QuickActions() {
     <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in duration-700">
       <CardHeader className="pb-2 sm:pb-3 lg:pb-4">
         <CardTitle className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
-          Quick Actions
+          {t("quick_actions")}
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-3 gap-2 sm:gap-3 pt-1 sm:pt-2 lg:pt-2">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useDashboard } from "@/contexts/dashboard-context"
+import { useI18n } from "@/hooks/use-i18n"
 import {
   TrendingUp,
   PieChart,
@@ -10,6 +11,7 @@ import {
 
 export function DashboardCardsSynced() {
   const { stats, metrics } = useDashboard()
+  const { t } = useI18n("dashboardmain")
 
   if (!stats || !metrics) {
     return (
@@ -27,17 +29,17 @@ export function DashboardCardsSynced() {
   const cards = [
     {
       icon: Wallet,
-      label: "Available Balance",
+      label: t("available_balance"),
       value: `$${stats.availableBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
-      change: stats.pendingDeposits > 0 ? `${stats.pendingDeposits} pending` : "Ready to invest",
+      change: stats.pendingDeposits > 0 ? `${stats.pendingDeposits} ${t("pending_lower")}` : t("ready_to_invest"),
       color: "text-emerald-600 dark:text-emerald-500",
       bgColor: "bg-emerald-50 dark:bg-emerald-950",
     },
     {
       icon: TrendingUp,
-      label: "Total Invested",
+      label: t("total_invested"),
       value: `$${stats.totalInvested.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
-      change: `${stats.activeInvestments} active plans`,
+      change: `${stats.activeInvestments} ${t("active_plans_label")}`,
       color: "text-blue-600 dark:text-blue-500",
       bgColor: "bg-blue-50 dark:bg-blue-950",
     },
@@ -45,15 +47,15 @@ export function DashboardCardsSynced() {
       icon: PieChart,
       label: "ROI",
       value: `${roi}%`,
-      change: stats.totalProfit > 0 ? "↑ Growing" : "Tracking",
+      change: stats.totalProfit > 0 ? t("growing") : t("tracking"),
       color: stats.totalProfit > 0 ? "text-amber-600 dark:text-amber-500" : "text-slate-600 dark:text-slate-400",
       bgColor: stats.totalProfit > 0 ? "bg-amber-50 dark:bg-amber-950" : "bg-slate-50 dark:bg-slate-950",
     },
     {
       icon: LogOut,
-      label: "Total Withdrawal",
+      label: t("total_withdrawal"),
       value: `$${stats.totalWithdrawn.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
-      change: stats.pendingWithdrawals > 0 ? `${stats.pendingWithdrawals} pending` : "No pending",
+      change: stats.pendingWithdrawals > 0 ? `${stats.pendingWithdrawals} ${t("pending_lower")}` : t("no_pending"),
       color: "text-red-600 dark:text-red-500",
       bgColor: "bg-red-50 dark:bg-red-950",
     },

@@ -16,6 +16,7 @@ import {
   BookOpen,
 } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useI18n } from "@/hooks/use-i18n"
 
 const educationTips = [
   {
@@ -69,6 +70,7 @@ const educationTips = [
 ]
 
 export function EducationTips() {
+  const { t } = useI18n("dashboardmain")
   const [currentTip, setCurrentTip] = useState(0)
   const [autoRotate, setAutoRotate] = useState(true)
 
@@ -102,7 +104,7 @@ export function EducationTips() {
       <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-3 sm:pb-4">
         <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-normal text-muted-foreground">
           <Lightbulb className="h-4 w-4 text-amber-500 flex-shrink-0" />
-          <span className="truncate">Daily Learning Tip</span>
+          <span className="truncate">{t("daily_learning_tip")}</span>
         </CardTitle>
         <div className="text-xs text-muted-foreground">
           {currentTip + 1} / {educationTips.length}
