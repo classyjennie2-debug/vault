@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useTranslation } from 'next-i18next'
 import {
   Card,
   CardContent,
@@ -31,7 +30,54 @@ interface ReferralStats {
 }
 
 export function ReferralDashboard() {
-  const { t } = useTranslation('referral')
+  // Simple translation helper for App Router
+  const getLanguage = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('language') || 'en'
+    }
+    return 'en'
+  }
+
+  const translations: Record<string, Record<string, string>> = {
+    en: {
+      loading: 'Loading referral data...',
+      title: 'Referral Program',
+      description: 'Earn 10% commission on every deposit from your referrals ($100+)',
+      code: 'Referral Code',
+      copyCode: 'Copy Code',
+      copiedCode: 'Copied to Clipboard',
+      shareWithFriends: 'Share with Friends',
+      referralLink: 'Referral Link (includes your code)',
+      activeReferrals: 'Active Referrals',
+      totalEarned: 'Total Earned',
+      availableBalance: 'Available Balance',
+      linkClicks: 'Link Clicks',
+      signups: 'Signups',
+      inviteFriends: 'Invite friends and earn',
+    },
+    es: {
+      loading: 'Cargando datos de referidos...',
+      title: 'Programa de Referidos',
+      description: 'Gana 10% de comisión en cada depósito de tus referidos ($100+)',
+      code: 'Código de Referido',
+      copyCode: 'Copiar Código',
+      copiedCode: 'Copiado al Portapapeles',
+      shareWithFriends: 'Compartir con Amigos',
+      referralLink: 'Enlace de Referido (incluye tu código)',
+      activeReferrals: 'Referidos Activos',
+      totalEarned: 'Total Ganado',
+      availableBalance: 'Saldo Disponible',
+      linkClicks: 'Clics en Enlace',
+      signups: 'Registros',
+      inviteFriends: 'Invita amigos y gana',
+    },
+  }
+
+  const t = (key: string): string => {
+    const lang = getLanguage()
+    return translations[lang]?.[key] || translations.en[key] || key
+  }
+
   const [stats, setStats] = useState<ReferralStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [copiedCode, setCopiedCode] = useState(false)
