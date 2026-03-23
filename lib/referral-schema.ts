@@ -31,7 +31,7 @@ export async function ensureReferralTablesExist() {
     await run(`
       CREATE TABLE IF NOT EXISTS referral_codes (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        user_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         code VARCHAR(20) UNIQUE NOT NULL,
         referral_link VARCHAR(500),
         clicks_count INTEGER DEFAULT 0,
@@ -51,8 +51,8 @@ export async function ensureReferralTablesExist() {
     await run(`
       CREATE TABLE IF NOT EXISTS referrals (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        referrer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        referred_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        referrer_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        referred_user_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         referral_code_id UUID REFERENCES referral_codes(id) ON DELETE SET NULL,
         status VARCHAR(20) DEFAULT 'active',
         signup_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -71,7 +71,7 @@ export async function ensureReferralTablesExist() {
     await run(`
       CREATE TABLE IF NOT EXISTS referral_bonuses (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        referrer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        referrer_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         referral_id UUID REFERENCES referrals(id) ON DELETE SET NULL,
         bonus_amount NUMERIC(15,2) NOT NULL,
         status VARCHAR(20) DEFAULT 'pending',
@@ -90,7 +90,7 @@ export async function ensureReferralTablesExist() {
     await run(`
       CREATE TABLE IF NOT EXISTS referral_balance (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+        user_id VARCHAR(255) NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
         balance NUMERIC(15,2) DEFAULT 0,
         total_earned NUMERIC(15,2) DEFAULT 0,
         total_withdrawn NUMERIC(15,2) DEFAULT 0,
@@ -106,7 +106,7 @@ export async function ensureReferralTablesExist() {
     await run(`
       CREATE TABLE IF NOT EXISTS referral_withdrawals (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        user_id VARCHAR(255) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         amount NUMERIC(15,2) NOT NULL,
         status VARCHAR(20) DEFAULT 'pending',
         requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
