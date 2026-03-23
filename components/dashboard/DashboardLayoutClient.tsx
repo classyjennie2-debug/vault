@@ -9,6 +9,7 @@ import {
   History,
   ArrowDownToLine,
   ArrowUpFromLine,
+  Users,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -39,6 +40,7 @@ const navItems = [
   { href: "/dashboard/deposit", label: "Deposit", icon: ArrowDownToLine },
   { href: "/dashboard/withdraw", label: "Withdraw", icon: ArrowUpFromLine },
   { href: "/dashboard/transactions", label: "Transactions", icon: History },
+  { href: "/dashboard/referrals", label: "Referrals", icon: Users },
 ]
 
 const desktopNavItems = navItems // Keep original length for desktop sidebar

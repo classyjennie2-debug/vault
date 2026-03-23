@@ -2,8 +2,8 @@
 
 import React from "react"
 import Link from "next/link"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Lock, ArrowLeft, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,7 @@ import { COUNTRY_CODES_LIST, type CountryCode } from "@/lib/phone-validation"
 
 export default function RegisterPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
@@ -21,6 +22,7 @@ export default function RegisterPage() {
   const [dateOfBirth, setDateOfBirth] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [referralCode, setReferralCode] = useState("")
   const [step, setStep] = useState<0 | 1>(0)
   const [code, setCode] = useState("")
   const [loading, setLoading] = useState(false)
@@ -28,6 +30,14 @@ export default function RegisterPage() {
   const [info, setInfo] = useState("")
   const [canResend, setCanResend] = useState(true)
   const [resendCountdown, setResendCountdown] = useState(0)
+
+  // Extract referral code from URL params on mount
+  useEffect(() => {
+    const refParam = searchParams.get('ref')
+    if (refParam) {
+      setReferralCode(refParam)
+    }
+  }, [searchParams])
 
   // Countdown timer for resend
   React.useEffect(() => {
@@ -62,7 +72,8 @@ export default function RegisterPage() {
           password,
           phone,
           phoneCountry,
-          dateOfBirth
+          dateOfBirth,
+          referralCode: referralCode || undefined
         }),
       })
       const data = await res.json()
@@ -293,6 +304,24 @@ export default function RegisterPage() {
                 onChange={(e) => setDateOfBirth(e.target.value)}
                 required
               />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="referralCode">
+                Referral Code <span className="text-xs text-muted-foreground">(Optional)</span>
+              </Label>
+              <Input
+                id="referralCode"
+                type="text"
+                placeholder="Enter a referral code if you have one"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                maxLength={8}
+              />
+              {referralCode && (
+                <p className="text-xs text-green-600">
+                  ✓ You'll earn referral bonuses from your referrer's deposits!
+                </p>
+              )}
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="password">Password</Label>

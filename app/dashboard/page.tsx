@@ -1,5 +1,6 @@
 import { DashboardHeroSynced } from "@/components/dashboard/dashboard-hero-synced"
 import { DashboardCardsSynced } from "@/components/dashboard/dashboard-cards-synced"
+import { ReferralSummaryCard } from "@/components/dashboard/referral-summary-card"
 import { GlanceStripSynced } from "@/components/dashboard/glance-strip-synced"
 import { PortfolioChart } from "@/components/dashboard/portfolio-chart"
 import { RecentTransactionsSynced } from "@/components/dashboard/recent-transactions-synced"
@@ -52,8 +53,11 @@ export default async function DashboardPage() {
 
         <QuickActions />
 
-        {/* Real-time Dashboard Cards with auto-syncing data */}
-        <DashboardCardsSynced />
+        {/* Dashboard Cards Grid with Referral Card */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+          <DashboardCardsSynced />
+          <ReferralSummaryCard />
+        </div>
 
         <div className="grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-5">
           <div className="lg:col-span-3">
