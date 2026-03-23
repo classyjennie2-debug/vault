@@ -1,0 +1,11 @@
+{
+  "title": "Panel",
+  "welcome": "Bienvenido a Vault Capital",
+  "balance": "Saldo",
+  "totalEarned": "Total ganado",
+  "transactions": "Transacciones",
+  "viewAll": "Ver todo",
+  "recentActivity": "Actividad reciente",
+  "noActivity": "Sin actividad reciente",
+  "loading": "Cargando..."
+}

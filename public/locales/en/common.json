@@ -1,0 +1,20 @@
+{
+  "language": "English",
+  "selectLanguage": "Select Language",
+  "logout": "Logout",
+  "login": "Login",
+  "signup": "Sign Up",
+  "email": "Email",
+  "password": "Password",
+  "home": "Home",
+  "about": "About",
+  "contact": "Contact",
+  "dashboard": "Dashboard",
+  "settings": "Settings",
+  "profile": "Profile",
+  "help": "Help",
+  "faq": "FAQ",
+  "termsOfService": "Terms of Service",
+  "privacyPolicy": "Privacy Policy",
+  "copyright": "© 2024 Vault Capital. All rights reserved."
+}

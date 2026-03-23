@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AuthNavButtons } from "@/components/auth-nav-buttons"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 export default function Header() {
   return (
@@ -58,8 +59,9 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Right Side: Auth Links */}
+          {/* Right Side: Auth Links & Language Switcher */}
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <AuthNavButtons />
 
             {/* Mobile Menu Button */}

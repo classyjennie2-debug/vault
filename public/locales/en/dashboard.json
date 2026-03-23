@@ -1,0 +1,11 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome to Vault Capital",
+  "balance": "Balance",
+  "totalEarned": "Total Earned",
+  "transactions": "Transactions",
+  "viewAll": "View All",
+  "recentActivity": "Recent Activity",
+  "noActivity": "No recent activity",
+  "loading": "Loading..."
+}

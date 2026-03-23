@@ -1,0 +1,17 @@
+{
+  "title": "Referral Program",
+  "description": "Earn 10% commission on every deposit from your referrals ($100+)",
+  "code": "Referral Code",
+  "copyCode": "Copy Code",
+  "copiedCode": "Copied to Clipboard",
+  "shareWithFriends": "Share with Friends",
+  "referralLink": "Referral Link (includes your code)",
+  "activeReferrals": "Active Referrals",
+  "totalEarned": "Total Earned",
+  "availableBalance": "Available Balance",
+  "linkClicks": "Link Clicks",
+  "signups": "Signups",
+  "earnCommission": "Earn 10% on deposits",
+  "minimum": "Minimum $100 deposit to earn",
+  "inviteFriends": "Invite friends and earn"
+}

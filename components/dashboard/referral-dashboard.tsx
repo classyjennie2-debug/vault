@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'next-i18next'
 import {
   Card,
   CardContent,
@@ -30,6 +31,7 @@ interface ReferralStats {
 }
 
 export function ReferralDashboard() {
+  const { t } = useTranslation('referral')
   const [stats, setStats] = useState<ReferralStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [copiedCode, setCopiedCode] = useState(false)
@@ -162,7 +164,7 @@ export function ReferralDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <div className="text-muted-foreground">Loading referral data...</div>
+        <div className="text-muted-foreground">{t('loading')}</div>
       </div>
     )
   }
@@ -186,9 +188,9 @@ export function ReferralDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Referral Program</h1>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
         <p className="text-muted-foreground mt-2">
-          Earn 10% commission on every deposit from your referrals ($100+)
+          {t('description')}
         </p>
       </div>
 
@@ -196,16 +198,16 @@ export function ReferralDashboard() {
       {stats?.referralCode && (
         <Card>
           <CardHeader>
-            <CardTitle>Your Referral Code</CardTitle>
+            <CardTitle>{t('code')}</CardTitle>
             <CardDescription>
-              Share this code with friends to earn 10% on their deposits
+              {t('inviteFriends')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Code Display - Large and Prominent */}
             <div className="bg-muted p-6 rounded-lg border border-border">
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-3">Referral Code</p>
+                <p className="text-sm text-muted-foreground mb-3">{t('code')}</p>
                 <p className="text-5xl font-bold font-mono tracking-wide mb-4">
                   {stats.referralCode.code}
                 </p>
@@ -217,12 +219,12 @@ export function ReferralDashboard() {
                   {copiedCode ? (
                     <>
                       <CheckCircle2 className="h-5 w-5" />
-                      Copied to Clipboard
+                      {t('copiedCode')}
                     </>
                   ) : (
                     <>
                       <Copy className="h-5 w-5" />
-                      Copy Code
+                      {t('copyCode')}
                     </>
                   )}
                 </Button>
@@ -232,7 +234,7 @@ export function ReferralDashboard() {
             {/* Referral Link & Share */}
             <div className="space-y-3">
               <div className="p-4 border border-border rounded-lg">
-                <p className="text-sm text-muted-foreground mb-2">Referral Link (includes your code)</p>
+                <p className="text-sm text-muted-foreground mb-2">{t('referralLink')}</p>
                 <p className="text-sm font-mono break-all text-muted-foreground mb-3">
                   {`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${stats.referralCode.code}`}
                 </p>
@@ -246,18 +248,18 @@ export function ReferralDashboard() {
                 className="w-full gap-2"
               >
                 <Share2 className="h-5 w-5" />
-                Share with Friends
+                {t('shareWithFriends')}
               </Button>
             </div>
 
             {/* Link Performance */}
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 border border-border rounded-lg text-center">
-                <p className="text-sm text-muted-foreground mb-2">Link Clicks</p>
+                <p className="text-sm text-muted-foreground mb-2">{t('linkClicks')}</p>
                 <p className="text-2xl font-bold">{stats.referralCode.clicksCount}</p>
               </div>
               <div className="p-4 border border-border rounded-lg text-center">
-                <p className="text-sm text-muted-foreground mb-2">Signups</p>
+                <p className="text-sm text-muted-foreground mb-2">{t('signups')}</p>
                 <p className="text-2xl font-bold">{stats?.stats.totalReferrals || 0}</p>
               </div>
             </div>
@@ -272,7 +274,7 @@ export function ReferralDashboard() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Active Referrals
+              {t('activeReferrals')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -311,7 +313,7 @@ export function ReferralDashboard() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Total Earned
+              {t('totalEarned')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -329,7 +331,7 @@ export function ReferralDashboard() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
-              Available Balance
+              {t('availableBalance')}
             </CardTitle>
           </CardHeader>
           <CardContent>
