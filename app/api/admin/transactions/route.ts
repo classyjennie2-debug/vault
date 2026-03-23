@@ -197,11 +197,11 @@ export async function POST(req: NextRequest) {
               // Credit the bonus to referrer's referral balance
               await creditReferralBonus(referrerId, bonusAmount)
               
-              // Create notification for referrer
+              // Create notification for referrer (without revealing referred user's deposit amount)
               await createNotification({
                 userId: referrerId,
                 title: "Referral Bonus Earned!",
-                message: `You earned $${bonusAmount.toFixed(2)} bonus from your referral's deposit of $${txAmount.toFixed(2)}. Check your referral dashboard!`,
+                message: `You earned $${bonusAmount.toFixed(2)} referral bonus! Your referred user made a deposit. Check your referral dashboard!`,
                 type: "success",
                 actionUrl: "/dashboard/referrals"
               }).catch(e => console.warn('Failed to create referrer notification:', e))

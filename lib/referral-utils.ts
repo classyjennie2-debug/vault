@@ -252,7 +252,7 @@ export async function getReferralStats(userId: string) {
     console.warn('[REFERRAL] Could not fetch referral balance:', error)
   }
   
-  // Get active referrals with their deposit status
+  // Get active referrals with their earnings (WITHOUT showing deposit amounts)
   let activeReferrals: any[] = []
   try {
     activeReferrals = await all(
@@ -263,15 +263,9 @@ export async function getReferralStats(userId: string) {
          u.name,
          r.signup_date,
          COALESCE(
-           (SELECT MAX(amount) FROM transactions 
-            WHERE user_id = r.referred_user_id 
-            AND type = 'deposit' 
-            AND status = 'approved'),
-           0
-         ) as last_deposit_amount,
-         COALESCE(
            (SELECT rb.bonus_amount FROM referral_bonuses rb
             WHERE rb.referral_id = r.id
+            ORDER BY rb.created_at DESC
             LIMIT 1),
            0
          ) as earned_bonus
@@ -308,7 +302,6 @@ export async function getReferralStats(userId: string) {
       email: r.email,
       name: r.name,
       signupDate: r.signup_date,
-      lastDepositAmount: parseFloat(r.last_deposit_amount),
       earnedBonus: parseFloat(r.earned_bonus)
     }))
   }

@@ -402,9 +402,8 @@ export function ReferralDashboard() {
                   <tr className="text-muted-foreground">
                     <th className="text-left py-3 px-3 font-medium">Name</th>
                     <th className="text-left py-3 px-3 font-medium">Email</th>
-                    <th className="text-right py-3 px-3 font-medium">Deposit</th>
                     <th className="text-right py-3 px-3 font-medium">Your Bonus</th>
-                    <th className="text-left py-3 px-3 font-medium">Date</th>
+                    <th className="text-left py-3 px-3 font-medium">Joined</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -412,11 +411,6 @@ export function ReferralDashboard() {
                     <tr key={referral.id} className="hover:bg-muted/50">
                       <td className="py-3 px-3">{referral.name || 'User'}</td>
                       <td className="py-3 px-3 text-muted-foreground">{referral.email}</td>
-                      <td className="py-3 px-3 text-right">
-                        {referral.lastDepositAmount > 0
-                          ? `$${referral.lastDepositAmount.toFixed(2)}`
-                          : '-'}
-                      </td>
                       <td className="py-3 px-3 text-right font-semibold">
                         {referral.earnedBonus > 0 ? `+$${referral.earnedBonus.toFixed(2)}` : '-'}
                       </td>
