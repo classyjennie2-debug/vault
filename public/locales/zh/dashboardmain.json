@@ -1,0 +1,23 @@
+{
+  "welcome_back": "欢迎回来，",
+  "portfolio_performing": "您的投资组合表现异常出色。继续投资，看着您的财富增长！",
+  "total_balance": "总余额",
+  "monthly_gain": "月收益",
+  "total_return_rate": "总回报率",
+  "syncing": "同步仪表板...",
+  "active_investments": "活跃投资",
+  "recent_transactions": "最近交易",
+  "portfolio_overview": "投资组合概览",
+  "quick_actions": "快速操作",
+  "deposit_funds": "存入资金",
+  "withdraw_funds": "提取资金",
+  "view_plans": "查看计划",
+  "my_referrals": "我的推荐",
+  "earnings": "收入",
+  "available_balance": "可用余额",
+  "total_invested": "总投资",
+  "pending_approval": "待批准",
+  "see_all": "查看全部",
+  "no_transactions": "无交易",
+  "no_investments": "无活跃投资"
+}

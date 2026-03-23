@@ -1,0 +1,23 @@
+{
+  "welcome_back": "أهلا وسهلا،",
+  "portfolio_performing": "محفظتك تؤدي استثنائياً بشكل جيد. استمر في الاستثمار وشاهد ثروتك تنمو!",
+  "total_balance": "الرصيد الإجمالي",
+  "monthly_gain": "الربح الشهري",
+  "total_return_rate": "معدل العائد الإجمالي",
+  "syncing": "مزامنة لوحة المعلومات...",
+  "active_investments": "الاستثمارات النشطة",
+  "recent_transactions": "المعاملات الأخيرة",
+  "portfolio_overview": "نظرة عامة على المحفظة",
+  "quick_actions": "الإجراءات السريعة",
+  "deposit_funds": "إيداع الأموال",
+  "withdraw_funds": "سحب الأموال",
+  "view_plans": "عرض الخطط",
+  "my_referrals": "إحالتي",
+  "earnings": "الأرباح",
+  "available_balance": "الرصيد المتاح",
+  "total_invested": "إجمالي الاستثمار",
+  "pending_approval": "قيد الانتظار",
+  "see_all": "عرض الكل",
+  "no_transactions": "لا توجد معاملات",
+  "no_investments": "لا توجد استثمارات نشطة"
+}

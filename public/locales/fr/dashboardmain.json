@@ -1,0 +1,23 @@
+{
+  "welcome_back": "Bienvenue,",
+  "portfolio_performing": "Votre portefeuille fonctionne exceptionnellement bien. Continuez à investir et regardez votre richesse croître!",
+  "total_balance": "Solde Total",
+  "monthly_gain": "Gain Mensuel",
+  "total_return_rate": "Taux de Rendement Total",
+  "syncing": "Synchronisation du tableau de bord...",
+  "active_investments": "Investissements Actifs",
+  "recent_transactions": "Transactions Récentes",
+  "portfolio_overview": "Aperçu du Portefeuille",
+  "quick_actions": "Actions Rapides",
+  "deposit_funds": "Déposer des Fonds",
+  "withdraw_funds": "Retirer des Fonds",
+  "view_plans": "Voir les Plans",
+  "my_referrals": "Mes Recommandations",
+  "earnings": "Gains",
+  "available_balance": "Solde Disponible",
+  "total_invested": "Total Investi",
+  "pending_approval": "En Attente de Validation",
+  "see_all": "Voir tous",
+  "no_transactions": "Aucune transaction",
+  "no_investments": "Aucun investissement actif"
+}
