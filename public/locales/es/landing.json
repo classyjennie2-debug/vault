@@ -1,4 +1,4 @@
-{
+﻿{
   "nav_features": "Características",
   "nav_performance": "Rendimiento",
   "nav_plans": "Planes",
@@ -37,7 +37,7 @@
   "countries_served": "Países Atendidos",
   "plans_label": "Planes de Inversión",
   "plans_title": "Planes para cada inversor",
-  "plans_description": "Comience con tan solo $1,000 y personalice su estrategia de inversión según su tolerancia al riesgo.",
+  "plans_description": "Comience con tan solo 1,000 dólares y personalice su estrategia de inversión según su tolerancia al riesgo.",
   "plans_popular": "Más Popular",
   "plans_annual_return": "rendimiento anual*",
   "plans_min_investment": "Inversión Mínima",
@@ -50,7 +50,7 @@
   "testimonial_2": "Recomiendo Vault a todos mis clientes. La transparencia y características de seguridad de la plataforma son inigualables en la industria.",
   "testimonial_3": "Como empresario ocupado, Vault me permite invertir sin complejidad. Muy impresionado con los resultados.",
   "cta_title": "Comience a construir riqueza hoy",
-  "cta_description": "Únase a miles de inversores exitosos que están creciendo su riqueza con Vault. Cree su cuenta gratis y comience a invertir en minutos.",
+  "cta_description": "Únase a miles de inversores exitosos que están creciendo su riqueza con Vault. Cree su cuenta gratis y comece a invertir en minutos.",
   "cta_button": "Crear Cuenta Gratis",
   "cta_button_logged": "Comenzar a Invertir",
   "cta_footnote": "Sin tarjeta de crédito requerida • Plan gratuito de por vida • Mejore en cualquier momento",

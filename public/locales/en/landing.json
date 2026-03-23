@@ -1,4 +1,4 @@
-{
+﻿{
   "nav_features": "Features",
   "nav_performance": "Performance",
   "nav_plans": "Plans",
@@ -37,7 +37,7 @@
   "countries_served": "Countries Served",
   "plans_label": "Investment Plans",
   "plans_title": "Plans for every investor",
-  "plans_description": "Start with as little as $1,000 and customize your investment strategy based on your risk tolerance.",
+  "plans_description": "Start with as little as 1,000 dollars and customize your investment strategy based on your risk tolerance.",
   "plans_popular": "Most Popular",
   "plans_annual_return": "annual return*",
   "plans_min_investment": "Min. Investment",
