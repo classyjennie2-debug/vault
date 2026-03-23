@@ -10,6 +10,17 @@ import { Loader2 } from 'lucide-react'
 export default function ReferralPage() {
   const { stats, loading, refetch } = useReferralStats()
   const [withdrawOpen, setWithdrawOpen] = useState(false)
+  const [key, setKey] = useState(0)
+
+  // Re-render component when language changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setKey(prev => prev + 1)
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   if (loading) {
     return (
@@ -20,7 +31,7 @@ export default function ReferralPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" key={key}>
       <div className="container max-w-6xl py-8 px-4">
         {/* Quick Action Button */}
         {stats?.stats.canWithdraw && stats?.stats.referralBalance > 0 && (

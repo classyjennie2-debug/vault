@@ -30,14 +30,12 @@ interface ReferralStats {
 }
 
 export function ReferralDashboard() {
-  // Simple translation helper for App Router
-  const getLanguage = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('language') || 'en'
-    }
-    return 'en'
-  }
+  const [stats, setStats] = useState<ReferralStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [copiedCode, setCopiedCode] = useState(false)
+  const [language, setLanguage] = useState<string>('en')
 
+  // Simple translation helper for App Router
   const translations: Record<string, Record<string, string>> = {
     en: {
       loading: 'Loading referral data...',
@@ -74,13 +72,23 @@ export function ReferralDashboard() {
   }
 
   const t = (key: string): string => {
-    const lang = getLanguage()
-    return translations[lang]?.[key] || translations.en[key] || key
+    return translations[language]?.[key] || translations.en[key] || key
   }
 
-  const [stats, setStats] = useState<ReferralStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [copiedCode, setCopiedCode] = useState(false)
+  useEffect(() => {
+    // Load language from localStorage on mount
+    const savedLanguage = localStorage.getItem('language') || 'en'
+    setLanguage(savedLanguage)
+    
+    // Listen for storage changes (for multi-tab language switching)
+    const handleStorageChange = () => {
+      const newLanguage = localStorage.getItem('language') || 'en'
+      setLanguage(newLanguage)
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   useEffect(() => {
     fetchReferralStats()
