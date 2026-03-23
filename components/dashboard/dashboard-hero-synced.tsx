@@ -2,9 +2,11 @@
 
 import { ArrowUpRight } from "lucide-react"
 import { useDashboard } from "@/contexts/dashboard-context"
+import { useI18n } from "@/hooks/use-i18n"
 
 export function DashboardHeroSynced() {
   const { stats, metrics, user, isLoading } = useDashboard()
+  const { t } = useI18n("dashboardmain")
 
   if (!stats || !metrics || !user) {
     return (
@@ -22,7 +24,7 @@ export function DashboardHeroSynced() {
       {isLoading && (
         <div className="mb-2 px-3 py-1 bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs rounded flex items-center gap-2">
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-          <span>Syncing dashboard...</span>
+          <span>{t("syncing")}</span>
         </div>
       )}
 
@@ -33,27 +35,27 @@ export function DashboardHeroSynced() {
           <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6 lg:gap-8">
             <div className="flex-1 min-w-0">
               <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1 sm:mb-2">
-                Welcome back,
+                {t("welcome_back")}
               </p>
               <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-1 sm:mb-2 line-clamp-2">
                 {user.name}
               </h1>
               <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-                Your portfolio is performing exceptionally well. Keep investing and watch your wealth grow!
+                {t("portfolio_performing")}
               </p>
             </div>
 
             {/* Balance Display - Real-time updates */}
             <div className="hidden md:flex flex-col items-end gap-3 lg:gap-6 flex-shrink-0">
               <div className="text-right">
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Total Balance</p>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{t("total_balance")}</p>
                 <p className="text-3xl lg:text-5xl font-bold text-slate-900 dark:text-white transition-colors duration-300">
                   ${totalBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </p>
               </div>
               <div className="flex items-center gap-4 lg:gap-7">
                 <div className="text-right">
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Monthly Gain</p>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{t("monthly_gain")}</p>
                   <p className="flex items-center justify-end gap-1 text-emerald-600 dark:text-emerald-500 font-semibold text-xs sm:text-sm">
                     <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4" />
                     {monthlyGain >= 0 ? '+' : ''}
@@ -66,7 +68,7 @@ export function DashboardHeroSynced() {
                 </div>
                 <div className="w-px h-8 sm:h-10 bg-slate-300 dark:bg-slate-600" />
                 <div className="text-right">
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Total Returns</p>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{t("total_return_rate")}</p>
                   <p className="text-slate-900 dark:text-white font-semibold text-xs sm:text-sm">
                     {totalReturnRate >= 0 ? '+' : ''}{totalReturnRate.toFixed(1)}%
                   </p>
