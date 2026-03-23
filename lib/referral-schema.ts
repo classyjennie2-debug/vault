@@ -3,23 +3,29 @@ import { run, get } from '@/lib/db'
 /**
  * Ensure referral tables exist in the database
  * Called automatically to initialize schema if missing
+ * This is the PRIMARY initialization method - critical for referral system
  */
 export async function ensureReferralTablesExist() {
   try {
+    // First, enable UUID extension
+    await run(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`)
+
     // Check if referral_codes table exists
     const tableExists = await get(
       `SELECT EXISTS(
         SELECT 1 FROM information_schema.tables 
-        WHERE table_name = 'referral_codes'
+        WHERE table_schema = 'public' 
+        AND table_name = 'referral_codes'
        ) as exists`
     )
 
     if (tableExists && (tableExists as any).exists) {
-      // Table already exists, all good
+      // Table already exists
+      console.log('[REFERRAL] Tables already exist in database')
       return true
     }
 
-    console.log('[REFERRAL] Creating referral tables in database...')
+    console.log('[REFERRAL] 🔧 Creating missing referral tables in database...')
 
     // Create referral_codes table
     await run(`
@@ -34,6 +40,7 @@ export async function ensureReferralTablesExist() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
+    console.log('[REFERRAL] ✓ Created referral_codes table')
 
     // Create indexes for referral_codes
     await run(`CREATE INDEX IF NOT EXISTS idx_referral_codes_user_id ON referral_codes(user_id)`)
@@ -53,6 +60,7 @@ export async function ensureReferralTablesExist() {
         UNIQUE (referred_user_id)
       )
     `)
+    console.log('[REFERRAL] ✓ Created referrals table')
 
     // Create indexes for referrals
     await run(`CREATE INDEX IF NOT EXISTS idx_referrals_referrer_id ON referrals(referrer_id)`)
@@ -72,6 +80,7 @@ export async function ensureReferralTablesExist() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
+    console.log('[REFERRAL] ✓ Created referral_bonuses table')
 
     // Create indexes for referral_bonuses
     await run(`CREATE INDEX IF NOT EXISTS idx_referral_bonuses_referrer_id ON referral_bonuses(referrer_id)`)
@@ -88,6 +97,7 @@ export async function ensureReferralTablesExist() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
+    console.log('[REFERRAL] ✓ Created referral_balance table')
 
     // Create indexes for referral_balance
     await run(`CREATE INDEX IF NOT EXISTS idx_referral_balance_user_id ON referral_balance(user_id)`)
@@ -103,15 +113,17 @@ export async function ensureReferralTablesExist() {
         completed_at TIMESTAMP
       )
     `)
+    console.log('[REFERRAL] ✓ Created referral_withdrawals table')
 
     // Create indexes for referral_withdrawals
     await run(`CREATE INDEX IF NOT EXISTS idx_referral_withdrawals_user_id ON referral_withdrawals(user_id)`)
     await run(`CREATE INDEX IF NOT EXISTS idx_referral_withdrawals_status ON referral_withdrawals(status)`)
 
-    console.log('[REFERRAL] Successfully created all referral tables')
+    console.log('[REFERRAL] ✅ All referral tables successfully created!')
     return true
   } catch (error) {
     console.error('[REFERRAL] Error ensuring referral tables exist:', error)
+    console.error('[REFERRAL] This could mean: tables exist but schema check failed, or permissions issue')
     // Don't throw - silently fail so the app continues to work
     return false
   }

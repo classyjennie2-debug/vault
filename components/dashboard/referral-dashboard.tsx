@@ -40,12 +40,17 @@ export function ReferralDashboard() {
 
   const fetchReferralStats = async () => {
     try {
+      console.log('[REFERRAL-COMPONENT] Fetching referral stats...')
       const response = await fetch('/api/referral/stats')
       if (!response.ok) throw new Error('Failed to fetch stats')
       const data = await response.json()
+      console.log('[REFERRAL-COMPONENT] Received stats:', data.data)
       setStats(data.data)
+      if (!data.data?.referralCode) {
+        console.warn('[REFERRAL-COMPONENT] ⚠️ No referral code in response! Data:', data.data)
+      }
     } catch (error) {
-      console.error('Error fetching referral stats:', error)
+      console.error('[REFERRAL-COMPONENT] Error fetching referral stats:', error)
       toast({
         title: 'Error',
         description: 'Failed to load referral statistics',
