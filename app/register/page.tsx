@@ -411,11 +411,6 @@ function RegisterPageContent() {
         </p>
       </div>
     </div>
-  )
-            Sign in
-          </Link>
-        </p>
-      </div>
     </div>
   )
 }

@@ -152,7 +152,7 @@ export default function LoginPage() {
 
         {/* Right: visual panel */}
         <div className="hidden w-1/2 bg-primary lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12">
-        <div className="max-w-sm text-center">
+          <div className="max-w-sm text-center">
           <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-primary-foreground/10 bg-primary-foreground/5">
             <Lock className="h-8 w-8 text-primary-foreground" />
           </div>
@@ -182,6 +182,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }
