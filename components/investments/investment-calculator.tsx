@@ -18,9 +18,11 @@ import {
 } from "@/components/ui/select"
 import type { InvestmentPlan } from "@/lib/types"
 import { TrendingUp } from "lucide-react"
+import { useI18n } from "@/hooks/use-i18n"
 import { calculateReturnRate, safeNumber, calculateExpectedProfit } from "@/lib/investment-utils"
 
 export function InvestmentCalculator() {
+  const { t } = useI18n('investments')
   const [selectedPlanId, setSelectedPlanId] = useState<string>("")
   const [amount, setAmount] = useState<string>("1000")
   const [duration, setDuration] = useState<number>(7)
@@ -49,7 +51,7 @@ export function InvestmentCalculator() {
   const investmentAmount = parseFloat(amount) || 0
   const durationNum = safeNumber(duration, 7)
 
-  if (loading) return <div>Loading calculator...</div>
+  if (loading) return <div>{t('loading_calculator')}</div>
   if (!selectedPlan) return null
 
   // plan might not include fees (real data), so default to zero
@@ -80,12 +82,12 @@ export function InvestmentCalculator() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-accent" />
-          Investment Calculator
+          {t('investment_calculator')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4 sm:space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="plan-select" className="text-sm sm:text-base">Select Investment Plan</Label>
+          <Label htmlFor="plan-select" className="text-sm sm:text-base">{t('select_investment_plan')}</Label>
           <Select value={selectedPlanId} onValueChange={setSelectedPlanId}>
             <SelectTrigger id="plan-select" className="h-11 sm:h-10 text-sm sm:text-base">
               <SelectValue />
@@ -101,26 +103,26 @@ export function InvestmentCalculator() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="duration-input" className="text-sm sm:text-base">Investment Duration</Label>
+          <Label htmlFor="duration-input" className="text-sm sm:text-base">{t('investment_duration')}</Label>
           <select
             id="duration-input"
             value={duration}
             onChange={e => setDuration(Number(e.target.value))}
             className="w-full h-11 sm:h-10 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-slate-800 text-foreground text-base sm:text-sm"
           >
-            <option value={7}>7 Days</option>
-            <option value={14}>14 Days (2 weeks)</option>
-            <option value={30}>30 Days (1 month)</option>
-            <option value={60}>60 Days (2 months)</option>
-            <option value={90}>90 Days (3 months)</option>
-            <option value={180}>180 Days (6 months)</option>
-            <option value={365}>365 Days (1 year)</option>
+            <option value={7}>{t('duration_7_days')}</option>
+            <option value={14}>{t('duration_14_days')}</option>
+            <option value={30}>{t('duration_30_days')}</option>
+            <option value={60}>{t('duration_60_days')}</option>
+            <option value={90}>{t('duration_90_days')}</option>
+            <option value={180}>{t('duration_180_days')}</option>
+            <option value={365}>{t('duration_365_days')}</option>
           </select>
-          <p className="text-xs text-muted-foreground">Longer duration = higher profit!</p>
+          <p className="text-xs text-muted-foreground">{t('longer_duration_higher_profit')}</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="amount-input" className="text-sm sm:text-base">Investment Amount ($)</Label>
+          <Label htmlFor="amount-input" className="text-sm sm:text-base">{t('investment_amount_usd')}</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm sm:text-base">
               $
@@ -141,13 +143,13 @@ export function InvestmentCalculator() {
           </p>
           {(belowMin || aboveMax) && (
             <p className="text-[11px] text-amber-600 dark:text-amber-400">
-              {belowMin ? "Amount is below this plan's minimum." : "Amount exceeds this plan's maximum."}
+              {belowMin ? t('below_minimum') : t('above_maximum')}
             </p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm sm:text-base">Estimated Returns</Label>
+          <Label className="text-sm sm:text-base">{t('estimated_returns')}</Label>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-sm">Gross Profit:</span>
             <span className="font-bold text-accent text-base">${grossProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>

@@ -148,7 +148,7 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          Range: ${minAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} - ${maxAmount === Infinity ? "Unlimited" : maxAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          Range: ${minAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })} - ${maxAmount === Infinity ? t('unlimited') : maxAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
         </p>
       </div>
 
@@ -160,16 +160,16 @@ export function InvestmentForm({ plan, onSuccess }: InvestmentFormProps) {
           onChange={e => setDuration(Number(e.target.value))}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-slate-800 text-foreground"
         >
-          <option value={365}>365 Days (12 Months) - Recommended</option>
-          <option value={180}>180 Days (6 months)</option>
-          <option value={90}>90 Days (3 months)</option>
-          <option value={60}>60 Days (2 months)</option>
-          <option value={30}>30 Days (1 month)</option>
-          <option value={14}>14 Days (2 weeks)</option>
-          <option value={7}>7 Days</option>
+          <option value={365}>{t('duration_365_days_recommended')}</option>
+          <option value={180}>{t('duration_180_days')}</option>
+          <option value={90}>{t('duration_90_days')}</option>
+          <option value={60}>{t('duration_60_days')}</option>
+          <option value={30}>{t('duration_30_days')}</option>
+          <option value={14}>{t('duration_14_days')}</option>
+          <option value={7}>{t('duration_7_days')}</option>
         </select>
         <p className="text-xs text-muted-foreground">
-          Longer duration = higher profit! 12 months gives maximum returns.
+          {t('longer_duration_max_returns')}
         </p>
       </div>
 

@@ -90,7 +90,25 @@
   "high_risk": "High Risk",
   "total_invested_header": "Total Invested",
   "accumulated_profit_header": "Accumulated Profit",
-  "active_investments_count": "Active Investments"
+  "active_investments_count": "Active Investments",
+  "select_investment_plan": "Select Investment Plan",
+  "investment_duration": "Investment Duration",
+  "investment_amount_usd": "Investment Amount ($)",
+  "duration_7_days": "7 Days",
+  "duration_14_days": "14 Days (2 weeks)",
+  "duration_30_days": "30 Days (1 month)",
+  "duration_60_days": "60 Days (2 months)",
+  "duration_90_days": "90 Days (3 months)",
+  "duration_180_days": "180 Days (6 months)",
+  "duration_365_days": "365 Days (1 year)",
+  "duration_365_days_recommended": "365 Days (12 Months) - Recommended",
+  "longer_duration_higher_profit": "Longer duration = higher profit!",
+  "longer_duration_max_returns": "Longer duration = higher profit! 12 months gives maximum returns.",
+  "estimated_returns": "Estimated Returns",
+  "below_minimum": "Amount is below this plan's minimum.",
+  "above_maximum": "Amount exceeds this plan's maximum.",
+  "unlimited": "Unlimited",
+  "loading_calculator": "Loading calculator..."
 }
 
 

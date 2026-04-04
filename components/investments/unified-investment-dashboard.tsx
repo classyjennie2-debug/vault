@@ -276,7 +276,7 @@ export function UnifiedInvestmentDashboard({ plans = [], investments = [] }: Uni
                               <div className="flex-1 min-w-0">
                                 <CardTitle className="text-base sm:text-lg leading-tight text-card-foreground">{plan.name}</CardTitle>
                                 <Badge className={`mt-2 text-xs ${getRiskColor(plan.risk)}`}>
-                                  {plan.risk} Risk
+                                  {plan.risk === 'Low' ? t('low_risk') : plan.risk === 'Medium' ? t('medium_risk') : plan.risk === 'High' ? t('high_risk') : plan.risk}
                                 </Badge>
                               </div>
                               <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground/50 flex-shrink-0" />
