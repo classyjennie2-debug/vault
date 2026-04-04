@@ -1,0 +1,17 @@
+{
+  "title": "Referral Program",
+  "description": "Kumita ng 10% commission sa bawat deposit mula sa iyong mga referral ($100+)",
+  "code": "Referral Code",
+  "copyCode": "Kopyahin ang Code",
+  "copiedCode": "Nakopya sa Clipboard",
+  "shareWithFriends": "Ibahagi sa Mga Kaibigan",
+  "referralLink": "Referral Link (kasama ang iyong code)",
+  "activeReferrals": "Active Referrals",
+  "totalEarned": "Kabuuang Nae-earn",
+  "availableBalance": "Available Balance",
+  "linkClicks": "Link Clicks",
+  "signups": "Signups",
+  "earnCommission": "Kumita ng 10% sa mga deposit",
+  "minimum": "Minimum $100 deposit upang kumita",
+  "inviteFriends": "Mag-imbita ng mga kaibigan at kumita"
+}

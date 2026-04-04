@@ -85,5 +85,19 @@
   "sign_out": "Cerrar sesión",
   "total_invested_label": "Total Invertido",
   "accumulated_profit_label": "Ganancia Acumulada",
-  "active_investments_label": "Inversiones Activas"
+  "active_investments_label": "Inversiones Activas",
+  "transaction_date": "Fecha",
+  "transaction_type": "Tipo",
+  "transaction_amount": "Monto",
+  "transaction_status": "Estado",
+  "transaction_action": "Acción",
+  "transaction_deposit": "Depósito",
+  "transaction_withdrawal": "Retiro",
+  "transaction_investment": "Inversión",
+  "transaction_return": "Retorno",
+  "transaction_completed": "Completado",
+  "transaction_pending": "Pendiente",
+  "transaction_failed": "Fallido",
+  "transaction_approved": "Aprobado",
+  "view_details": "Ver Detalles"
 }

@@ -28,5 +28,8 @@
   "return": "Retorno",
   "completed": "Concluído",
   "pending": "Pendente",
-  "failed": "Falhou"
+  "failed": "Falhou",
+  "transaction_deleted": "Transação excluída",
+  "export_transactions": "Exportar Transações",
+  "download_receipt": "Baixar Recibo"
 }

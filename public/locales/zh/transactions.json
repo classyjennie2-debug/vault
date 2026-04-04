@@ -28,5 +28,8 @@
   "return": "回报",
   "completed": "已完成",
   "pending": "待定",
-  "failed": "失败"
+  "failed": "失败",
+  "transaction_deleted": "交易已删除",
+  "export_transactions": "导出交易",
+  "download_receipt": "下载收据"
 }

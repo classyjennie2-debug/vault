@@ -40,12 +40,7 @@ const typeColors = {
   return: "text-accent",
 }
 
-const typeLabels = {
-  deposit: "Deposit",
-  withdrawal: "Withdrawal",
-  investment: "Investment",
-  return: "Return",
-}
+const typeLabels: Record<string, string> = {} // Will use translation keys instead
 
 type FilterType = "all" | "deposit" | "withdrawal" | "investment" | "return"
 
@@ -55,6 +50,16 @@ export default function TransactionsPage() {
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
+
+  const getTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      'deposit': 'deposit',
+      'withdrawal': 'withdrawal',
+      'investment': 'investment',
+      'return': 'return'
+    }
+    return t(typeMap[type] || type)
+  }
 
   useEffect(() => {
     async function fetchTransactions() {
@@ -128,7 +133,7 @@ export default function TransactionsPage() {
                   <ArrowUpRight className="h-5 w-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Total Deposits</p>
+                  <p className="text-xs text-muted-foreground">{t('totalDeposited')}</p>
                   <p className="text-lg font-bold text-card-foreground">
                     ${(totalDeposits || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </p>
@@ -144,7 +149,7 @@ export default function TransactionsPage() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">
-                    Total Withdrawals
+                    {t('totalWithdrawn')}
                   </p>
                   <p className="text-lg font-bold text-card-foreground">
                     ${(totalWithdrawals || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
@@ -160,7 +165,7 @@ export default function TransactionsPage() {
                   <RefreshCw className="h-5 w-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Total Returns</p>
+                  <p className="text-xs text-muted-foreground">{t('totalReturns')}</p>
                   <p className="text-lg font-bold text-card-foreground">
                     ${(totalReturns || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </p>
@@ -176,7 +181,7 @@ export default function TransactionsPage() {
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-2 text-base text-foreground">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            All Transactions
+            {t('recentTransactions')}
           </CardTitle>
           <div className="flex flex-wrap gap-2">
             {(
@@ -189,7 +194,7 @@ export default function TransactionsPage() {
                 onClick={() => setFilter(type)}
                 className="text-xs capitalize"
               >
-                {type === "all" ? "All" : typeLabels[type]}
+                {type === "all" ? t('all') : getTypeLabel(type)}
               </Button>
             ))}
           </div>
@@ -216,7 +221,7 @@ export default function TransactionsPage() {
               </div>
             ) : filtered.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                No transactions found for this filter.
+                {t('noTransactions')}
               </p>
             ) : (
               filtered.map((tx) => {
@@ -249,7 +254,7 @@ export default function TransactionsPage() {
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                           <span>{tx.date}</span>
                           <span>{"/"}</span>
-                          <span className="capitalize">{tx.type}</span>
+                          <span>{getTypeLabel(tx.type)}</span>
                         </div>
                       </div>
                     </div>
@@ -270,7 +275,7 @@ export default function TransactionsPage() {
                         }
                         className="text-[10px] px-1.5 py-0"
                       >
-                        {tx.status}
+                        {formatTransactionStatus(tx.status)}
                       </Badge>
                     </div>
                   </div>
@@ -305,8 +310,8 @@ export default function TransactionsPage() {
                     )
                   })()}
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-lg sm:text-2xl font-bold text-foreground capitalize truncate">
-                      {typeLabels[selectedTransaction.type as keyof typeof typeLabels]}
+                    <h2 className="text-lg sm:text-2xl font-bold text-foreground truncate">
+                      {getTypeLabel(selectedTransaction.type)}
                     </h2>
                     <p className="text-xs sm:text-sm text-muted-foreground mt-1 truncate">{selectedTransaction.description}</p>
                   </div>
@@ -325,7 +330,7 @@ export default function TransactionsPage() {
               <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
               {/* Amount Section - Prominent Display */}
               <div className="bg-gradient-to-br from-secondary/50 to-secondary/20 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-border/50">
-                <p className="text-xs sm:text-sm text-muted-foreground mb-2">Transaction Amount</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mb-2">{t('amount')}</p>
                 <p className={`text-2xl sm:text-4xl font-bold ${selectedTransaction.type === "deposit" || selectedTransaction.type === "return" ? "text-accent" : "text-foreground"}`}>
                   {selectedTransaction.type === "deposit" || selectedTransaction.type === "return" ? "+" : "-"}
                   ${selectedTransaction.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}

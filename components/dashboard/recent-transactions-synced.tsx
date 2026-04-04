@@ -34,6 +34,26 @@ export function RecentTransactionsSynced() {
     return 'text-emerald-600 dark:text-emerald-400'
   }
 
+  const getTransactionTypeText = (type: string) => {
+    const typeMap: Record<string, string> = {
+      'deposit': 'transaction_deposit',
+      'withdrawal': 'transaction_withdrawal',
+      'investment': 'transaction_investment',
+      'return': 'transaction_return'
+    }
+    return t(typeMap[type] || 'transaction_' + type)
+  }
+
+  const getTransactionStatusText = (status: string) => {
+    const statusMap: Record<string, string> = {
+      'approved': 'transaction_approved',
+      'pending': 'transaction_pending',
+      'failed': 'transaction_failed',
+      'completed': 'transaction_completed'
+    }
+    return t(statusMap[status] || 'transaction_' + status)
+  }
+
   return (
     <>
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-4 md:p-6">
@@ -61,9 +81,9 @@ export function RecentTransactionsSynced() {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-medium text-sm capitalize text-slate-900 dark:text-white group-hover:text-accent transition-colors">{tx.type}</p>
+                  <p className="font-medium text-sm text-slate-900 dark:text-white group-hover:text-accent transition-colors">{getTransactionTypeText(tx.type)}</p>
                   <p className={`text-xs font-medium ${getStatusColor(tx.status)}`}>
-                    {formatTransactionStatus(tx.status)}
+                    {getTransactionStatusText(tx.status)}
                   </p>
                 </div>
               </div>

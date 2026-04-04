@@ -9,7 +9,7 @@ type Dictionary = Record<string, string>
  * It keeps the "namespace" structure already used in the repo.
  */
 export function useI18n(namespace: string = 'common') {
-  const [language, setLanguage] = useState<'en' | 'es' | 'pt' | 'fr' | 'zh' | 'ar'>('en')
+  const [language, setLanguage] = useState<'en' | 'es' | 'pt' | 'fr' | 'zh' | 'ar' | 'ph'>('en')
   const [dict, setDict] = useState<Dictionary>({})
 
   // Load language preference

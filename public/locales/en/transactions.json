@@ -28,5 +28,8 @@
   "return": "Return",
   "completed": "Completed",
   "pending": "Pending",
-  "failed": "Failed"
+  "failed": "Failed",
+  "transaction_deleted": "Transaction deleted",
+  "export_transactions": "Export Transactions",
+  "download_receipt": "Download Receipt"
 }

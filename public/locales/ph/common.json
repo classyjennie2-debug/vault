@@ -1,0 +1,23 @@
+{
+  "language": "Filipino",
+  "selectLanguage": "Pumili ng Wika",
+  "logout": "Mag-logout",
+  "login": "Mag-login",
+  "signup": "Magparehistro",
+  "email": "Email",
+  "password": "Passwd",
+  "home": "Tahanan",
+  "about": "Tungkol",
+  "contact": "Makipag-ugnayan",
+  "dashboard": "Dashboard",
+  "settings": "Mga Setting",
+  "profile": "Profile",
+  "help": "Tulong",
+  "faq": "FAQ",
+  "termsOfService": "Mga Tuntunin ng Serbisyo",
+  "privacyPolicy": "Patakaran sa Kalakasan",
+  "pricing": "Presyo",
+  "security": "Seguridad",
+  "testimonials": "Mga Testimonya",
+  "copyright": "© 2026 Vault Capital. Lahat ng karapatan ay naaalay."
+}

@@ -19,6 +19,7 @@ import { Logo } from "@/components/ui/logo"
 import { BottomNavBar } from "@/components/dashboard/bottom-nav-bar"
 import { WelcomePopup } from "@/components/dashboard/welcome-popup"
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { useI18n } from "@/hooks/use-i18n"
 
 interface Props {
   children: React.ReactNode
@@ -35,19 +36,20 @@ interface Props {
   isFirstVisit?: boolean
 }
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/investments", label: "Investments", icon: TrendingUp },
-  { href: "/dashboard/deposit", label: "Deposit", icon: ArrowDownToLine },
-  { href: "/dashboard/withdraw", label: "Withdraw", icon: ArrowUpFromLine },
-  { href: "/dashboard/transactions", label: "Transactions", icon: History },
-  { href: "/dashboard/referrals", label: "Referrals", icon: Users },
-]
-
-const desktopNavItems = navItems // Keep original length for desktop sidebar
-
 export default function DashboardLayoutClient({ children, user, firstName = "", lastName = "", isFirstVisit = false }: Props) {
   const pathname = usePathname()
+  const { t } = useI18n("dashboardmain")
+
+  const navItems = [
+    { href: "/dashboard", label: t("welcome"), icon: LayoutDashboard },
+    { href: "/dashboard/investments", label: t("active_investments"), icon: TrendingUp },
+    { href: "/dashboard/deposit", label: t("deposit_funds"), icon: ArrowDownToLine },
+    { href: "/dashboard/withdraw", label: t("withdraw_funds"), icon: ArrowUpFromLine },
+    { href: "/dashboard/transactions", label: t("recent_transactions"), icon: History },
+    { href: "/dashboard/referrals", label: t("my_referrals"), icon: Users },
+  ]
+
+  const desktopNavItems = navItems // Keep original length for desktop sidebar
 
   return (
     <div className="flex min-h-screen bg-background flex-col">

@@ -11,17 +11,19 @@ import {
   Settings,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-const navItems = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/dashboard/investments", label: "Invest", icon: TrendingUp },
-  { href: "/dashboard/deposit", label: "Deposit", icon: ArrowDownToLine },
-  { href: "/dashboard/transactions", label: "History", icon: History },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
-]
+import { useI18n } from "@/hooks/use-i18n"
 
 export function BottomNavBar() {
   const pathname = usePathname()
+  const { t } = useI18n("dashboardmain")
+
+  const navItems = [
+    { href: "/dashboard", label: t("welcome"), icon: LayoutDashboard },
+    { href: "/dashboard/investments", label: t("active_investments"), icon: TrendingUp },
+    { href: "/dashboard/deposit", label: t("deposit_funds"), icon: ArrowDownToLine },
+    { href: "/dashboard/transactions", label: t("recent_transactions"), icon: History },
+    { href: "/dashboard/settings", label: t("settings"), icon: Settings },
+  ]
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 flex lg:hidden h-16 border-t border-border bg-card shadow-lg shadow-black/10 z-40">

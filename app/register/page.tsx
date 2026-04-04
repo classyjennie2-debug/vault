@@ -10,10 +10,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PasswordStrengthMeter, calculatePasswordStrength } from "@/components/auth/password-strength-meter"
 import { COUNTRY_CODES_LIST, type CountryCode } from "@/lib/phone-validation"
+import { useI18n } from "@/hooks/use-i18n"
+import { LanguageSwitcher } from "@/components/language-switcher"
 
 function RegisterPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t } = useI18n("auth")
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
@@ -56,7 +59,7 @@ function RegisterPageContent() {
     setInfo("")
     
     if (!firstName.trim() || !lastName.trim() || !email || !password || !phone.trim() || !dateOfBirth || !phoneCountry) {
-      setError("All fields are required")
+      setError(t("allFieldsRequired") || "All fields are required")
       return
     }
 
@@ -78,17 +81,17 @@ function RegisterPageContent() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || "Something went wrong")
+        setError(data.error || t("error"))
         setLoading(false)
         console.error("Signup error response:", { status: res.status, data })
         return
       }
-      setInfo("Verification code sent to your email")
+      setInfo(t("email_sent"))
       setLoading(false)
       setStep(1)
     } catch (err) {
       const message = err instanceof Error ? err.message : "Network error"
-      setError(`Failed to create account: ${message}`)
+      setError(t("error"))
       setLoading(false)
       console.error("Signup fetch error:", err)
     }
@@ -106,19 +109,19 @@ function RegisterPageContent() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || "Invalid code")
+        setError(data.error || t("error"))
         setLoading(false)
         return
       }
       // Show success and redirect quickly
-      setInfo("✓ Verification successful! Redirecting...")
+      setInfo("✓ " + t("success") + "! Redirecting...")
       // Use setTimeout to ensure smooth redirect with loading page
       setTimeout(() => {
         router.push("/dashboard")
       }, 200)
       // Don't set loading to false - keep the button locked
     } catch (_err) {
-      setError("An error occurred. Please try again.")
+      setError(t("error"))
       setLoading(false)
     }
   }
@@ -144,85 +147,90 @@ function RegisterPageContent() {
         setCanResend(true)
         setResendCountdown(0)
         if (res.status === 429) {
-          setError(data.error || "Please wait before requesting a new code")
+          setError(data.error || t("error"))
         } else if (res.status === 404) {
-          setError("Email not found")
+          setError(t("error"))
         } else {
-          setError(data.error || "Failed to resend code")
+          setError(data.error || t("error"))
         }
         return
       }
 
-      setInfo("Verification code sent to your email")
+      setInfo(t("email_sent"))
     } catch (err) {
       setCanResend(true)
       setResendCountdown(0)
       const message = err instanceof Error ? err.message : "Network error"
-      setError(`Failed to resend code: ${message}`)
+      setError(t("error"))
     }
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left: visual panel */}
-      <div className="hidden w-1/2 bg-primary lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12">
-        <div className="max-w-sm text-center">
-          <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-primary-foreground/10 bg-primary-foreground/5">
-            <Lock className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <h2 className="text-2xl font-bold text-primary-foreground">
-            Start Your Journey
-          </h2>
-          <p className="mt-4 text-sm leading-relaxed text-primary-foreground/60">
-            Join 50,000+ investors using Vault to build and grow their wealth
-            with diversified, institutional-grade strategies.
-          </p>
-          <div className="mt-10 grid grid-cols-3 gap-4">
-            <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4">
-              <p className="text-xl font-bold text-primary-foreground">6.5%</p>
-              <p className="mt-1 text-xs text-primary-foreground/50">
-                Conservative
-              </p>
-            </div>
-            <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4">
-              <p className="text-xl font-bold text-primary-foreground">
-                12.8%
-              </p>
-              <p className="mt-1 text-xs text-primary-foreground/50">Growth</p>
-            </div>
-            <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4">
-              <p className="text-xl font-bold text-primary-foreground">
-                22.5%
-              </p>
-              <p className="mt-1 text-xs text-primary-foreground/50">
-                High Yield
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="flex min-h-screen flex-col">
+      {/* Language Switcher in top-right */}
+      <div className="flex justify-end p-4 lg:p-6">
+        <LanguageSwitcher />
       </div>
 
-      {/* Right: Form */}
-      <div className="flex w-full flex-col justify-center px-6 py-12 lg:w-1/2 lg:px-20">
-        <Link
-          href="/"
-          className="mb-12 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to home
-        </Link>
-        <div className="flex items-center gap-2 mb-10">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Lock className="h-4 w-4 text-primary-foreground" />
+      <div className="flex flex-1">
+        {/* Left: visual panel */}
+        <div className="hidden w-1/2 bg-primary lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12">
+          <div className="max-w-sm text-center">
+            <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-primary-foreground/10 bg-primary-foreground/5">
+              <Lock className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h2 className="text-2xl font-bold text-primary-foreground">
+              {t("create_account")}
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-primary-foreground/60">
+              {t("join_platform")}
+            </p>
+            <div className="mt-10 grid grid-cols-3 gap-4">
+              <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4">
+                <p className="text-xl font-bold text-primary-foreground">6.5%</p>
+                <p className="mt-1 text-xs text-primary-foreground/50">
+                  {t("low")}
+                </p>
+              </div>
+              <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4">
+                <p className="text-xl font-bold text-primary-foreground">
+                  12.8%
+                </p>
+                <p className="mt-1 text-xs text-primary-foreground/50">{t("medium")}</p>
+              </div>
+              <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4">
+                <p className="text-xl font-bold text-primary-foreground">
+                  22.5%
+                </p>
+                <p className="mt-1 text-xs text-primary-foreground/50">
+                  {t("high")}
+                </p>
+              </div>
+            </div>
           </div>
-          <span className="text-lg font-semibold text-foreground">Vault</span>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-          Create your account
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Get started with Vault in under 2 minutes
-        </p>
+
+        {/* Right: Form */}
+        <div className="flex w-full flex-col justify-center px-6 py-12 lg:w-1/2 lg:px-20">
+          <Link
+            href="/"
+            className="mb-12 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("back_to_home")}
+          </Link>
+          <div className="flex items-center gap-2 mb-10">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <Lock className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="text-lg font-semibold text-foreground">Vault</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            {t("create_account")}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {t("join_platform")}
+          </p>
 
         {step === 0 ? (
           <form onSubmit={handleRegister} className="mt-8 flex flex-col gap-5">
@@ -234,20 +242,20 @@ function RegisterPageContent() {
             )}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName">{t("first_name_label")}</Label>
                 <Input
                   id="firstName"
-                  placeholder="First"
+                  placeholder={t("first_name_label")}
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName">{t("last_name_label")}</Label>
                 <Input
                   id="lastName"
-                  placeholder="Last"
+                  placeholder={t("last_name_label")}
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
@@ -255,18 +263,18 @@ function RegisterPageContent() {
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email_label")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("email_placeholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">{t("phone_label")}</Label>
               <div className="flex gap-2">
                 <select
                   value={phoneCountry}
@@ -296,7 +304,7 @@ function RegisterPageContent() {
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="dateOfBirth">Date of Birth</Label>
+              <Label htmlFor="dateOfBirth">{t("date_of_birth_label")}</Label>
               <Input
                 id="dateOfBirth"
                 type="date"
@@ -306,7 +314,7 @@ function RegisterPageContent() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="referralCode">
+              <Label htmlFor="password">{t("password_label")}</Label>
                 Referral Code <span className="text-xs text-muted-foreground">(Optional)</span>
               </Label>
               <Input
@@ -329,7 +337,7 @@ function RegisterPageContent() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Create a strong password"
+                  placeholder={t("password_placeholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -351,7 +359,7 @@ function RegisterPageContent() {
               <PasswordStrengthMeter password={password} />
             </div>
             <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading || calculatePasswordStrength(password).score < 2}>
-              {loading ? "Creating Account..." : "Create Account"}
+              {loading ? t("loading") : t("sign_up_button")}
             </Button>
           </form>
         ) : (
@@ -363,10 +371,10 @@ function RegisterPageContent() {
               <p className="text-sm text-green-600">{info}</p>
             )}
             <p className="text-sm text-muted-foreground">
-              Enter the verification code we sent to <strong>{email}</strong>
+              {t("email_verification_required")}
             </p>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="code">Code</Label>
+              <Label htmlFor="code">{t("verify_email")}</Label>
               <Input
                 id="code"
                 placeholder="123456"
@@ -376,7 +384,7 @@ function RegisterPageContent() {
               />
             </div>
             <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
-              {loading ? "Verifying..." : "Verify & Continue"}
+              {loading ? t("loading") : t("verify_email")}
             </Button>
             <Button 
               type="button" 
@@ -386,18 +394,24 @@ function RegisterPageContent() {
               disabled={!canResend || loading}
             >
               {!canResend && resendCountdown > 0
-                ? `Resend in ${Math.floor(resendCountdown / 60)}:${String(resendCountdown % 60).padStart(2, '0')}`
-                : "Resend Code"}
+                ? `${t("resend_email")} ${Math.floor(resendCountdown / 60)}:${String(resendCountdown % 60).padStart(2, '0')}`
+                : t("resend_email")}
             </Button>
           </form>
         )}
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
+          {t("have_account")}{" "}
           <Link
             href="/login"
             className="font-medium text-foreground hover:underline"
           >
+            {t("sign_in")}
+          </Link>
+        </p>
+      </div>
+    </div>
+  )
             Sign in
           </Link>
         </p>

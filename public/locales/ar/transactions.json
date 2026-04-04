@@ -28,5 +28,8 @@
   "return": "عائد",
   "completed": "مكتمل",
   "pending": "قيد المعالجة",
-  "failed": "فشل"
+  "failed": "فشل",
+  "transaction_deleted": "تم حذف المعاملة",
+  "export_transactions": "تصدير المعاملات",
+  "download_receipt": "تحميل الإيصال"
 }
