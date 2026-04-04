@@ -10,6 +10,7 @@ import { useI18n } from "@/hooks/use-i18n"
 export function RecentTransactionsSynced() {
   const { recentTransactions, isLoading } = useDashboard()
   const { t } = useI18n("dashboardmain")
+  const { t: tTransactions } = useI18n("transactions")
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
 
   if (!recentTransactions || recentTransactions.length === 0) {
@@ -35,23 +36,30 @@ export function RecentTransactionsSynced() {
   }
 
   const getTransactionTypeText = (type: string) => {
+    // Map to the actual keys in transactions.json
     const typeMap: Record<string, string> = {
-      'deposit': 'transaction_deposit',
-      'withdrawal': 'transaction_withdrawal',
-      'investment': 'transaction_investment',
-      'return': 'transaction_return'
+      'deposit': 'deposit',
+      'withdrawal': 'withdrawal',
+      'investment': 'investment',
+      'return': 'return'
     }
-    return t(typeMap[type] || 'transaction_' + type)
+    return tTransactions(typeMap[type] || type)
   }
 
-  const getTransactionStatusText = (status: string) => {
-    const statusMap: Record<string, string> = {
-      'approved': 'transaction_approved',
-      'pending': 'transaction_pending',
-      'failed': 'transaction_failed',
-      'completed': 'transaction_completed'
+  const getTransactionStatusText = (status: string, type?: string) => {
+    // Map to the actual keys in transactions.json
+    // For pending deposits, show "initiated" 
+    if (type === 'deposit' && status === 'pending') {
+      return tTransactions('initiated')
     }
-    return t(statusMap[status] || 'transaction_' + status)
+    
+    const statusMap: Record<string, string> = {
+      'approved': 'completed',
+      'completed': 'completed',
+      'pending': 'pending',
+      'failed': 'failed'
+    }
+    return tTransactions(statusMap[status] || status)
   }
 
   return (
@@ -83,7 +91,7 @@ export function RecentTransactionsSynced() {
                 <div className="min-w-0">
                   <p className="font-medium text-sm text-slate-900 dark:text-white group-hover:text-accent transition-colors">{getTransactionTypeText(tx.type)}</p>
                   <p className={`text-xs font-medium ${getStatusColor(tx.status)}`}>
-                    {getTransactionStatusText(tx.status)}
+                    {getTransactionStatusText(tx.status, tx.type)}
                   </p>
                 </div>
               </div>
