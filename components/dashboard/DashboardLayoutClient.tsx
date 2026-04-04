@@ -40,13 +40,14 @@ export default function DashboardLayoutClient({ children, user, firstName = "", 
   const pathname = usePathname()
   const { t } = useI18n("dashboardmain")
 
+  // Menu labels stay in English and don't change with language selection
   const navItems = [
-    { href: "/dashboard", label: t("welcome"), icon: LayoutDashboard },
-    { href: "/dashboard/investments", label: t("active_investments"), icon: TrendingUp },
-    { href: "/dashboard/deposit", label: t("deposit_funds"), icon: ArrowDownToLine },
-    { href: "/dashboard/withdraw", label: t("withdraw_funds"), icon: ArrowUpFromLine },
-    { href: "/dashboard/transactions", label: t("recent_transactions"), icon: History },
-    { href: "/dashboard/referrals", label: t("my_referrals"), icon: Users },
+    { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+    { href: "/dashboard/investments", label: "Investments", icon: TrendingUp },
+    { href: "/dashboard/deposit", label: "Deposit", icon: ArrowDownToLine },
+    { href: "/dashboard/withdraw", label: "Withdraw", icon: ArrowUpFromLine },
+    { href: "/dashboard/transactions", label: "Transactions", icon: History },
+    { href: "/dashboard/referrals", label: "Referrals", icon: Users },
   ]
 
   const desktopNavItems = navItems // Keep original length for desktop sidebar

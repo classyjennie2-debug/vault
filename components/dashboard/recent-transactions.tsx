@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import type { Transaction } from "@/lib/types"
 import { TransactionDetailModal } from "./transaction-detail-modal"
+import { useI18n } from "@/hooks/use-i18n"
 
 const typeIcons = {
   deposit: ArrowUpRight,
@@ -34,6 +35,7 @@ const statusColors = {
 }
 
 export function RecentTransactions() {
+  const { t } = useI18n("dashboardmain")
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
@@ -64,13 +66,13 @@ export function RecentTransactions() {
       <CardHeader className="flex flex-row items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
         <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
           <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-          <span className="truncate">Recent Transactions</span>
+          <span className="truncate">{t("recent_transactions")}</span>
         </CardTitle>
         <Link
           href="/dashboard/transactions"
           className="text-[10px] sm:text-xs font-semibold text-accent hover:text-accent/80 hover:underline flex items-center gap-0.5 transition-colors duration-300 flex-shrink-0"
         >
-          View all
+          {t("view_all")}
           <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
         </Link>
       </CardHeader>
