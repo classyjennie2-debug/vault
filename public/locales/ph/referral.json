@@ -13,5 +13,17 @@
   "signups": "Signups",
   "earnCommission": "Kumita ng 10% sa mga deposit",
   "minimum": "Minimum $100 deposit upang kumita",
-  "inviteFriends": "Mag-imbita ng mga kaibigan at kumita"
+  "inviteFriends": "Mag-imbita ng mga kaibigan at kumita",
+  "loading": "Naglo-load...",
+  "my_referrals": "Ang Aking Mga Referral",
+  "withdraw": "I-withdraw ang Balanse",
+  "shareYourCode": "Ibahagi ang Iyong Referral Code",
+  "referralCode": "Ang Iyong Referral Code",
+  "howItWorks": "Paano Ito Gumagana",
+  "step1Title": "Ibahagi ang Iyong Link",
+  "step1Desc": "Ibahagi ang iyong natatanging referral link sa mga kaibigan at kasama",
+  "step2Title": "Sila Ay Mag-sign Up",
+  "step2Desc": "Kapag sila ay nag-sign up gamit ang iyong code, sila ay nagiging iyong referral",
+  "step3Title": "Kumita ng Commission",
+  "step3Desc": "Kumita ng 10% commission sa kanilang mga investment - umuulit sa kita"
 }

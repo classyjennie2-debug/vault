@@ -13,5 +13,17 @@
   "signups": "注册数",
   "earnCommission": "存款返佣 10%",
   "minimum": "最低 $100 存款方可获得",
-  "inviteFriends": "邀请好友一起赚钱"
+  "inviteFriends": "邀请好友一起赚钱",
+  "loading": "加载中...",
+  "my_referrals": "我的推荐",
+  "withdraw": "提取余额",
+  "shareYourCode": "分享您的推荐代码",
+  "referralCode": "您的推荐代码",
+  "howItWorks": "工作原理",
+  "step1Title": "分享您的链接",
+  "step1Desc": "与朋友和同事分享您独特的推荐链接",
+  "step2Title": "他们注册",
+  "step2Desc": "当他们使用您的代码注册时，他们成为您的推荐",
+  "step3Title": "赚取佣金",
+  "step3Desc": "赚取他们投资的10%佣金 - 利润持续"
 }

@@ -13,5 +13,17 @@
   "signups": "Inscriptions",
   "earnCommission": "Gagnez 10 % sur les dépôts",
   "minimum": "Dépôt minimum de 100 $ pour gagner",
-  "inviteFriends": "Invitez des amis et gagnez"
+  "inviteFriends": "Invitez des amis et gagnez",
+  "loading": "Chargement...",
+  "my_referrals": "Mes Parrainages",
+  "withdraw": "Retirer le Solde",
+  "shareYourCode": "Partagez Votre Code de Parrainage",
+  "referralCode": "Votre Code de Parrainage",
+  "howItWorks": "Comment Ça Marche",
+  "step1Title": "Partagez Votre Lien",
+  "step1Desc": "Partagez votre lien de parrainage unique avec des amis et des collègues",
+  "step2Title": "Ils S'Inscrivent",
+  "step2Desc": "Quand ils s'inscrivent avec votre code, ils deviennent votre parrain",
+  "step3Title": "Gagnez une Commission",
+  "step3Desc": "Gagnez 10% de commission sur leurs investissements - récurrent sur les bénéfices"
 }

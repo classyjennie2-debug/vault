@@ -13,5 +13,17 @@
   "signups": "Signups",
   "earnCommission": "Earn 10% on deposits",
   "minimum": "Minimum $100 deposit to earn",
-  "inviteFriends": "Invite friends and earn"
+  "inviteFriends": "Invite friends and earn",
+  "loading": "Loading...",
+  "my_referrals": "My Referrals",
+  "withdraw": "Withdraw Balance",
+  "shareYourCode": "Share Your Referral",
+  "referralCode": "Your Referral Code",
+  "howItWorks": "How Referrals Work",
+  "step1Title": "Share Your Link",
+  "step1Desc": "Share your unique referral link with friends and colleagues",
+  "step2Title": "They Sign Up",
+  "step2Desc": "When they sign up using your code, they become your referral",
+  "step3Title": "Earn Commission",
+  "step3Desc": "Earn 10% commission on their investments - recurring on profits"
 }

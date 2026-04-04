@@ -13,5 +13,17 @@
   "signups": "Cadastros",
   "earnCommission": "Ganhe 10% sobre depósitos",
   "minimum": "Depósito mínimo de $100 para ganhar",
-  "inviteFriends": "Convide amigos e ganhe"
+  "inviteFriends": "Convide amigos e ganhe",
+  "loading": "Carregando...",
+  "my_referrals": "Meus Referenciados",
+  "withdraw": "Sacar Saldo",
+  "shareYourCode": "Compartilhe Seu Código de Referência",
+  "referralCode": "Seu Código de Referência",
+  "howItWorks": "Como Funciona",
+  "step1Title": "Compartilhe Seu Link",
+  "step1Desc": "Compartilhe seu link único de referência com amigos e colegas",
+  "step2Title": "Eles Se Registram",
+  "step2Desc": "Quando se registrarem usando seu código, eles se tornam seu referenciado",
+  "step3Title": "Ganhe Comissão",
+  "step3Desc": "Ganhe 10% de comissão em seus investimentos - recorrente em lucros"
 }

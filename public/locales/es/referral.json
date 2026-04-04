@@ -13,5 +13,17 @@
   "signups": "Registros",
   "earnCommission": "Gana 10% en depósitos",
   "minimum": "Depósito mínimo de $100 para ganar",
-  "inviteFriends": "Invita amigos y gana"
+  "inviteFriends": "Invita amigos y gana",
+  "loading": "Cargando...",
+  "my_referrals": "Mis Referidos",
+  "withdraw": "Retirar Saldo",
+  "shareYourCode": "Comparte Tu Código de Referido",
+  "referralCode": "Tu Código de Referido",
+  "howItWorks": "Cómo Funciona",
+  "step1Title": "Comparte Tu Enlace",
+  "step1Desc": "Comparte tu enlace único de referido con amigos y colegas",
+  "step2Title": "Ellos Se Registran",
+  "step2Desc": "Cuando se registren usando tu código, se convierten en tu referido",
+  "step3Title": "Gana Comisión",
+  "step3Desc": "Gana 10% de comisión en sus inversiones - recurriendo en ganancias"
 }
