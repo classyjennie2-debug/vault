@@ -31,5 +31,10 @@
   "failed": "فشل",
   "transaction_deleted": "تم حذف المعاملة",
   "export_transactions": "تصدير المعاملات",
-  "download_receipt": "تحميل الإيصال"
+  "download_receipt": "تحميل الإيصال",
+  "no_recent_transactions": "لا توجد معاملات حديثة",
+  "previous": "السابق",
+  "next": "التالي",
+  "page": "الصفحة",
+  "initiated": "تم البدء"
 }

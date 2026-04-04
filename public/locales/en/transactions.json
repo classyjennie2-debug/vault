@@ -31,5 +31,10 @@
   "failed": "Failed",
   "transaction_deleted": "Transaction deleted",
   "export_transactions": "Export Transactions",
-  "download_receipt": "Download Receipt"
+  "download_receipt": "Download Receipt",
+  "no_recent_transactions": "No recent transactions",
+  "previous": "Previous",
+  "next": "Next",
+  "page": "Page",
+  "initiated": "Initiated"
 }

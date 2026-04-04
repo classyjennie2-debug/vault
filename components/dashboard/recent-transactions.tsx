@@ -84,7 +84,7 @@ export function RecentTransactions() {
           </div>
         ) : userTransactions.length === 0 ? (
           <div className="text-center py-6 sm:py-8 text-muted-foreground text-sm">
-            No recent transactions
+            {tTransactions("no_recent_transactions")}
           </div>
         ) : (
           userTransactions.slice(page * pageSize, page * pageSize + pageSize).map((tx, idx) => {
@@ -96,7 +96,7 @@ export function RecentTransactions() {
             // Display deposit status differently: initiated vs approved
             let displayStatus = tx.status
             if (tx.type === "deposit" && tx.status === "pending") {
-              displayStatus = "initiated"
+              displayStatus = tTransactions("initiated")
             }
             
             return (
@@ -141,17 +141,17 @@ export function RecentTransactions() {
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
             >
-              Previous
+              {tTransactions("previous")}
             </button>
             <p className="text-[11px] text-muted-foreground">
-              Page {page + 1} / {Math.ceil(userTransactions.length / pageSize)}
+              {tTransactions("page")} {page + 1} / {Math.ceil(userTransactions.length / pageSize)}
             </p>
             <button
               className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
               onClick={() => setPage((p) => (p + 1 < Math.ceil(userTransactions.length / pageSize) ? p + 1 : p))}
               disabled={page + 1 >= Math.ceil(userTransactions.length / pageSize)}
             >
-              Next
+              {tTransactions("next")}
             </button>
           </div>
         )}

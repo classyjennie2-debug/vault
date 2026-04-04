@@ -31,5 +31,10 @@
   "failed": "失败",
   "transaction_deleted": "交易已删除",
   "export_transactions": "导出交易",
-  "download_receipt": "下载收据"
+  "download_receipt": "下载收据",
+  "no_recent_transactions": "没有最近的交易",
+  "previous": "上一页",
+  "next": "下一页",
+  "page": "页面",
+  "initiated": "已启动"
 }

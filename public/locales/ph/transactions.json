@@ -31,5 +31,10 @@
   "failed": "Nabigong",
   "transaction_deleted": "Transaksyon na natanggal",
   "export_transactions": "I-export ang Mga Transaksyon",
-  "download_receipt": "I-download ang Resibo"
+  "download_receipt": "I-download ang Resibo",
+  "no_recent_transactions": "Walang mga transaction na kamakailan",
+  "previous": "Nakaraan",
+  "next": "Susunod",
+  "page": "Pahina",
+  "initiated": "Nagsimula"
 }
