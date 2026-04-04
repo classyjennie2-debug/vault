@@ -16,11 +16,12 @@ export function LanguageSwitcher() {
 
   const languages: Record<string, string> = {
     en: 'English',
-    es: 'Español',
-    pt: 'Português',
-    fr: 'Français',
-    zh: '中文',
-    ar: 'العربية',
+    es: 'Spanish',
+    pt: 'Portuguese',
+    fr: 'French',
+    zh: 'Chinese',
+    ar: 'Arabic',
+    ph: 'Filipino',
   }
 
   // Load language from localStorage on mount
