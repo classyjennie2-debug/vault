@@ -314,7 +314,7 @@ function RegisterPageContent() {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">{t("password_label")}</Label>
+              <Label htmlFor="referralCode">
                 Referral Code <span className="text-xs text-muted-foreground">(Optional)</span>
               </Label>
               <Input
@@ -332,7 +332,7 @@ function RegisterPageContent() {
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password_label")}</Label>
               <div className="relative">
                 <Input
                   id="password"
