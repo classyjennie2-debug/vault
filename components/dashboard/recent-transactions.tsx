@@ -35,7 +35,8 @@ const statusColors = {
 }
 
 export function RecentTransactions() {
-  const { t } = useI18n("dashboardmain")
+  const { t: tDashboard } = useI18n("dashboardmain")
+  const { t: tTransactions } = useI18n("transactions")
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
@@ -66,13 +67,13 @@ export function RecentTransactions() {
       <CardHeader className="flex flex-row items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
         <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
           <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-          <span className="truncate">{t("recent_transactions")}</span>
+          <span className="truncate">{tDashboard("recent_transactions")}</span>
         </CardTitle>
         <Link
           href="/dashboard/transactions"
           className="text-[10px] sm:text-xs font-semibold text-accent hover:text-accent/80 hover:underline flex items-center gap-0.5 transition-colors duration-300 flex-shrink-0"
         >
-          {t("view_all")}
+          {tDashboard("view_all")}
           <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
         </Link>
       </CardHeader>
@@ -110,7 +111,7 @@ export function RecentTransactions() {
                 </div>
                 <div className="flex-1 overflow-hidden min-w-0">
                   <p className="truncate text-xs sm:text-sm font-semibold text-card-foreground group-hover:text-accent transition-colors">
-                    {tx.description}
+                    {tTransactions(tx.type)}
                   </p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground/70 truncate">{tx.date}</p>
                 </div>
