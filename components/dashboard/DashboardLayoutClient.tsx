@@ -115,7 +115,6 @@ export default function DashboardLayoutClient({ children, user, firstName = "", 
               <span className="font-semibold text-sm sm:text-base text-foreground font-serif truncate">Vault Capital</span>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              <LanguageSwitcher />
               <NotificationBell />
               <UserMenu user={user} />
             </div>
