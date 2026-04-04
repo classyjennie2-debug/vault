@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
+import { useI18n } from "@/hooks/use-i18n"
 
 export default function PortfolioPage() {
+  const { t } = useI18n('portfolio')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [portfolioData, setPortfolioData] = useState({
@@ -71,9 +73,9 @@ export default function PortfolioPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Portfolio Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
         <p className="text-muted-foreground mt-2">
-          View your complete investment portfolio and performance metrics
+          {t('description')}
         </p>
       </div>
 
@@ -89,15 +91,15 @@ export default function PortfolioPage() {
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          Portfolio data is updated daily. Last update: {new Date().toLocaleDateString()}
+          {t('last_update')} {new Date().toLocaleDateString()}
         </AlertDescription>
       </Alert>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analysis">Analysis</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
+          <TabsTrigger value="analysis">{t('analysis')}</TabsTrigger>
+          <TabsTrigger value="history">{t('history')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -114,20 +116,20 @@ export default function PortfolioPage() {
         <TabsContent value="analysis" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Performance Analysis</CardTitle>
+              <CardTitle>{t('performance_analysis')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Best Performing Asset</p>
+                    <p className="text-sm text-muted-foreground">{t('best_performing')}</p>
                     <p className="text-2xl font-bold">High Yield Plan</p>
-                    <p className="text-sm text-green-600">+22.5% YTD</p>
+                    <p className="text-sm text-green-600">+22.5% {t('ytd_return')}</p>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Volatility</p>
-                    <p className="text-2xl font-bold">Low</p>
-                    <p className="text-sm text-muted-foreground">Diversified portfolio</p>
+                    <p className="text-sm text-muted-foreground">{t('volatility')}</p>
+                    <p className="text-2xl font-bold">{t('low')}</p>
+                    <p className="text-sm text-muted-foreground">{t('diversified_portfolio')}</p>
                   </div>
                 </div>
               </div>
@@ -138,7 +140,7 @@ export default function PortfolioPage() {
         <TabsContent value="history" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Portfolio History</CardTitle>
+              <CardTitle>{t('portfolio_history')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -146,7 +148,7 @@ export default function PortfolioPage() {
                   <div key={index} className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
                     <div>
                       <p className="font-medium">{item.date}</p>
-                      <p className="text-sm text-muted-foreground">Balance: ${item.balance.toLocaleString()}</p>
+                      <p className="text-sm text-muted-foreground">{t('balance')}: ${item.balance.toLocaleString()}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-green-600">+${item.returns.toLocaleString()}</p>

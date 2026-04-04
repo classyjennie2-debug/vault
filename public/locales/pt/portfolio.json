@@ -1,0 +1,21 @@
+{
+  "title": "Painel de Portfólio",
+  "description": "Visualize seu portfólio de investimento completo e métricas de desempenho",
+  "last_update": "Os dados do portfólio são atualizados diariamente. Última atualização:",
+  "overview": "Visão Geral",
+  "analysis": "Análise",
+  "history": "Histórico",
+  "performance_analysis": "Análise de Desempenho",
+  "best_performing": "Ativo com Melhor Desempenho",
+  "ytd_return": "Retorno YTD",
+  "volatility": "Volatilidade",
+  "low": "Baixa",
+  "diversified_portfolio": "Portfólio diversificado",
+  "portfolio_history": "Histórico do Portfólio",
+  "balance": "Saldo",
+  "returns": "Retornos",
+  "date": "Data",
+  "view_portfolio": "Ver Portfólio",
+  "your_portfolio": "Seu Portfólio",
+  "complete_portfolio": "Gerencie seu portfólio de investimento completo"
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Tableau de Bord du Portefeuille",
+  "description": "Consultez votre portefeuille d'investissement complet et les métriques de performance",
+  "last_update": "Les données du portefeuille sont mises à jour quotidiennement. Dernière mise à jour :",
+  "overview": "Aperçu",
+  "analysis": "Analyse",
+  "history": "Historique",
+  "performance_analysis": "Analyse de Performance",
+  "best_performing": "Actif le Plus Performant",
+  "ytd_return": "Rendement YTD",
+  "volatility": "Volatilité",
+  "low": "Faible",
+  "diversified_portfolio": "Portefeuille diversifié",
+  "portfolio_history": "Historique du Portefeuille",
+  "balance": "Solde",
+  "returns": "Rendements",
+  "date": "Date",
+  "view_portfolio": "Voir le Portefeuille",
+  "your_portfolio": "Votre Portefeuille",
+  "complete_portfolio": "Gérez votre portefeuille d'investissement complet"
+}

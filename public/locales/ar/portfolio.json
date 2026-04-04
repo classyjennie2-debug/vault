@@ -1,0 +1,21 @@
+{
+  "title": "لوحة الحافظة",
+  "description": "عرض حافظتك الاستثمارية الكاملة ومقاييس الأداء",
+  "last_update": "يتم تحديث بيانات الحافظة يوميا. آخر تحديث:",
+  "overview": "نظرة عامة",
+  "analysis": "تحليل",
+  "history": "السجل",
+  "performance_analysis": "تحليل الأداء",
+  "best_performing": "الأفضل أداء",
+  "ytd_return": "العائد منذ بداية السنة",
+  "volatility": "التقلب",
+  "low": "منخفض",
+  "diversified_portfolio": "حافظة متنوعة",
+  "portfolio_history": "سجل الحافظة",
+  "balance": "الرصيد",
+  "returns": "العوائد",
+  "date": "التاريخ",
+  "view_portfolio": "عرض الحافظة",
+  "your_portfolio": "حافظتك",
+  "complete_portfolio": "إدارة حافظتك الاستثمارية الكاملة"
+}
