@@ -5,9 +5,11 @@ import { ReferralDashboard } from '@/components/dashboard/referral-dashboard'
 import { ReferralWithdrawModal } from '@/components/dashboard/referral-withdraw-modal'
 import { Button } from '@/components/ui/button'
 import { useReferralStats } from '@/hooks/use-referral'
+import { useI18n } from '@/hooks/use-i18n'
 import { Loader2 } from 'lucide-react'
 
 export default function ReferralPage() {
+  const { t } = useI18n('referral')
   const { stats, loading, refetch } = useReferralStats()
   const [withdrawOpen, setWithdrawOpen] = useState(false)
   const [key, setKey] = useState(0)
@@ -31,7 +33,17 @@ export default function ReferralPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6" key={key}>
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6" key={key}>
+      {/* Page Header */}
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          {t('my_referrals', 'My Referrals')}
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          {t('description', 'Manage your referral program and earnings')}
+        </p>
+      </div>
+
       {/* Quick Action Button */}
       {stats?.stats.canWithdraw && stats?.stats.referralBalance > 0 && (
         <div className="flex justify-end">
