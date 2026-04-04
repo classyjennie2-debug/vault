@@ -157,13 +157,6 @@ export function LandingClient({ plans }: LandingClientProps) {
             hrefWhenLoggedOut="/login"
             hrefWhenLoggedIn="/dashboard"
           />
-          <LandingCTA
-            size="sm"
-            showText={t("nav_get_started")}
-            showLoggedInText={t("nav_investing")}
-            hrefWhenLoggedOut="/register"
-            hrefWhenLoggedIn="/dashboard/investments"
-          />
         </div>
       </nav>
 
@@ -184,7 +177,7 @@ export function LandingClient({ plans }: LandingClientProps) {
           <h1 className="max-w-3xl text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
             <span className="text-balance">
               {t("hero_title_part1")}
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent font-serif">
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent font-serif text-6xl md:text-7xl lg:text-8xl tracking-wide">
                 {" "}
                 {t("hero_title_part2")}
               </span>
@@ -452,7 +445,7 @@ export function LandingClient({ plans }: LandingClientProps) {
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
                   <Lock className="h-3.5 w-3.5 text-primary-foreground" />
                 </div>
-                <span className="font-semibold text-foreground">Vault</span>
+                <span className="font-serif font-bold text-lg tracking-wide text-foreground">Vault</span>
               </div>
               <p className="text-xs text-muted-foreground">{t("footer_tagline")}</p>
             </div>
