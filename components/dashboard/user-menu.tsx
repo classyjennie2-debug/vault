@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Settings, HelpCircle, LogOut, ChevronDown, Moon, Sun } from "lucide-react"
+import { Settings, HelpCircle, LogOut, ChevronDown, Moon, Sun, Globe } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,6 +30,18 @@ export function UserMenu({ user }: UserMenuProps) {
   const { t } = useI18n("dashboardmain")
   const [isDark, setIsDark] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [language, setLanguage] = useState<string>('en')
+  const [languageNames, setLanguageNames] = useState<Record<string, string>>({})
+
+  const LANGUAGES: Record<string, string> = {
+    en: 'English',
+    es: 'Español',
+    pt: 'Português',
+    fr: 'Français',
+    zh: '中文',
+    ar: 'العربية',
+    ph: 'Filipino',
+  }
 
   useEffect(() => {
     setMounted(true)
@@ -38,7 +50,36 @@ export function UserMenu({ user }: UserMenuProps) {
       saved === "dark" ||
       (saved === null && window.matchMedia("(prefers-color-scheme: dark)").matches)
     setIsDark(prefersDark)
+
+    // Load language
+    const savedLanguage = localStorage.getItem('language') || 'en'
+    setLanguage(savedLanguage)
+
+    // Fetch language names
+    const fetchLanguageNames = async () => {
+      const names: Record<string, string> = {}
+      
+      for (const [code, _] of Object.entries(LANGUAGES)) {
+        try {
+          const response = await fetch(`/locales/${code}/common.json`)
+          const data = await response.json()
+          names[code] = data.language || LANGUAGES[code]
+        } catch (error) {
+          names[code] = LANGUAGES[code]
+        }
+      }
+      
+      setLanguageNames(names)
+    }
+    
+    fetchLanguageNames()
   }, [])
+
+  const handleLanguageChange = (newLanguage: string) => {
+    localStorage.setItem('language', newLanguage)
+    setLanguage(newLanguage)
+    window.location.reload()
+  }
 
   const toggleTheme = () => {
     if (!mounted) return
@@ -140,6 +181,26 @@ export function UserMenu({ user }: UserMenuProps) {
               <span>{isDark ? t("light_mode") : t("dark_mode")}</span>
             </div>
           </DropdownMenuItem>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-2 h-9">
+                <Globe className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">{languageNames[language] || LANGUAGES[language] || 'Language'}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="right">
+              {Object.entries(LANGUAGES).map(([code, _]) => (
+                <DropdownMenuItem
+                  key={code}
+                  onClick={() => handleLanguageChange(code)}
+                  className={language === code ? 'bg-accent' : ''}
+                >
+                  {languageNames[code] || LANGUAGES[code]}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <DropdownMenuItem asChild>
             <Link

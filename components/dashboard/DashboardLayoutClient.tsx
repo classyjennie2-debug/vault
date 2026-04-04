@@ -18,7 +18,6 @@ import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { Logo } from "@/components/ui/logo"
 import { BottomNavBar } from "@/components/dashboard/bottom-nav-bar"
 import { WelcomePopup } from "@/components/dashboard/welcome-popup"
-import { LanguageSwitcher } from "@/components/language-switcher"
 import { useI18n } from "@/hooks/use-i18n"
 
 interface Props {
@@ -58,7 +57,6 @@ export default function DashboardLayoutClient({ children, user, firstName = "", 
       <header className="hidden lg:flex h-16 items-center justify-between border-b border-border bg-card px-8 sticky top-0 z-20">
         <div className="flex-1"></div>
         <div className="flex items-center gap-3">
-          <LanguageSwitcher />
           <NotificationBell />
           <UserMenu user={user} />
         </div>

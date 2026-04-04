@@ -206,6 +206,39 @@ export default function SettingsPage() {
       }
     }
     fetchActivities()
+
+    // Load language
+    const savedLanguage = localStorage.getItem('language') || 'en'
+    setLanguage(savedLanguage)
+
+    // Fetch language names
+    const LANGUAGES: Record<string, string> = {
+      en: 'English',
+      es: 'Español',
+      pt: 'Português',
+      fr: 'Français',
+      zh: '中文',
+      ar: 'العربية',
+      ph: 'Filipino',
+    }
+
+    const fetchLanguageNames = async () => {
+      const names: Record<string, string> = {}
+      
+      for (const [code, _] of Object.entries(LANGUAGES)) {
+        try {
+          const response = await fetch(`/locales/${code}/common.json`)
+          const data = await response.json()
+          names[code] = data.language || LANGUAGES[code]
+        } catch (error) {
+          names[code] = LANGUAGES[code]
+        }
+      }
+      
+      setLanguageNames(names)
+    }
+    
+    fetchLanguageNames()
   }, [])
 
   const [securitySettings, setSecuritySettings] = useState({
@@ -229,6 +262,9 @@ export default function SettingsPage() {
     activityLogging: true,
   })
 
+  const [language, setLanguage] = useState<string>('en')
+  const [languageNames, setLanguageNames] = useState<Record<string, string>>({})
+
   const handleSaveSettings = async () => {
     const res = await fetch("/api/settings", {
       method: "POST",
@@ -244,6 +280,12 @@ export default function SettingsPage() {
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     }
+  }
+
+  const handleLanguageChange = (newLanguage: string) => {
+    localStorage.setItem('language', newLanguage)
+    setLanguage(newLanguage)
+    window.location.reload()
   }
 
   const handleLogout = async () => {
@@ -659,6 +701,43 @@ export default function SettingsPage() {
                 })
               }
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Language Settings */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Settings className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+            <div>
+              <CardTitle>Language Preferences</CardTitle>
+              <CardDescription>
+                Choose your preferred language
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="language">Language</Label>
+            <Select value={language} onValueChange={handleLanguageChange}>
+              <SelectTrigger className="mt-1 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">{languageNames['en'] || 'English'}</SelectItem>
+                <SelectItem value="es">{languageNames['es'] || 'Español'}</SelectItem>
+                <SelectItem value="pt">{languageNames['pt'] || 'Português'}</SelectItem>
+                <SelectItem value="fr">{languageNames['fr'] || 'Français'}</SelectItem>
+                <SelectItem value="zh">{languageNames['zh'] || '中文'}</SelectItem>
+                <SelectItem value="ar">{languageNames['ar'] || 'العربية'}</SelectItem>
+                <SelectItem value="ph">{languageNames['ph'] || 'Filipino'}</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-2">
+              The interface will reload in your selected language
+            </p>
           </div>
         </CardContent>
       </Card>
