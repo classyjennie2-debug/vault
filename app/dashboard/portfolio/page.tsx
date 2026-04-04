@@ -57,7 +57,7 @@ export default function PortfolioPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-6">
         <div className="h-8 w-48 bg-muted rounded animate-pulse" />
         <div className="grid gap-4 md:grid-cols-4">
           {[...Array(4)].map((_, i) => (
@@ -69,7 +69,7 @@ export default function PortfolioPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Portfolio Dashboard</h1>
         <p className="text-muted-foreground mt-2">

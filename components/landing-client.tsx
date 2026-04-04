@@ -119,7 +119,7 @@ export function LandingClient({ plans }: LandingClientProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
-      <nav className="fixed top-0 z-50 flex w-full items-center justify-between border-b border-border/50 bg-background/80 px-6 py-4 backdrop-blur-md lg:px-12">
+      <nav className="fixed top-0 z-50 flex w-full items-center justify-between border-b border-border/50 bg-background/80 px-4 sm:px-6 md:px-8 py-4 backdrop-blur-md">
         <Logo />
         <div className="hidden items-center gap-8 md:flex">
           <Link
@@ -168,7 +168,7 @@ export function LandingClient({ plans }: LandingClientProps) {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden px-6 pt-32 pb-20 lg:pt-44 lg:pb-32">
+      <section className="relative overflow-hidden px-4 sm:px-6 md:px-8 pt-24 sm:pt-32 pb-12 sm:pb-20 md:pt-40 md:pb-24 lg:pt-44 lg:pb-32">
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute -top-64 right-0 h-96 w-96 bg-gradient-to-l from-primary/20 to-transparent blur-3xl" />
@@ -221,7 +221,7 @@ export function LandingClient({ plans }: LandingClientProps) {
       </section>
 
       {/* Features */}
-      <section id="features" className="px-6 py-20 lg:px-12 lg:py-28">
+      <section id="features" className="px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 lg:py-28">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
             <p className="mb-3 text-sm font-medium tracking-wider text-accent uppercase">
@@ -258,7 +258,7 @@ export function LandingClient({ plans }: LandingClientProps) {
       {/* Stats */}
       <section
         id="stats"
-        className="border-y border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-6 py-20 lg:px-12 lg:py-28"
+        className="border-y border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 lg:py-28"
       >
         <div className="mx-auto max-w-5xl">
           <div className="mb-16 text-center">
@@ -282,7 +282,7 @@ export function LandingClient({ plans }: LandingClientProps) {
       </section>
 
       {/* Plans preview */}
-      <section id="plans" className="px-6 py-20 lg:px-12 lg:py-28">
+      <section id="plans" className="px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 lg:py-28">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
             <p className="mb-3 text-sm font-semibold tracking-wider text-accent uppercase">
@@ -364,7 +364,7 @@ export function LandingClient({ plans }: LandingClientProps) {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="px-6 py-20 lg:px-12 lg:py-28 bg-slate-50 dark:bg-slate-900/50">
+      <section id="testimonials" className="px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 lg:py-28 bg-slate-50 dark:bg-slate-900/50">
         <div className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
             <p className="mb-3 text-sm font-semibold tracking-wider text-accent uppercase">
@@ -414,7 +414,7 @@ export function LandingClient({ plans }: LandingClientProps) {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden px-6 py-20 lg:px-12 lg:py-28">
+      <section className="relative overflow-hidden px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 lg:py-28">
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute -top-40 right-0 h-80 w-80 bg-gradient-to-l from-primary/20 to-transparent blur-3xl" />
@@ -444,7 +444,7 @@ export function LandingClient({ plans }: LandingClientProps) {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border px-6 py-12 lg:px-12">
+      <footer className="border-t border-border px-4 sm:px-6 md:px-8 py-8 sm:py-10 md:py-12 lg:py-12">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 md:grid-cols-4 mb-8">
             <div className="md:col-span-1">

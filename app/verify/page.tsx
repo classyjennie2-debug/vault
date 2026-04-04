@@ -154,10 +154,10 @@ function VerifyContent() {
       </div>
 
       {/* Right: Form */}
-      <div className="flex w-full flex-col justify-center px-6 py-12 lg:w-1/2 lg:px-20">
+      <div className="flex w-full flex-col justify-center px-4 sm:px-6 py-8 sm:py-12 lg:w-1/2 lg:px-16 lg:py-12">
         <Link
           href="/"
-          className="mb-12 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+          className="mb-8 sm:mb-12 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to home
