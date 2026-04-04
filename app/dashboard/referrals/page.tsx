@@ -33,9 +33,9 @@ export default function ReferralPage() {
   }
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6" key={key}>
+    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6 w-full" key={key}>
       {/* Page Header */}
-      <div>
+      <div className="w-full">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           {t('my_referrals', 'My Referrals')}
         </h1>
@@ -46,7 +46,7 @@ export default function ReferralPage() {
 
       {/* Quick Action Button */}
       {stats?.stats.canWithdraw && stats?.stats.referralBalance > 0 && (
-        <div className="flex justify-end">
+        <div className="flex justify-end w-full">
           <Button
             onClick={() => setWithdrawOpen(true)}
             size="sm"
