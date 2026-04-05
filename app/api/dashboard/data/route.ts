@@ -9,6 +9,7 @@ import {
   get
 } from "@/lib/db"
 import { calculateMonthlyMetrics } from "@/lib/monthly-metrics"
+import { calculateDailyBalanceChange } from "@/lib/daily-metrics"
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,9 +17,10 @@ export async function GET(req: NextRequest) {
     if (user instanceof NextResponse) return user
 
     // Fetch all dashboard data in parallel
-    const [stats, monthlyMetrics, portfolioData, activeInvestments, transactions] = await Promise.all([
+    const [stats, monthlyMetrics, dailyMetrics, portfolioData, activeInvestments, transactions] = await Promise.all([
       getUserStats(user.id),
       calculateMonthlyMetrics(user.id),
+      calculateDailyBalanceChange(user.id),
       generatePortfolioData(user.id),
       getUserActiveInvestmentsWithProfit(user.id),
       getUserTransactions(user.id),
@@ -68,7 +70,7 @@ export async function GET(req: NextRequest) {
         totalReturnRate: parseFloat(totalReturnRate as string),
       },
       metrics: {
-        monthlyGain: monthlyMetrics.monthlyGain,
+        dailyBalanceChange: dailyMetrics.dailyBalanceChange,
         monthlyReturns: monthlyMetrics.monthlyReturns,
         weeklyChange,
       },

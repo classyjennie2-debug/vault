@@ -38,7 +38,7 @@
     "syncing_label":  "جاري المزامنة...",
     "last_updated":  "آخر تحديث:",
     "net_balance":  "الرصيد الصافي",
-    "monthly_delta":  "التغيير الشهري",
+    "daily_balance_change":  "تغيير الرصيد اليومي",
     "referral_program":  "برنامج الإحالة",
     "earn_on_referrals":  "اكسب من الإحالات",
     "active_referrals":  "الإحالات النشطة",

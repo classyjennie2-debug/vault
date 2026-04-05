@@ -43,11 +43,11 @@ export function GlanceStripSynced() {
       tone: "border-primary/30 text-primary bg-primary/5",
     },
     {
-      label: t("monthly_delta"),
-      value: `${metrics.monthlyGain >= 0 ? "+" : ""}$${metrics.monthlyGain.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+      label: t("daily_balance_change"),
+      value: `${metrics.dailyBalanceChange >= 0 ? "+" : ""}$${metrics.dailyBalanceChange.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
       icon: TrendingUp,
       tone:
-        metrics.monthlyGain >= 0
+        metrics.dailyBalanceChange >= 0
           ? "border-emerald-400/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5"
           : "border-rose-400/40 text-rose-600 dark:text-rose-400 bg-rose-500/5",
     },
