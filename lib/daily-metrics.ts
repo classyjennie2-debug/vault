@@ -12,7 +12,7 @@ export async function calculateDailyBalanceChange(userId: string) {
 
     const usePostgres = pgPool !== null
 
-    // Get all approved transactions from last 24 hours
+    // Get all transactions from last 24 hours (don't filter by status in query)
     const transactions = await all<{
       id: string
       type: string
@@ -22,34 +22,42 @@ export async function calculateDailyBalanceChange(userId: string) {
     }>(
       usePostgres
         ? `SELECT id, type, amount, status, created_at as date FROM transactions 
-           WHERE user_id = $1 AND created_at >= $2 AND created_at <= $3 AND status = 'approved'
+           WHERE user_id = $1 AND created_at >= $2 AND created_at <= $3
            ORDER BY created_at ASC`
         : `SELECT id, type, amount, status, date FROM transactions 
-           WHERE userId = $1 AND date >= $2 AND date <= $3 AND status = 'approved'
+           WHERE userId = $1 AND date >= $2 AND date <= $3
            ORDER BY date ASC`,
       [userId, oneDayAgo, today]
     )
+
+    console.log(`[Daily Metrics] Found ${transactions.length} transactions for user ${userId} in last 24 hours`)
+    if (transactions.length > 0) {
+      console.log(`[Daily Metrics] Date range: ${oneDayAgo} to ${today}`)
+      console.log(`[Daily Metrics] Sample transaction:`, transactions[0])
+    }
 
     let dailyDeposits = 0
     let dailyReturns = 0
     let dailyWithdrawals = 0
     let dailyInvestments = 0
 
-    // Sum up transactions by type
+    // Sum up transactions by type - only count approved ones
     transactions.forEach((tx) => {
-      switch (tx.type) {
-        case 'deposit':
-          dailyDeposits += tx.amount
-          break
-        case 'return':
-          dailyReturns += tx.amount
-          break
-        case 'withdrawal':
-          dailyWithdrawals += tx.amount
-          break
-        case 'investment':
-          dailyInvestments += tx.amount
-          break
+      if (tx.status === 'approved') {
+        switch (tx.type) {
+          case 'deposit':
+            dailyDeposits += tx.amount
+            break
+          case 'return':
+            dailyReturns += tx.amount
+            break
+          case 'withdrawal':
+            dailyWithdrawals += tx.amount
+            break
+          case 'investment':
+            dailyInvestments += tx.amount
+            break
+        }
       }
     })
 
@@ -59,6 +67,8 @@ export async function calculateDailyBalanceChange(userId: string) {
     // Withdrawals reduce balance (money out)
     // Investments reduce available balance but go to invested
     const dailyBalanceChange = dailyReturns + dailyDeposits - dailyWithdrawals - dailyInvestments
+
+    console.log(`[Daily Metrics] Calculation: returns(${dailyReturns}) + deposits(${dailyDeposits}) - withdrawals(${dailyWithdrawals}) - investments(${dailyInvestments}) = ${dailyBalanceChange}`)
 
     return {
       dailyBalanceChange: Math.round(dailyBalanceChange * 100) / 100,
