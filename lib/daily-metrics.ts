@@ -61,11 +61,9 @@ export async function calculateDailyBalanceChange(userId: string) {
       }
     })
 
-    // Daily balance change = returns + deposits - withdrawals - investments
-    // Returns add to balance (profits)
-    // Deposits add to balance (money in)
-    // Withdrawals reduce balance (money out)
-    // Investments reduce available balance but go to invested
+    // Daily balance change represents the net gain from transactions today
+    // This includes returns (profits), deposits, less withdrawals and investments
+    // Similar to how monthlyGain was the key metric for monthly performance
     const dailyBalanceChange = dailyReturns + dailyDeposits - dailyWithdrawals - dailyInvestments
 
     console.log(`[Daily Metrics] Calculation: returns(${dailyReturns}) + deposits(${dailyDeposits}) - withdrawals(${dailyWithdrawals}) - investments(${dailyInvestments}) = ${dailyBalanceChange}`)
