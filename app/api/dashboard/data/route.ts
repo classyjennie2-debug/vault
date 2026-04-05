@@ -77,6 +77,12 @@ export async function GET(req: NextRequest) {
       portfolio: portfolioData,
       activeInvestments: activeInvestments || [],
       recentTransactions: recentTransactions || [],
+    }, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+      }
     })
   } catch (error) {
     console.error("[Dashboard Data] Error:", error)

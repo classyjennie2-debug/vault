@@ -21,7 +21,7 @@ export interface DashboardDataSnapshot {
     totalReturnRate: number
   }
   metrics: {
-    monthlyGain: number
+    dailyBalanceChange: number
     monthlyReturns: number
     weeklyChange: number
   }
@@ -87,8 +87,8 @@ export function useDashboardPolling(interval: number = 5000) {
         if (data.stats.pendingDeposits !== previousDataRef.current.stats.pendingDeposits) {
           changes.push(`pending deposits: ${previousDataRef.current.stats.pendingDeposits} → ${data.stats.pendingDeposits}`)
         }
-        if (data.metrics.monthlyGain !== previousDataRef.current.metrics.monthlyGain) {
-          changes.push(`monthly gain: $${previousDataRef.current.metrics.monthlyGain} → $${data.metrics.monthlyGain}`)
+        if (data.metrics.dailyBalanceChange !== previousDataRef.current.metrics.dailyBalanceChange) {
+          changes.push(`daily balance change: $${previousDataRef.current.metrics.dailyBalanceChange} → $${data.metrics.dailyBalanceChange}`)
         }
 
         if (changes.length > 0) {
