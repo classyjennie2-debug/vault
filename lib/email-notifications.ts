@@ -12,6 +12,17 @@ const transporter = nodemailer.createTransport({
   },
 })
 
+// Debug SMTP configuration
+if (process.env.NODE_ENV === 'development') {
+  console.log('[Email] SMTP Configuration:', {
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT || '587',
+    secure: process.env.EMAIL_SECURE === 'true',
+    user: process.env.EMAIL_USER,
+    tokenSet: !!emailToken,
+  })
+}
+
 // Vault Logo URL - uses public domain for email compatibility
 const LOGO_URL = 'https://vaultcapital.bond/vault-logo-email.svg'
 
