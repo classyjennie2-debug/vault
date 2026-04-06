@@ -15,8 +15,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email required" }, { status: 400 })
     }
 
-    const emailPass = process.env.EMAIL_PASS || process.env.EMAIL_TOKEN
-    apiLogger.debug("TEST EMAIL SENDING", { email, host: !!process.env.EMAIL_HOST, port: !!process.env.EMAIL_PORT, userSet: !!process.env.EMAIL_USER, passSet: !!emailPass })
+    const emailToken = process.env.EMAIL_TOKEN || process.env.EMAIL_PASS
+    apiLogger.debug("TEST EMAIL SENDING", { email, host: !!process.env.EMAIL_HOST, port: !!process.env.EMAIL_PORT, userSet: !!process.env.EMAIL_USER, tokenSet: !!emailToken })
 
     // Send test email
     await sendVerificationCode(email)

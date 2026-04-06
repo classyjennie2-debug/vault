@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 
-const emailPass = process.env.EMAIL_PASS || process.env.EMAIL_TOKEN
+const emailToken = process.env.EMAIL_TOKEN || process.env.EMAIL_PASS
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
   secure: process.env.EMAIL_SECURE === 'true',
   auth: {
     user: process.env.EMAIL_USER,
-    pass: emailPass,
+    pass: emailToken,
   },
 })
 
