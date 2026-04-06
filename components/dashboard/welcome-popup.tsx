@@ -47,7 +47,7 @@ export function WelcomePopup({ firstName = "", lastName = "", isFirstVisit = tru
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="fixed inset-0 z-[200] max-w-sm sm:max-w-md md:max-w-lg border-2 border-amber-700/20 shadow-2xl bg-gradient-to-b from-white to-amber-50/30 p-4 sm:p-6 rounded-2xl">
+      <DialogContent className="w-full max-h-[90vh] overflow-y-auto gap-4 sm:gap-6 border-2 border-amber-700/20 shadow-2xl bg-gradient-to-b from-white to-amber-50/30 rounded-2xl">
         <DialogHeader className="space-y-3 sm:space-y-4">
           {/* Animated Icon */}
           <div className="flex items-center justify-center mb-1 sm:mb-2">
@@ -62,25 +62,25 @@ export function WelcomePopup({ firstName = "", lastName = "", isFirstVisit = tru
           {/* Welcome Message */}
           <DialogTitle className="text-center space-y-2 sm:space-y-3">
             <div className="text-sm sm:text-base font-medium text-slate-600">Welcome back,</div>
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
+            <div className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 leading-tight break-words px-2">
               {displayName}
             </div>
           </DialogTitle>
 
-          <DialogDescription className="text-center text-sm sm:text-base text-slate-700 leading-relaxed px-1 font-medium">
+          <DialogDescription className="text-center text-sm sm:text-base text-slate-700 leading-relaxed px-2 sm:px-4 font-medium">
             Your account is all set. You're ready to start investing and growing your wealth with Vault.
           </DialogDescription>
         </DialogHeader>
 
         {/* Quick Start Section */}
-        <div className="mt-6 sm:mt-8 space-y-3">
+        <div className="mt-4 sm:mt-6 space-y-3 px-2 sm:px-0">
           <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
             <span className="inline-block w-1 h-4 bg-amber-700 rounded-full"></span>
             Key Features
           </h3>
           
           <div className="space-y-2 sm:space-y-3">
-            <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 transition-colors">
+            <div className="flex gap-2 sm:gap-3 items-start p-2 sm:p-4 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 transition-colors">
               <CheckCircle2 className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
               <div className="min-w-0">
                 <p className="font-semibold text-sm text-slate-900">
@@ -92,7 +92,7 @@ export function WelcomePopup({ firstName = "", lastName = "", isFirstVisit = tru
               </div>
             </div>
 
-            <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 transition-colors">
+            <div className="flex gap-2 sm:gap-3 items-start p-2 sm:p-4 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 transition-colors">
               <Lock className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
               <div className="min-w-0">
                 <p className="font-semibold text-sm text-slate-900">
@@ -104,7 +104,7 @@ export function WelcomePopup({ firstName = "", lastName = "", isFirstVisit = tru
               </div>
             </div>
 
-            <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 transition-colors">
+            <div className="flex gap-2 sm:gap-3 items-start p-2 sm:p-4 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 transition-colors">
               <TrendingUp className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
               <div className="min-w-0">
                 <p className="font-semibold text-sm text-slate-900">
@@ -116,7 +116,7 @@ export function WelcomePopup({ firstName = "", lastName = "", isFirstVisit = tru
               </div>
             </div>
 
-            <div className="flex gap-2 sm:gap-3 items-start p-3 sm:p-4 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 transition-colors">
+            <div className="flex gap-2 sm:gap-3 items-start p-2 sm:p-4 rounded-lg bg-amber-50 border border-amber-200 hover:border-amber-300 transition-colors">
               <Zap className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
               <div className="min-w-0">
                 <p className="font-semibold text-sm text-slate-900">
@@ -131,10 +131,10 @@ export function WelcomePopup({ firstName = "", lastName = "", isFirstVisit = tru
         </div>
 
         {/* Action Button */}
-        <div className="space-y-3 pt-6 sm:pt-8">
+        <div className="space-y-3 pt-4 sm:pt-6 px-2 sm:px-0">
           <Button
             onClick={() => setOpen(false)}
-            className="w-full bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-800 hover:to-amber-900 text-amber-100 font-semibold h-10 sm:h-12 rounded-lg shadow-lg hover:shadow-amber-700/50 transition-all text-sm sm:text-base"
+            className="w-full bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-800 hover:to-amber-900 text-amber-100 font-semibold h-9 sm:h-10 rounded-lg shadow-lg hover:shadow-amber-700/50 transition-all text-sm"
           >
             Start Exploring Dashboard
           </Button>

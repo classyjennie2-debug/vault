@@ -115,22 +115,6 @@ export async function POST(request: Request) {
       // Return success so user can proceed to verification step
     }
 
-    // Send welcome email to the new user
-    try {
-      const { sendNotificationEmail } = await import("@/lib/email-notifications")
-      await sendNotificationEmail({
-        to: email,
-        template: 'welcome',
-        data: {
-          fullName: firstName,
-          dashboardLink: `${process.env.NEXTAUTH_URL || 'https://vaultcapital.bond'}/dashboard`,
-        }
-      })
-    } catch (welcomeError) {
-      console.error("Failed to send welcome email:", welcomeError)
-      // Don't fail the signup if welcome email fails
-    }
-
     return NextResponse.json({ success: true })
       }
     )

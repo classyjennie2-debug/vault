@@ -36,6 +36,25 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",
     })
+
+    // Send welcome email after successful verification
+    try {
+      const { sendNotificationEmail } = await import("@/lib/email-notifications")
+      const firstName = user.name?.split(' ')[0] || user.name || 'Investor'
+      await sendNotificationEmail({
+        to: email,
+        template: 'welcome',
+        data: {
+          fullName: firstName,
+          dashboardLink: `${process.env.NEXTAUTH_URL || 'https://vaultcapital.bond'}/dashboard`,
+        }
+      })
+      console.log(`[Email] Welcome email sent to ${email}`)
+    } catch (welcomeError) {
+      console.error("Failed to send welcome email:", welcomeError)
+      // Don't fail the verification if welcome email fails
+    }
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Verify error:", error)
