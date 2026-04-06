@@ -63,7 +63,7 @@ export function RecentTransactions() {
   }, [])
 
   return (
-    <Card className="card-professional border-l-4 border-l-accent/30 shadow-elevation-2 overflow-hidden hover:shadow-elevation-3 transition-smooth">
+    <Card className="card-professional border-l-4 border-l-accent/30 shadow-md overflow-hidden hover:shadow-lg transition-smooth">
       <CardHeader className="flex flex-row items-center justify-between divider-subtle pb-2 sm:pb-3">
         <CardTitle className="h-section flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
           <Clock className="h-5 w-5 text-accent flex-shrink-0" />
@@ -103,10 +103,10 @@ export function RecentTransactions() {
               <div
                 key={tx.id}
                 onClick={() => setSelectedTransaction(tx)}
-                className="group flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-accent/5 dark:hover:bg-accent/10 border-l-4 border-l-accent/20 hover:border-l-accent/50 transition-smooth cursor-pointer shadow-elevation-1 hover:shadow-elevation-2 animate-fade-in"
+                className="group flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-accent/5 dark:hover:bg-accent/10 border-l-4 border-l-accent/20 hover:border-l-accent/50 transition-smooth cursor-pointer shadow hover:shadow-md animate-fade-in"
                 style={{ animationDelay: `${idx * 75}ms` }}
               >
-                <div className={`flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-smooth font-bold shadow-elevation-1`}>
+                <div className={`flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-smooth font-bold shadow`}>
                   <Icon className={`h-3.5 w-3.5 sm:h-5 sm:w-5`} />
                 </div>
                 <div className="flex-1 overflow-hidden min-w-0">

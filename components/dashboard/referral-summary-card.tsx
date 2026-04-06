@@ -38,7 +38,7 @@ export function ReferralSummaryCard() {
   }).format(stats?.stats.referralBalance || 0)
 
   return (
-    <Card className="md:col-span-2 card-professional border-l-4 border-l-accent/30 shadow-elevation-2 hover:shadow-elevation-3 transition-smooth overflow-hidden animate-fade-in">
+    <Card className="md:col-span-2 card-professional border-l-4 border-l-accent/30 shadow-md hover:shadow-lg transition-smooth overflow-hidden animate-fade-in">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div>
@@ -71,7 +71,7 @@ export function ReferralSummaryCard() {
         </div>
 
         <Link href="/dashboard/referrals">
-          <Button variant="outline" size="sm" className="btn-professional w-full gap-2 shadow-elevation-1 hover:shadow-elevation-2">
+          <Button variant="outline" size="sm" className="btn-professional w-full gap-2 shadow hover:shadow-md">
             {t("view_details")}
             <ArrowRight className="h-4 w-4" />
           </Button>

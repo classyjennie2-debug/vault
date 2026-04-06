@@ -100,7 +100,7 @@ export function EducationTips() {
   }
 
   return (
-    <Card className="card-professional border-l-4 border-l-accent/30 shadow-elevation-2 overflow-hidden hover:shadow-elevation-3 transition-smooth bg-gradient-to-br from-accent/5 to-accent/10 dark:from-accent/10 dark:to-accent/15 animate-slide-up">
+    <Card className="card-professional border-l-4 border-l-accent/30 shadow-md overflow-hidden hover:shadow-lg transition-smooth bg-gradient-to-br from-accent/5 to-accent/10 dark:from-accent/10 dark:to-accent/15 animate-slide-up">
       <CardHeader className="divider-subtle pb-3 sm:pb-4">
         <CardTitle className="h-section flex items-center gap-2 text-sm sm:text-base font-semibold text-foreground">
           <Lightbulb className="h-5 w-5 text-amber-500 flex-shrink-0" />
@@ -114,9 +114,9 @@ export function EducationTips() {
       <CardContent className="pt-4 sm:pt-6">
         <div className="space-y-4">
           {/* Tip Card */}
-          <div className={`p-4 rounded-lg card-professional shadow-elevation-1 hover:shadow-elevation-2 transition-smooth border-l-4 border-l-current/40 ${tip.color}`}>
+          <div className={`p-4 rounded-lg card-professional shadow hover:shadow-md transition-smooth border-l-4 border-l-current/40 ${tip.color}`}>
             <div className="flex items-start gap-3">
-              <div className={`p-2.5 rounded-lg shadow-elevation-1 flex-shrink-0 ${tip.color}`}>
+              <div className={`p-2.5 rounded-lg shadow flex-shrink-0 ${tip.color}`}>
                 <Icon className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
@@ -137,7 +137,7 @@ export function EducationTips() {
           <div className="flex items-center justify-between">
             <button
               onClick={handlePrev}
-              className="btn-professional inline-flex items-center justify-center h-8 w-8 rounded-md shadow-elevation-1 hover:shadow-elevation-2 transition-smooth hover:scale-110"
+              className="btn-professional inline-flex items-center justify-center h-8 w-8 rounded-md shadow hover:shadow-md transition-smooth hover:scale-110"
               aria-label="Previous tip"
             >
               <ChevronRight className="h-4 w-4 rotate-180" />
@@ -155,8 +155,8 @@ export function EducationTips() {
                   }}
                   className={`rounded-full transition-all ${
                     idx === currentTip
-                      ? "w-6 h-2 bg-accent shadow-elevation-2"
-                      : "w-2 h-2 bg-muted-foreground/30 hover:bg-accent/50 shadow-elevation-1"
+                      ? "w-6 h-2 bg-accent shadow-md"
+                      : "w-2 h-2 bg-muted-foreground/30 hover:bg-accent/50 shadow"
                   }`}
                   aria-label={`Go to tip ${idx + 1}`}
                 />
@@ -165,7 +165,7 @@ export function EducationTips() {
 
             <button
               onClick={handleNext}
-              className="btn-professional inline-flex items-center justify-center h-8 w-8 rounded-md shadow-elevation-1 hover:shadow-elevation-2 transition-smooth hover:scale-110"
+              className="btn-professional inline-flex items-center justify-center h-8 w-8 rounded-md shadow hover:shadow-md transition-smooth hover:scale-110"
               aria-label="Next tip"
             >
               <ChevronRight className="h-4 w-4" />

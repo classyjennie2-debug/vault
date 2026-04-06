@@ -75,7 +75,7 @@ export default function LoginPage() {
             {t("back_to_home")}
           </Link>
           <div className="flex items-center gap-2 mb-10 animate-fade-in">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent shadow-elevation-1">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent shadow">
               <Lock className="h-4 w-4 text-accent-foreground" />
             </div>
             <span className="text-lg font-semibold text-foreground">Vault</span>
@@ -136,7 +136,7 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
-            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-elevation-2 hover:shadow-elevation-3" disabled={loading}>
+            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-md hover:shadow-lg" disabled={loading}>
               {loading ? t("redirecting") : t("login_button")}
             </Button>
           </form>
@@ -155,7 +155,7 @@ export default function LoginPage() {
         {/* Right: visual panel */}
         <div className="hidden w-1/2 bg-gradient-to-br from-accent to-accent/80 lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12">
           <div className="max-w-sm text-center animate-slide-up">
-          <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent-foreground/10 bg-accent-foreground/5 shadow-elevation-2">
+          <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent-foreground/10 bg-accent-foreground/5 shadow-md">
             <Lock className="h-8 w-8 text-accent-foreground" />
           </div>
           <h2 className="h-section text-2xl font-bold text-accent-foreground">

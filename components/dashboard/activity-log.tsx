@@ -96,7 +96,7 @@ export function ActivityLog({ activities = [], limit = 10, expanded = false }: A
           return (
             <div
               key={activity.id}
-              className="group flex flex-col gap-2 rounded-lg card-professional border-l-4 border-l-accent/30 p-3 shadow-elevation-1 hover:shadow-elevation-2 transition-smooth hover:bg-accent/5 dark:hover:bg-accent/10 animate-fade-in"
+              className="group flex flex-col gap-2 rounded-lg card-professional border-l-4 border-l-accent/30 p-3 shadow hover:shadow-md transition-smooth hover:bg-accent/5 dark:hover:bg-accent/10 animate-fade-in"
               style={{ animationDelay: `${idx * 50}ms` }}
             >
               {/* Main row */}

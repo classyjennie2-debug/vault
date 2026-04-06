@@ -194,49 +194,53 @@
 }
 
 @layer components {
-  /* Professional Shadow System - Elevation Levels */
-  .shadow-elevation-1 {
-    @apply shadow-sm;
-  }
-  .shadow-elevation-2 {
-    @apply shadow-md;
-  }
-  .shadow-elevation-3 {
-    @apply shadow-lg;
-  }
-  .shadow-elevation-4 {
-    @apply shadow-xl;
-  }
-
   /* Smooth Transition Utilities */
   .transition-smooth {
-    @apply transition duration-300 ease-in-out;
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
   .transition-smooth-fast {
-    @apply transition duration-200 ease-in-out;
+    transition-property: all;
+    transition-duration: 0.2s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
   .transition-smooth-slow {
-    @apply transition duration-500 ease-in-out;
+    transition-property: all;
+    transition-duration: 0.5s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Professional Card Styling */
   .card-professional {
-    @apply rounded-lg border border-border bg-card text-card-foreground shadow-elevation-1 transition-smooth hover:shadow-elevation-2;
+    @apply rounded-lg border border-border bg-card text-card-foreground shadow-md hover:shadow-lg;
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Professional Button Styling */
   .btn-professional {
-    @apply inline-flex items-center justify-center rounded-lg font-medium transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center rounded-lg font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed;
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Professional Input Styling */
   .input-professional {
-    @apply flex h-10 w-full rounded-lg border border-input bg-input px-3 py-2 text-sm placeholder:text-muted-foreground transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent;
+    @apply flex h-10 w-full rounded-lg border border-input bg-input px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent;
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Professional Link Styling */
   .link-professional {
-    @apply text-primary transition-smooth hover:text-primary/80 underline-offset-4 hover:underline;
+    @apply text-primary hover:text-primary/80 underline-offset-4 hover:underline;
+    transition-property: color;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Subtle Accent Border */

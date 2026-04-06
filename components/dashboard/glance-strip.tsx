@@ -69,7 +69,7 @@ export function GlanceStrip({ totalBalance, monthlyGain }: GlanceStripProps) {
         <div
           key={label}
           className={cn(
-            "group card-professional px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between gap-3 text-xs sm:text-sm shadow-elevation-1 transition-smooth hover:shadow-elevation-2",
+            "group card-professional px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between gap-3 text-xs sm:text-sm shadow hover:shadow-md transition-smooth",
             "border-l-4 border-l-accent/30 animate-fade-in",
             tone
           )}

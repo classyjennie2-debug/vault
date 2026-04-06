@@ -21,7 +21,7 @@ export default function ContactPage() {
         </p>
 
         <div className="grid gap-8 md:grid-cols-2 animate-fade-in" style={{ animationDelay: "200ms" }}>
-          <div className="card-professional border-l-4 border-l-accent/30 p-6 shadow-elevation-2 hover:shadow-elevation-3 transition-smooth">
+          <div className="card-professional border-l-4 border-l-accent/30 p-6 shadow-md hover:shadow-lg transition-smooth">
             <h2 className="h-subsection text-2xl font-semibold mb-6">Get in Touch</h2>
             <div className="space-y-6">
               <div className="group hover:bg-accent/5 p-3 rounded-md transition-smooth">
@@ -39,7 +39,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="card-professional border-l-4 border-l-accent/30 p-6 shadow-elevation-2 hover:shadow-elevation-3 transition-smooth">
+          <div className="card-professional border-l-4 border-l-accent/30 p-6 shadow-md hover:shadow-lg transition-smooth">
             <h2 className="h-subsection text-2xl font-semibold mb-6">Business Hours</h2>
             <div className="space-y-3">
               <div className="flex justify-between items-center p-3 hover:bg-accent/5 rounded-md transition-smooth group">

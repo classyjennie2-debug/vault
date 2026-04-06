@@ -176,7 +176,7 @@ function RegisterPageContent() {
         {/* Left: visual panel */}
         <div className="hidden w-1/2 bg-gradient-to-br from-accent to-accent/80 lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12">
           <div className="max-w-sm text-center animate-slide-up">
-            <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent-foreground/10 bg-accent-foreground/5 shadow-elevation-2">
+            <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent-foreground/10 bg-accent-foreground/5 shadow-md">
               <Lock className="h-8 w-8 text-accent-foreground" />
             </div>
             <h2 className="h-section text-2xl font-bold text-accent-foreground">
@@ -186,19 +186,19 @@ function RegisterPageContent() {
               {t("join_platform")}
             </p>
             <div className="mt-10 grid grid-cols-3 gap-4">
-              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-elevation-2 transition-smooth">
+              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-md transition-smooth">
                 <p className="data-value text-xl font-bold text-accent-foreground">6.5%</p>
                 <p className="mt-1 text-xs text-accent-foreground/50 body-secondary">
                   {t("low")}
                 </p>
               </div>
-              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-elevation-2 transition-smooth">
+              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-md transition-smooth">
                 <p className="data-value text-xl font-bold text-accent-foreground">
                   12.8%
                 </p>
                 <p className="mt-1 text-xs text-accent-foreground/50 body-secondary">{t("medium")}</p>
               </div>
-              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-elevation-2 transition-smooth">
+              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-md transition-smooth">
                 <p className="data-value text-xl font-bold text-accent-foreground">
                   22.5%
                 </p>
@@ -220,7 +220,7 @@ function RegisterPageContent() {
             {t("back_to_home")}
           </Link>
           <div className="flex items-center gap-2 mb-10 animate-fade-in">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent shadow-elevation-1">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent shadow">
               <Lock className="h-4 w-4 text-accent-foreground" />
             </div>
             <span className="text-lg font-semibold text-foreground">Vault</span>
@@ -364,7 +364,7 @@ function RegisterPageContent() {
               </div>
               <PasswordStrengthMeter password={password} />
             </div>
-            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-elevation-2 hover:shadow-elevation-3" disabled={loading || calculatePasswordStrength(password).score < 2}>
+            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-md hover:shadow-lg" disabled={loading || calculatePasswordStrength(password).score < 2}>
               {loading ? t("loading") : t("sign_up_button")}
             </Button>
           </form>
@@ -390,13 +390,13 @@ function RegisterPageContent() {
                 required
               />
             </div>
-            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-elevation-2 hover:shadow-elevation-3" disabled={loading}>
+            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-md hover:shadow-lg" disabled={loading}>
               {loading ? t("loading") : t("verify_email")}
             </Button>
             <Button 
               type="button" 
               variant="outline" 
-              className="btn-professional w-full shadow-elevation-1 hover:shadow-elevation-2" 
+              className="btn-professional w-full shadow hover:shadow-md" 
               onClick={handleResendCode}
               disabled={!canResend || loading}
             >

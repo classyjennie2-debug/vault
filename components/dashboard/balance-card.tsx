@@ -14,7 +14,7 @@ export function BalanceCard({ user }: { user: UserRow }) {
   }).format(user.balance)
 
   return (
-    <Card className="md:col-span-2 lg:col-span-2 card-professional border-l-4 border-l-accent/30 shadow-elevation-2 overflow-hidden hover:shadow-elevation-3 transition-smooth animate-fade-in">
+    <Card className="md:col-span-2 lg:col-span-2 card-professional border-l-4 border-l-accent/30 shadow-md overflow-hidden hover:shadow-lg transition-smooth animate-fade-in">
       <CardHeader className="flex flex-row items-start justify-between pb-3">
         <CardTitle className="h-subsection text-sm font-medium text-muted-foreground break-words flex-1">
           Total Balance

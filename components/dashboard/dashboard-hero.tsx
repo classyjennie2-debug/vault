@@ -35,7 +35,7 @@ export async function DashboardHero({ user, stats }: DashboardHeroProps) {
   return (
     <div className="w-full mb-3 sm:mb-4 md:mb-6 lg:mb-8">
       {/* Main Hero Banner - Professional Navy & White Design */}
-      <div className="card-professional relative overflow-hidden rounded-lg sm:rounded-xl bg-gradient-to-br from-accent/5 to-accent/10 dark:from-accent/15 dark:to-accent/20 border border-accent/30 shadow-elevation-2 hover:shadow-elevation-3 transition-smooth">
+      <div className="card-professional relative overflow-hidden rounded-lg sm:rounded-xl bg-gradient-to-br from-accent/5 to-accent/10 dark:from-accent/15 dark:to-accent/20 border border-accent/30 shadow-md hover:shadow-lg transition-smooth">
 
         {/* Content */}
         <div className="relative z-10 px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-8 lg:px-10 lg:py-12 animate-fade-in">
@@ -81,19 +81,19 @@ export async function DashboardHero({ user, stats }: DashboardHeroProps) {
 
       {/* Quick Stats Bar - Professional Minimal Design */}
       <div className="mt-2 sm:mt-3 md:mt-4 lg:mt-6 grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 lg:gap-4 animate-fade-in" style={{ animationDelay: "100ms" }}>
-        <div className="card-professional bg-white dark:bg-slate-800 border-l-4 border-l-emerald-500/40 p-2 sm:p-3 md:p-4 lg:p-5 shadow-elevation-1 hover:shadow-elevation-2 transition-smooth group">
+        <div className="card-professional bg-white dark:bg-slate-800 border-l-4 border-l-emerald-500/40 p-2 sm:p-3 md:p-4 lg:p-5 shadow hover:shadow-md transition-smooth group">
           <p className="text-[10px] sm:text-xs font-medium text-muted-foreground body-secondary line-clamp-1">Total Profit</p>
           <p className="data-value text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-emerald-600 dark:text-emerald-500 mt-0.5 sm:mt-1.5 group-hover:scale-105 transition-smooth">${(totalProfit).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           <p className="text-[10px] sm:text-xs text-muted-foreground body-secondary mt-0.5 sm:mt-1.5 line-clamp-1">From all investments</p>
         </div>
 
-        <div className="card-professional bg-white dark:bg-slate-800 border-l-4 border-l-accent/40 p-2 sm:p-3 md:p-4 lg:p-5 shadow-elevation-1 hover:shadow-elevation-2 transition-smooth group">
+        <div className="card-professional bg-white dark:bg-slate-800 border-l-4 border-l-accent/40 p-2 sm:p-3 md:p-4 lg:p-5 shadow hover:shadow-md transition-smooth group">
           <p className="text-[10px] sm:text-xs font-medium text-muted-foreground body-secondary line-clamp-1">Active Plans</p>
           <p className="data-value text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-accent mt-0.5 sm:mt-1.5 group-hover:scale-105 transition-smooth">{activeInvestments}</p>
           <p className="text-[10px] sm:text-xs text-muted-foreground body-secondary mt-0.5 sm:mt-1.5 line-clamp-1">Active investments</p>
         </div>
 
-        <div className="card-professional bg-white dark:bg-slate-800 border-l-4 border-l-accent/40 p-2 sm:p-3 md:p-4 lg:p-5 shadow-elevation-1 hover:shadow-elevation-2 transition-smooth group">
+        <div className="card-professional bg-white dark:bg-slate-800 border-l-4 border-l-accent/40 p-2 sm:p-3 md:p-4 lg:p-5 shadow hover:shadow-md transition-smooth group">
           <p className="text-[10px] sm:text-xs font-medium text-muted-foreground body-secondary line-clamp-1">ROI</p>
           <p className="data-value text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-accent mt-0.5 sm:mt-1.5 group-hover:scale-105 transition-smooth">{totalProfit >= 0 ? ((totalProfit / Math.max(totalBalance, 1)) * 100).toFixed(1) : "0"}%</p>
           <p className="text-[10px] sm:text-xs text-muted-foreground body-secondary mt-0.5 sm:mt-1.5 line-clamp-1">Return on investment</p>

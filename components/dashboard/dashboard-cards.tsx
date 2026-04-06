@@ -75,7 +75,7 @@ function StatCard({
   gradientIndex?: number
 }) {
   return (
-    <Card className={`group card-professional overflow-hidden border-l-4 border-l-accent/30 shadow-elevation-1 hover:shadow-elevation-3 transition-smooth animate-fade-in ${gradients[gradientIndex]}`} style={{ animationDelay: `${(gradientIndex || 0) * 75}ms` }}>
+    <Card className={`group card-professional overflow-hidden border-l-4 border-l-accent/30 shadow hover:shadow-lg transition-smooth animate-fade-in ${gradients[gradientIndex]}`} style={{ animationDelay: `${(gradientIndex || 0) * 75}ms` }}>
       <CardHeader className="flex flex-row items-center justify-between pb-1 sm:pb-2 pt-2 sm:pt-3 px-3 sm:px-4 gap-2">
         <CardTitle className="h-subsection text-[10px] sm:text-xs font-semibold text-slate-600 dark:text-slate-400 tracking-wide line-clamp-2">
           {label}

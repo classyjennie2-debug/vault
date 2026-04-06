@@ -110,9 +110,9 @@ export default function PricingPage() {
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`card-professional rounded-lg border-l-4 overflow-hidden transition-smooth hover:shadow-elevation-3 animate-fade-in ${
+              className={`card-professional rounded-lg border-l-4 overflow-hidden transition-smooth hover:shadow-lg animate-fade-in ${
                 plan.highlighted
-                  ? "border-l-accent shadow-elevation-3 scale-105 md:scale-100 bg-gradient-to-br from-accent/10 to-accent/5"
+                  ? "border-l-accent shadow-lg scale-105 md:scale-100 bg-gradient-to-br from-accent/10 to-accent/5"
                   : "border-l-accent/30 border-b border-slate-200 dark:border-slate-700"
               }`}
               style={{ animationDelay: `${index * 100}ms` }}
@@ -156,7 +156,7 @@ export default function PricingPage() {
 
                 {/* CTA Button */}
                 <button
-                  className={`btn-professional w-full py-3 rounded-lg font-semibold transition-smooth shadow-elevation-2 hover:shadow-elevation-3 ${
+                  className={`btn-professional w-full py-3 rounded-lg font-semibold transition-smooth shadow-md hover:shadow-lg ${
                     plan.highlighted
                       ? "bg-accent text-white hover:bg-accent/90"
                       : "border border-accent text-accent hover:bg-accent/10"
@@ -176,7 +176,7 @@ export default function PricingPage() {
           <div className="max-w-6xl mx-auto">
             <h2 className="h-section text-3xl font-bold text-center mb-12 animate-fade-in">Detailed Comparison</h2>
 
-            <div className="overflow-x-auto rounded-lg card-professional border-l-4 border-l-accent/30 shadow-elevation-2">
+            <div className="overflow-x-auto rounded-lg card-professional border-l-4 border-l-accent/30 shadow-md">
               <table className="w-full">
                 <thead className="bg-gradient-to-r from-accent/10 to-accent/5 border-b-2 border-accent/20">
                   <tr>

@@ -33,7 +33,7 @@ const CustomTooltip = ({ active, payload }: {
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="card-professional bg-white dark:bg-slate-950 rounded-lg p-3 shadow-elevation-3 border-l-4 border-l-accent/30">
+      <div className="card-professional bg-white dark:bg-slate-950 rounded-lg p-3 shadow-lg border-l-4 border-l-accent/30">
         <p className="h-subsection font-semibold text-sm text-card-foreground">
           {payload[0].payload.month}
         </p>
@@ -56,7 +56,7 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
   const avgValue = values.length > 0 ? values.reduce((sum, val) => sum + val, 0) / values.length : 0
 
   return (
-    <Card className="card-professional border-l-4 border-l-accent/30 shadow-elevation-2 overflow-hidden hover:shadow-elevation-3 transition-smooth animate-fade-in">
+    <Card className="card-professional border-l-4 border-l-accent/30 shadow-md overflow-hidden hover:shadow-lg transition-smooth animate-fade-in">
       <CardHeader className="divider-subtle pb-2 sm:pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
@@ -147,7 +147,7 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
         </div>
 
         {/* Stats footer - responsive grid */}
-        <div className="mt-3 sm:mt-4 lg:mt-6 grid grid-cols-3 gap-2 sm:gap-3 p-2 sm:p-3 lg:p-4 bg-gradient-to-r from-accent/5 to-accent/10 dark:from-accent/10 dark:to-accent/15 rounded-lg border-l-4 border-l-accent/30 shadow-elevation-1">
+        <div className="mt-3 sm:mt-4 lg:mt-6 grid grid-cols-3 gap-2 sm:gap-3 p-2 sm:p-3 lg:p-4 bg-gradient-to-r from-accent/5 to-accent/10 dark:from-accent/10 dark:to-accent/15 rounded-lg border-l-4 border-l-accent/30 shadow">
           <div className="group hover:bg-accent/5 p-2 rounded-md transition-smooth">
             <p className="text-[10px] sm:text-xs text-muted-foreground font-medium body-secondary">30-Day High</p>
             <p className="data-value text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words group-hover:text-accent transition-smooth">${(thirtyDayHigh || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>

@@ -35,7 +35,7 @@ export function QuickActions() {
   ]
 
   return (
-    <Card className="card-professional border-l-4 border-l-accent/30 shadow-elevation-2 animate-slide-up">
+    <Card className="card-professional border-l-4 border-l-accent/30 shadow-md animate-slide-up">
       <CardHeader className="pb-2 sm:pb-3 lg:pb-4">
         <CardTitle className="h-section text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
           {t("quick_actions")}
@@ -48,7 +48,7 @@ export function QuickActions() {
             <Button
               key={action.label}
               variant="outline"
-              className="btn-professional group flex flex-col items-center justify-center gap-1 sm:gap-2 h-auto py-3 sm:py-4 lg:py-5 px-2 sm:px-3 border-slate-200 dark:border-slate-700 hover:border-accent/50 dark:hover:border-accent/50 hover:bg-accent/5 dark:hover:bg-accent/5 shadow-elevation-1 hover:shadow-elevation-2 transition-smooth animate-fade-in min-h-[48px] sm:min-h-[56px]"
+              className="btn-professional group flex flex-col items-center justify-center gap-1 sm:gap-2 h-auto py-3 sm:py-4 lg:py-5 px-2 sm:px-3 border-slate-200 dark:border-slate-700 hover:border-accent/50 dark:hover:border-accent/50 hover:bg-accent/5 dark:hover:bg-accent/5 shadow hover:shadow-md transition-smooth animate-fade-in min-h-[48px] sm:min-h-[56px]"
               style={{ animationDelay: `${idx * 100}ms` }}
               asChild
             >
