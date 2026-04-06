@@ -26,10 +26,10 @@ const values = [
 
 const team = [
   {
-    name: "Robert Hartwell",
+    name: "Norman Garceau",
     role: "Chief Executive Officer",
     bio: "30+ years in fintech with a track record of building successful investment platforms",
-    image: "https://i.pravatar.cc/150?img=33",
+    image: "https://i.pravatar.cc/150?img=12",
   },
   {
     name: "Paul Greenfield",
