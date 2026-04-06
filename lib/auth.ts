@@ -117,7 +117,8 @@ export async function sendVerificationCode(email: string, fullName?: string) {
     expiresAt,
   })
 
-  if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  const emailPass = process.env.EMAIL_PASS || process.env.EMAIL_TOKEN
+  if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !emailPass) {
     console.warn("Email configuration incomplete; verification email not sent")
     return
   }
@@ -154,8 +155,9 @@ export async function verifySignupCode(email: string, code: string) {
 
 export async function sendAdminNotification(subject: string, htmlContent: string, type: "signup" | "transaction" = "signup") {
   const adminEmail = process.env.MY_EMAIL || process.env.ADMIN_EMAIL || "ops@vault.local"
+  const emailPass = process.env.EMAIL_PASS || process.env.EMAIL_TOKEN
 
-  if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !emailPass) {
     console.warn(`Email configuration incomplete - Admin notification for ${type} not sent`)
     return
   }
@@ -168,7 +170,7 @@ export async function sendAdminNotification(subject: string, htmlContent: string
     secure: false,
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      pass: emailPass,
     },
   })
 
