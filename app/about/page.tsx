@@ -29,7 +29,7 @@ const team = [
     name: "Norman Garceau",
     role: "Chief Executive Officer",
     bio: "30+ years in fintech with a track record of building successful investment platforms",
-    image: "https://i.pravatar.cc/150?img=12",
+    image: "https://i.pravatar.cc/150?img=65",
   },
   {
     name: "Paul Greenfield",
