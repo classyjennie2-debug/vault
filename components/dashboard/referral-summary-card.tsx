@@ -38,40 +38,40 @@ export function ReferralSummaryCard() {
   }).format(stats?.stats.referralBalance || 0)
 
   return (
-    <Card className="md:col-span-2 hover:shadow-lg transition-shadow">
+    <Card className="md:col-span-2 card-professional border-l-4 border-l-accent/30 shadow-elevation-2 hover:shadow-elevation-3 transition-smooth overflow-hidden animate-fade-in">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4" />
+            <CardTitle className="h-section text-base flex items-center gap-2">
+              <Users className="h-5 w-5 text-accent" />
               {t("referral_program")}
             </CardTitle>
-            <CardDescription>{t("earn_on_referrals")}</CardDescription>
+            <CardDescription className="body-secondary">{t("earn_on_referrals")}</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{t("active_referrals")}</p>
-            <p className="text-2xl font-bold">{stats?.stats.totalReferrals || 0}</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="group hover:bg-accent/5 p-2 rounded-md transition-smooth space-y-1">
+            <p className="text-xs text-muted-foreground body-secondary">{t("active_referrals")}</p>
+            <p className="data-value text-2xl font-bold">{stats?.stats.totalReferrals || 0}</p>
+            <p className="text-xs text-muted-foreground body-secondary">
               {stats?.stats.canWithdraw
                 ? t("can_withdraw")
                 : `${stats?.stats.referralsNeeded || 0} ${t("more_needed")}`}
             </p>
           </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{t("available_balance")}</p>
-            <p className="text-2xl font-bold text-accent">{formattedBalance}</p>
+          <div className="group hover:bg-accent/5 p-2 rounded-md transition-smooth space-y-1">
+            <p className="text-xs text-muted-foreground body-secondary">{t("available_balance")}</p>
+            <p className="data-value text-2xl font-bold text-accent">{formattedBalance}</p>
             {stats?.stats.canWithdraw && stats?.stats.referralBalance > 0 && (
-              <p className="text-xs text-accent font-semibold">{t("ready_to_transfer")}</p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold body-secondary">{t("ready_to_transfer")}</p>
             )}
           </div>
         </div>
 
         <Link href="/dashboard/referrals">
-          <Button variant="outline" size="sm" className="w-full gap-2">
+          <Button variant="outline" size="sm" className="btn-professional w-full gap-2 shadow-elevation-1 hover:shadow-elevation-2">
             {t("view_details")}
             <ArrowRight className="h-4 w-4" />
           </Button>

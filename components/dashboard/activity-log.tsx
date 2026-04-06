@@ -83,51 +83,52 @@ export function ActivityLog({ activities = [], limit = 10, expanded = false }: A
   const displayActivities = (activities || []).slice(0, limit)
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {displayActivities.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-sm text-muted-foreground text-center py-8 body-secondary">
           {t("no_recent_activity")}
         </p>
       ) : (
-        displayActivities.map((activity) => {
+        displayActivities.map((activity, idx) => {
           const timestamp = activity.timestamp || activity.created_at || ""
           const ipAddress = activity.ip_address || activity.ipAddress || ""
           
           return (
             <div
               key={activity.id}
-              className="flex flex-col gap-2 rounded-lg border border-border p-3 hover:bg-secondary/50 transition-colors"
+              className="group flex flex-col gap-2 rounded-lg card-professional border-l-4 border-l-accent/30 p-3 shadow-elevation-1 hover:shadow-elevation-2 transition-smooth hover:bg-accent/5 dark:hover:bg-accent/10 animate-fade-in"
+              style={{ animationDelay: `${idx * 50}ms` }}
             >
               {/* Main row */}
               <div className="flex items-start gap-3">
                 {/* Icon */}
                 <div className="flex-shrink-0 mt-0.5">
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
+                  <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent group-hover:bg-accent/30 group-hover:scale-110 transition-smooth font-semibold">
                     {activityIcons[activity.type]}
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-sm font-semibold text-foreground group-hover:text-accent transition-smooth">
                     {getActivityLabel(activity.type)}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground body-secondary mt-0.5">
                     {activity.description}
                   </p>
                 </div>
 
                 {/* Time & Status */}
                 <div className="flex-shrink-0 text-right">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground body-secondary">
                     {formatTimeAgo(timestamp)}
                   </p>
-                  <p className={`text-xs font-medium mt-1 ${
+                  <p className={`text-xs font-semibold mt-1 rounded px-2 py-1 inline-block transition-smooth ${
                     activity.status === "success"
-                      ? "text-green-600 dark:text-green-400"
+                      ? "status-success"
                       : activity.status === "pending"
-                        ? "text-yellow-600 dark:text-yellow-400"
-                        : "text-red-600 dark:text-red-400"
+                        ? "status-warning"
+                        : "status-error"
                   }`}>
                     {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
                   </p>
@@ -136,25 +137,25 @@ export function ActivityLog({ activities = [], limit = 10, expanded = false }: A
 
               {/* Expanded details */}
               {expanded && (
-                <div className="ml-11 pt-2 border-t border-border/50 space-y-1 text-xs">
-                  <div className="text-muted-foreground">
-                    <p><strong>Time:</strong> {formatFullDateTime(timestamp)}</p>
+                <div className="ml-11 pt-2 border-t-2 border-accent/20 space-y-1.5 text-xs divider-subtle">
+                  <div className="text-muted-foreground body-secondary">
+                    <p><strong className="font-semibold">Time:</strong> {formatFullDateTime(timestamp)}</p>
                   </div>
                   {activity.location && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Globe className="h-3 w-3" />
-                      <span><strong>Location:</strong> {activity.location}</span>
+                    <div className="flex items-center gap-2 text-muted-foreground body-secondary">
+                      <Globe className="h-3 w-3 text-accent/60" />
+                      <span><strong className="font-semibold">Location:</strong> {activity.location}</span>
                     </div>
                   )}
                   {activity.device && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Smartphone className="h-3 w-3" />
-                      <span><strong>Device:</strong> {activity.device}</span>
+                    <div className="flex items-center gap-2 text-muted-foreground body-secondary">
+                      <Smartphone className="h-3 w-3 text-accent/60" />
+                      <span><strong className="font-semibold">Device:</strong> {activity.device}</span>
                     </div>
                   )}
                   {ipAddress && (
-                    <div className="text-muted-foreground">
-                      <p><strong>IP Address:</strong> {ipAddress}</p>
+                    <div className="text-muted-foreground body-secondary">
+                      <p><strong className="font-semibold">IP Address:</strong> {ipAddress}</p>
                     </div>
                   )}
                 </div>
