@@ -87,19 +87,19 @@ export default function PricingPage() {
       </div>
       {/* Header */}
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Investment Plans</h1>
-          <p className="text-lg text-muted-foreground mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in">
+          <h1 className="h-section text-4xl md:text-5xl font-bold mb-4">Investment Plans</h1>
+          <p className="body-secondary text-lg text-muted-foreground mb-6">
             Choose the perfect investment plan that matches your financial goals and risk appetite.
           </p>
           <div className="flex justify-center gap-4 flex-wrap">
-            <div className="px-4 py-2 rounded-full bg-accent/10 text-accent font-medium">
+            <div className="px-4 py-2 rounded-full bg-accent/10 text-accent font-semibold status-badge">
               Transparent Pricing
             </div>
-            <div className="px-4 py-2 rounded-full bg-accent/10 text-accent font-medium">
+            <div className="px-4 py-2 rounded-full bg-accent/10 text-accent font-semibold status-badge">
               Flexible Terms
             </div>
-            <div className="px-4 py-2 rounded-full bg-accent/10 text-accent font-medium">
+            <div className="px-4 py-2 rounded-full bg-accent/10 text-accent font-semibold status-badge">
               Insured Funds
             </div>
           </div>
@@ -110,44 +110,45 @@ export default function PricingPage() {
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`rounded-lg border-2 overflow-hidden transition-all ${
+              className={`card-professional rounded-lg border-l-4 overflow-hidden transition-smooth hover:shadow-elevation-3 animate-fade-in ${
                 plan.highlighted
-                  ? "border-accent shadow-2xl scale-105 md:scale-100"
-                  : "border-border hover:border-accent/50"
+                  ? "border-l-accent shadow-elevation-3 scale-105 md:scale-100 bg-gradient-to-br from-accent/10 to-accent/5"
+                  : "border-l-accent/30 border-b border-slate-200 dark:border-slate-700"
               }`}
+              style={{ animationDelay: `${index * 100}ms` }}
             >
               {plan.highlighted && (
-                <div className="bg-accent text-white py-2 text-center font-semibold text-sm">
-                  MOST POPULAR
+                <div className="bg-gradient-to-r from-accent to-accent/80 text-white py-3 text-center font-bold text-sm tracking-wide">
+                  🏆 MOST POPULAR
                 </div>
               )}
 
               <div className="p-8">
                 {/* Plan Header */}
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground mb-6">{plan.description}</p>
+                <h3 className="h-subsection text-2xl font-bold mb-2">{plan.name}</h3>
+                <p className="body-secondary text-sm text-muted-foreground mb-6">{plan.description}</p>
 
                 {/* Stats */}
-                <div className="space-y-3 mb-8 pb-8 border-b">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Monthly Return</p>
-                    <p className="text-2xl font-bold text-accent">{plan.monthlyReturn}</p>
+                <div className="space-y-4 mb-8 pb-8 divider-subtle">
+                  <div className="group hover:bg-accent/5 p-2 rounded-md transition-smooth">
+                    <p className="text-sm text-muted-foreground body-secondary">Monthly Return</p>
+                    <p className="data-value text-2xl font-bold text-accent group-hover:scale-105 transition-smooth">{plan.monthlyReturn}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Minimum Investment</p>
-                    <p className="text-xl font-semibold">{plan.minInvestment}</p>
+                  <div className="group hover:bg-accent/5 p-2 rounded-md transition-smooth">
+                    <p className="text-sm text-muted-foreground body-secondary">Minimum Investment</p>
+                    <p className="data-value text-xl font-semibold group-hover:text-accent transition-smooth">{plan.minInvestment}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Lock-in Period</p>
-                    <p className="text-xl font-semibold">{plan.duration}</p>
+                  <div className="group hover:bg-accent/5 p-2 rounded-md transition-smooth">
+                    <p className="text-sm text-muted-foreground body-secondary">Lock-in Period</p>
+                    <p className="data-value text-xl font-semibold group-hover:text-accent transition-smooth">{plan.duration}</p>
                   </div>
                 </div>
 
                 {/* Features */}
-                <ul className="space-y-4 mb-8">
+                <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                    <li key={idx} className="flex items-start gap-3 group hover:text-accent transition-smooth">
+                      <Check className="w-5 h-5 text-accent flex-shrink-0 mt-0.5 group-hover:scale-110 transition-smooth" />
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
@@ -155,7 +156,7 @@ export default function PricingPage() {
 
                 {/* CTA Button */}
                 <button
-                  className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                  className={`btn-professional w-full py-3 rounded-lg font-semibold transition-smooth shadow-elevation-2 hover:shadow-elevation-3 ${
                     plan.highlighted
                       ? "bg-accent text-white hover:bg-accent/90"
                       : "border border-accent text-accent hover:bg-accent/10"
@@ -170,30 +171,28 @@ export default function PricingPage() {
       </div>
 
       {/* Comparison Table */}
-      <div className="bg-secondary/50 py-16">
+      <div className="bg-gradient-to-b from-accent/5 to-accent/10 dark:from-accent/15 dark:to-accent/20 py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Detailed Comparison</h2>
+            <h2 className="h-section text-3xl font-bold text-center mb-12 animate-fade-in">Detailed Comparison</h2>
 
-            <div className="overflow-x-auto rounded-lg border">
+            <div className="overflow-x-auto rounded-lg card-professional border-l-4 border-l-accent/30 shadow-elevation-2">
               <table className="w-full">
-                <thead className="bg-secondary border-b">
+                <thead className="bg-gradient-to-r from-accent/10 to-accent/5 border-b-2 border-accent/20">
                   <tr>
-                    <th className="px-6 py-4 text-left font-semibold">Features</th>
-                    <th className="px-6 py-4 text-center font-semibold">Starter</th>
-                    <th className="px-6 py-4 text-center font-semibold">Professional</th>
-                    <th className="px-6 py-4 text-center font-semibold">Premium</th>
+                    <th className="px-6 py-4 text-left font-bold h-subsection">Features</th>
+                    <th className="px-6 py-4 text-center font-bold h-subsection">Starter</th>
+                    <th className="px-6 py-4 text-center font-bold h-subsection">Professional</th>
+                    <th className="px-6 py-4 text-center font-bold h-subsection">Premium</th>
                   </tr>
                 </thead>
                 <tbody>
                   {comparisonFeatures.map((row, index) => (
-                    <tr key={index} className="border-t hover:bg-secondary/30">
-                      <td className="px-6 py-4 font-medium">{row.feature}</td>
-                      <td className="px-6 py-4 text-center text-sm">{row.starter}</td>
-                      <td className="px-6 py-4 text-center text-sm font-semibold">
-                        {row.professional}
-                      </td>
-                      <td className="px-6 py-4 text-center text-sm">{row.premium}</td>
+                    <tr key={index} className="border-t border-accent/10 hover:bg-accent/5 transition-smooth group">
+                      <td className="px-6 py-4 font-semibold body-secondary group-hover:text-accent transition-smooth">{row.feature}</td>
+                      <td className="px-6 py-4 text-center text-sm body-secondary">{row.starter}</td>
+                      <td className="px-6 py-4 text-center text-sm font-bold data-value text-accent">{row.professional}</td>
+                      <td className="px-6 py-4 text-center text-sm body-secondary">{row.premium}</td>
                     </tr>
                   ))}
                 </tbody>
