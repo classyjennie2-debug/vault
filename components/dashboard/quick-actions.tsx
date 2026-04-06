@@ -35,9 +35,9 @@ export function QuickActions() {
   ]
 
   return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in duration-700">
+    <Card className="card-professional border-l-4 border-l-accent/30 shadow-elevation-2 animate-slide-up">
       <CardHeader className="pb-2 sm:pb-3 lg:pb-4">
-        <CardTitle className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
+        <CardTitle className="h-section text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
           {t("quick_actions")}
         </CardTitle>
       </CardHeader>
@@ -48,15 +48,15 @@ export function QuickActions() {
             <Button
               key={action.label}
               variant="outline"
-              className="flex flex-col items-center justify-center gap-1 sm:gap-2 h-auto py-3 sm:py-4 lg:py-5 px-2 sm:px-3 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-300 animate-in fade-in slide-in-from-left duration-500 min-h-[48px] sm:min-h-[56px]"
+              className="btn-professional group flex flex-col items-center justify-center gap-1 sm:gap-2 h-auto py-3 sm:py-4 lg:py-5 px-2 sm:px-3 border-slate-200 dark:border-slate-700 hover:border-accent/50 dark:hover:border-accent/50 hover:bg-accent/5 dark:hover:bg-accent/5 shadow-elevation-1 hover:shadow-elevation-2 transition-smooth animate-fade-in min-h-[48px] sm:min-h-[56px]"
               style={{ animationDelay: `${idx * 100}ms` }}
               asChild
             >
               <Link href={action.href} className="flex flex-col items-center gap-1 sm:gap-2 w-full">
-                <div className="rounded-lg">
-                  <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${action.color} transition-colors duration-300`} />
+                <div className="rounded-lg p-2 bg-accent/10 group-hover:bg-accent/20 transition-smooth group-hover:scale-110">
+                  <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${action.color} transition-smooth`} />
                 </div>
-                <span className="text-[10px] sm:text-xs font-semibold text-slate-900 dark:text-white text-center leading-tight line-clamp-2">
+                <span className="text-[10px] sm:text-xs font-semibold text-slate-900 dark:text-white text-center leading-tight line-clamp-2 body-secondary">
                   {action.label}
                 </span>
               </Link>

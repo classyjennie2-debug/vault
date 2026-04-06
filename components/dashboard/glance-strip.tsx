@@ -65,21 +65,23 @@ export function GlanceStrip({ totalBalance, monthlyGain }: GlanceStripProps) {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-      {items.map(({ label, value, icon: Icon, tone }) => (
+      {items.map(({ label, value, icon: Icon, tone }, idx) => (
         <div
           key={label}
           className={cn(
-            "rounded-lg border px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between gap-3 text-xs sm:text-sm shadow-sm transition-colors",
+            "group card-professional px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between gap-3 text-xs sm:text-sm shadow-elevation-1 transition-smooth hover:shadow-elevation-2",
+            "border-l-4 border-l-accent/30 animate-fade-in",
             tone
           )}
+          style={{ animationDelay: `${idx * 50}ms` }}
         >
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="h-7 px-2 text-[11px] font-semibold bg-white/40 dark:bg-slate-900/40">
-              <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <Badge variant="outline" className="h-7 px-2 text-[11px] font-semibold bg-white/40 dark:bg-slate-900/40 group-hover:bg-accent/10 transition-smooth">
+              <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:scale-110 transition-smooth" />
             </Badge>
             <div className="leading-tight">
-              <p className="text-[10px] sm:text-xs text-muted-foreground">{label}</p>
-              <p className="font-semibold text-foreground">{value}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground body-secondary">{label}</p>
+              <p className="font-semibold text-foreground data-value">{value}</p>
             </div>
           </div>
         </div>

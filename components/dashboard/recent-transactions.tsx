@@ -63,15 +63,15 @@ export function RecentTransactions() {
   }, [])
 
   return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in slide-in-from-right duration-700">
-      <CardHeader className="flex flex-row items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
-        <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
-          <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+    <Card className="card-professional border-l-4 border-l-accent/30 shadow-elevation-2 overflow-hidden hover:shadow-elevation-3 transition-smooth">
+      <CardHeader className="flex flex-row items-center justify-between divider-subtle pb-2 sm:pb-3">
+        <CardTitle className="h-section flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+          <Clock className="h-5 w-5 text-accent flex-shrink-0" />
           <span className="truncate">{tDashboard("recent_transactions")}</span>
         </CardTitle>
         <Link
           href="/dashboard/transactions"
-          className="text-[10px] sm:text-xs font-semibold text-accent hover:text-accent/80 hover:underline flex items-center gap-0.5 transition-colors duration-300 flex-shrink-0"
+          className="link-professional text-[10px] sm:text-xs font-semibold text-accent hover:text-accent/80 flex items-center gap-0.5 transition-smooth flex-shrink-0"
         >
           {tDashboard("view_all")}
           <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -80,10 +80,10 @@ export function RecentTransactions() {
       <CardContent className="flex flex-col gap-2 sm:gap-3 pt-3 sm:pt-4 lg:pt-6">
         {loading ? (
           <div className="flex items-center justify-center py-6 sm:py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
           </div>
         ) : userTransactions.length === 0 ? (
-          <div className="text-center py-6 sm:py-8 text-muted-foreground text-sm">
+          <div className="text-center py-6 sm:py-8 text-muted-foreground text-sm body-secondary">
             {tTransactions("no_recent_transactions")}
           </div>
         ) : (
@@ -103,21 +103,21 @@ export function RecentTransactions() {
               <div
                 key={tx.id}
                 onClick={() => setSelectedTransaction(tx)}
-                className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-l-2 hover:border-l-primary transition-all duration-300 group animate-in fade-in slide-in-from-left duration-500 cursor-pointer"
+                className="group flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg hover:bg-accent/5 dark:hover:bg-accent/10 border-l-4 border-l-accent/20 hover:border-l-accent/50 transition-smooth cursor-pointer shadow-elevation-1 hover:shadow-elevation-2 animate-fade-in"
                 style={{ animationDelay: `${idx * 75}ms` }}
               >
-                <div className={`flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-transform duration-300 font-bold`}>
+                <div className={`flex h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-lg ${bgColor} group-hover:scale-110 transition-smooth font-bold shadow-elevation-1`}>
                   <Icon className={`h-3.5 w-3.5 sm:h-5 sm:w-5`} />
                 </div>
                 <div className="flex-1 overflow-hidden min-w-0">
-                  <p className="truncate text-xs sm:text-sm font-semibold text-card-foreground group-hover:text-accent transition-colors">
+                  <p className="truncate text-xs sm:text-sm font-semibold text-card-foreground group-hover:text-accent transition-smooth">
                     {tTransactions(tx.type)}
                   </p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground/70 truncate">{tx.date}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground/70 truncate body-secondary">{tx.date}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-1">
                   <p
-                    className={`text-xs sm:text-sm font-bold transition-colors duration-300 whitespace-nowrap ${
+                    className={`text-xs sm:text-sm font-bold transition-smooth whitespace-nowrap data-value ${
                       isPositive ? "text-emerald-600 dark:text-emerald-500" : "text-slate-900 dark:text-slate-100"
                     }`}
                   >
@@ -125,7 +125,7 @@ export function RecentTransactions() {
                     {(tx.amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </p>
                   <Badge
-                    className={`text-[8px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 font-semibold border ${statusColor}`}
+                    className={`text-[8px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 font-semibold border transition-smooth ${statusColor}`}
                   >
                     {displayStatus}
                   </Badge>
@@ -135,19 +135,19 @@ export function RecentTransactions() {
           })
         )}
         {!loading && userTransactions.length > pageSize && (
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-3 sm:pt-4 divider-subtle border-t">
             <button
-              className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+              className="text-xs text-muted-foreground hover:text-accent disabled:opacity-40 transition-smooth hover:font-semibold"
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
             >
               {tTransactions("previous")}
             </button>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground body-secondary">
               {tTransactions("page")} {page + 1} / {Math.ceil(userTransactions.length / pageSize)}
             </p>
             <button
-              className="text-xs text-muted-foreground hover:text-foreground disabled:opacity-40"
+              className="text-xs text-muted-foreground hover:text-accent disabled:opacity-40 transition-smooth hover:font-semibold"
               onClick={() => setPage((p) => (p + 1 < Math.ceil(userTransactions.length / pageSize) ? p + 1 : p))}
               disabled={page + 1 >= Math.ceil(userTransactions.length / pageSize)}
             >
