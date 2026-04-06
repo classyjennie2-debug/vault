@@ -1,19 +1,23 @@
 import nodemailer from 'nodemailer'
 
-const emailToken = process.env.EMAIL_TOKEN || process.env.EMAIL_PASS
-
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT || '587'),
-  secure: process.env.EMAIL_SECURE === 'true',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: emailToken,
-  },
-})
+// Create transporter dynamically to ensure fresh env vars are read
+function getTransporter() {
+  const emailToken = process.env.EMAIL_TOKEN || process.env.EMAIL_PASS
+  
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT || '587'),
+    secure: process.env.EMAIL_SECURE === 'true',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: emailToken,
+    },
+  })
+}
 
 // Debug SMTP configuration
 if (process.env.NODE_ENV === 'development') {
+  const emailToken = process.env.EMAIL_TOKEN || process.env.EMAIL_PASS
   console.log('[Email] SMTP Configuration:', {
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT || '587',
@@ -22,6 +26,11 @@ if (process.env.NODE_ENV === 'development') {
     tokenSet: !!emailToken,
   })
 }
+
+const transporter = getTransporter()
+
+// For backward compatibility, keep transporter export
+export { transporter }
 
 // Vault Logo URL - uses public domain for email compatibility
 const LOGO_URL = 'https://vaultcapital.bond/vault-logo-email.svg'
@@ -371,8 +380,11 @@ export async function sendNotificationEmail(notification: EmailNotification) {
     const { subject, html } = template(notification.data)
 
     const fromEmail = process.env.EMAIL_FROM || `${process.env.EMAIL_USER}`
+    
+    // Get fresh transporter with current env vars
+    const currentTransporter = getTransporter()
 
-    await transporter.sendMail({
+    await currentTransporter.sendMail({
       from: `Vault Capital <${fromEmail}>`,
       to: notification.to,
       subject,
