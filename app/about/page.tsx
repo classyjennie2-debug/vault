@@ -38,7 +38,7 @@ const team = [
     image: "https://i.pravatar.cc/150?img=62",
   },
   {
-    name: "Margaret Stone",
+    name: "Lisa Angelo",
     role: "Chief Investment Officer",
     bio: "Portfolio manager with $8B+ AUM and 25 years expertise in crypto and DeFi strategies",
     image: "https://i.pravatar.cc/150?img=47",
