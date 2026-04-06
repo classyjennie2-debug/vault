@@ -33,11 +33,11 @@ const CustomTooltip = ({ active, payload }: {
 }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white dark:bg-slate-950 border border-border rounded-lg p-3 shadow-xl">
-        <p className="font-semibold text-sm text-card-foreground">
+      <div className="card-professional bg-white dark:bg-slate-950 rounded-lg p-3 shadow-elevation-3 border-l-4 border-l-accent/30">
+        <p className="h-subsection font-semibold text-sm text-card-foreground">
           {payload[0].payload.month}
         </p>
-        <p className="text-sm font-bold text-green-600 dark:text-green-400">
+        <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1 data-value">
           ${payload[0].value.toLocaleString()}
         </p>
       </div>
@@ -56,19 +56,19 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
   const avgValue = values.length > 0 ? values.reduce((sum, val) => sum + val, 0) / values.length : 0
 
   return (
-    <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-in fade-in slide-in-from-left duration-700">
-      <CardHeader className="border-b border-slate-200 dark:border-slate-700 pb-2 sm:pb-3">
+    <Card className="card-professional border-l-4 border-l-accent/30 shadow-elevation-2 overflow-hidden hover:shadow-elevation-3 transition-smooth animate-fade-in">
+      <CardHeader className="divider-subtle pb-2 sm:pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
-              <Activity className="h-4 w-4 text-primary flex-shrink-0" />
+            <CardTitle className="h-section flex items-center gap-2 text-sm sm:text-base font-semibold text-slate-900 dark:text-white">
+              <Activity className="h-5 w-5 text-accent flex-shrink-0" />
               <span className="truncate">{t("portfolio_performance")}</span>
             </CardTitle>
             <div className="mt-2 sm:mt-3 lg:mt-4">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white">
+              <p className="data-value text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white">
                 ${balance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </p>
-              <div className="flex items-center gap-2 mt-1 sm:mt-2">
+              <div className="flex items-center gap-2 mt-1 sm:mt-2 body-secondary">
                 <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600 dark:text-emerald-500 flex-shrink-0" />
                 <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-500">
                   +{monthlyChange}% {t("this_month")}
@@ -147,18 +147,18 @@ export function PortfolioChart({ data, balance, monthlyChange = 8.2 }: Portfolio
         </div>
 
         {/* Stats footer - responsive grid */}
-        <div className="mt-3 sm:mt-4 lg:mt-6 grid grid-cols-3 gap-2 sm:gap-3 p-2 sm:p-3 lg:p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-200 dark:border-slate-700">
-          <div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">30-Day High</p>
-            <p className="text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words">${(thirtyDayHigh || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+        <div className="mt-3 sm:mt-4 lg:mt-6 grid grid-cols-3 gap-2 sm:gap-3 p-2 sm:p-3 lg:p-4 bg-gradient-to-r from-accent/5 to-accent/10 dark:from-accent/10 dark:to-accent/15 rounded-lg border-l-4 border-l-accent/30 shadow-elevation-1">
+          <div className="group hover:bg-accent/5 p-2 rounded-md transition-smooth">
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium body-secondary">30-Day High</p>
+            <p className="data-value text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words group-hover:text-accent transition-smooth">${(thirtyDayHigh || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
-          <div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">30-Day Low</p>
-            <p className="text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words">${(thirtyDayLow || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+          <div className="group hover:bg-accent/5 p-2 rounded-md transition-smooth">
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium body-secondary">30-Day Low</p>
+            <p className="data-value text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words group-hover:text-accent transition-smooth">${(thirtyDayLow || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
-          <div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Avg Value</p>
-            <p className="text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words">${(avgValue || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+          <div className="group hover:bg-accent/5 p-2 rounded-md transition-smooth">
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium body-secondary">Avg Value</p>
+            <p className="data-value text-xs sm:text-sm font-bold text-card-foreground mt-0.5 sm:mt-1 break-words group-hover:text-accent transition-smooth">${(avgValue || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
           </div>
         </div>
       </CardContent>

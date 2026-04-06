@@ -100,33 +100,33 @@ export function EducationTips() {
   }
 
   return (
-    <Card className="border backdrop-blur-lg bg-gradient-to-br from-slate-50/50 to-slate-100/30 dark:from-slate-950/50 dark:to-slate-900/30 animate-in fade-in slide-in-from-bottom duration-700">
-      <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-3 sm:pb-4">
-        <CardTitle className="flex items-center gap-2 text-sm sm:text-base font-normal text-muted-foreground">
-          <Lightbulb className="h-4 w-4 text-amber-500 flex-shrink-0" />
+    <Card className="card-professional border-l-4 border-l-accent/30 shadow-elevation-2 overflow-hidden hover:shadow-elevation-3 transition-smooth bg-gradient-to-br from-accent/5 to-accent/10 dark:from-accent/10 dark:to-accent/15 animate-slide-up">
+      <CardHeader className="divider-subtle pb-3 sm:pb-4">
+        <CardTitle className="h-section flex items-center gap-2 text-sm sm:text-base font-semibold text-foreground">
+          <Lightbulb className="h-5 w-5 text-amber-500 flex-shrink-0" />
           <span className="truncate">{t("daily_learning_tip")}</span>
+          <span className="ml-auto text-xs text-muted-foreground body-secondary">
+            {currentTip + 1} / {educationTips.length}
+          </span>
         </CardTitle>
-        <div className="text-xs text-muted-foreground">
-          {currentTip + 1} / {educationTips.length}
-        </div>
       </CardHeader>
 
       <CardContent className="pt-4 sm:pt-6">
         <div className="space-y-4">
           {/* Tip Card */}
-          <div className={`p-4 rounded-lg ${tip.color} border border-current/10`}>
+          <div className={`p-4 rounded-lg card-professional shadow-elevation-1 hover:shadow-elevation-2 transition-smooth border-l-4 border-l-current/40 ${tip.color}`}>
             <div className="flex items-start gap-3">
-              <div className={`p-2 rounded-lg ${tip.color} flex-shrink-0`}>
+              <div className={`p-2.5 rounded-lg shadow-elevation-1 flex-shrink-0 ${tip.color}`}>
                 <Icon className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide opacity-75">
+                  <span className="text-xs font-semibold uppercase tracking-wide opacity-75 body-secondary">
                     {t(tip.categoryKey)}
                   </span>
                 </div>
-                <h3 className="text-sm sm:text-base font-semibold mb-2">{t(tip.titleKey)}</h3>
-                <p className="text-xs sm:text-sm opacity-90 leading-relaxed">
+                <h3 className="h-subsection text-sm sm:text-base font-semibold mb-2">{t(tip.titleKey)}</h3>
+                <p className="body-secondary text-xs sm:text-sm opacity-90 leading-relaxed">
                   {t(tip.descriptionKey)}
                 </p>
               </div>
@@ -137,7 +137,7 @@ export function EducationTips() {
           <div className="flex items-center justify-between">
             <button
               onClick={handlePrev}
-              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border/50 hover:bg-accent transition-colors"
+              className="btn-professional inline-flex items-center justify-center h-8 w-8 rounded-md shadow-elevation-1 hover:shadow-elevation-2 transition-smooth hover:scale-110"
               aria-label="Previous tip"
             >
               <ChevronRight className="h-4 w-4 rotate-180" />
@@ -153,10 +153,10 @@ export function EducationTips() {
                     setAutoRotate(false)
                     setTimeout(() => setAutoRotate(true), 10000)
                   }}
-                  className={`h-2 rounded-full transition-all ${
+                  className={`rounded-full transition-all ${
                     idx === currentTip
-                      ? "w-6 bg-primary"
-                      : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                      ? "w-6 h-2 bg-accent shadow-elevation-2"
+                      : "w-2 h-2 bg-muted-foreground/30 hover:bg-accent/50 shadow-elevation-1"
                   }`}
                   aria-label={`Go to tip ${idx + 1}`}
                 />
@@ -165,7 +165,7 @@ export function EducationTips() {
 
             <button
               onClick={handleNext}
-              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border/50 hover:bg-accent transition-colors"
+              className="btn-professional inline-flex items-center justify-center h-8 w-8 rounded-md shadow-elevation-1 hover:shadow-elevation-2 transition-smooth hover:scale-110"
               aria-label="Next tip"
             >
               <ChevronRight className="h-4 w-4" />
