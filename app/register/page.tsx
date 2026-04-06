@@ -174,35 +174,35 @@ function RegisterPageContent() {
 
       <div className="flex flex-1">
         {/* Left: visual panel */}
-        <div className="hidden w-1/2 bg-primary lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12">
-          <div className="max-w-sm text-center">
-            <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-primary-foreground/10 bg-primary-foreground/5">
-              <Lock className="h-8 w-8 text-primary-foreground" />
+        <div className="hidden w-1/2 bg-gradient-to-br from-accent to-accent/80 lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12">
+          <div className="max-w-sm text-center animate-slide-up">
+            <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent-foreground/10 bg-accent-foreground/5 shadow-elevation-2">
+              <Lock className="h-8 w-8 text-accent-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-primary-foreground">
+            <h2 className="h-section text-2xl font-bold text-accent-foreground">
               {t("create_account")}
             </h2>
-            <p className="mt-4 text-sm leading-relaxed text-primary-foreground/60">
+            <p className="body-secondary mt-4 text-sm leading-relaxed text-accent-foreground/70">
               {t("join_platform")}
             </p>
             <div className="mt-10 grid grid-cols-3 gap-4">
-              <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4">
-                <p className="text-xl font-bold text-primary-foreground">6.5%</p>
-                <p className="mt-1 text-xs text-primary-foreground/50">
+              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-elevation-2 transition-smooth">
+                <p className="data-value text-xl font-bold text-accent-foreground">6.5%</p>
+                <p className="mt-1 text-xs text-accent-foreground/50 body-secondary">
                   {t("low")}
                 </p>
               </div>
-              <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4">
-                <p className="text-xl font-bold text-primary-foreground">
+              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-elevation-2 transition-smooth">
+                <p className="data-value text-xl font-bold text-accent-foreground">
                   12.8%
                 </p>
-                <p className="mt-1 text-xs text-primary-foreground/50">{t("medium")}</p>
+                <p className="mt-1 text-xs text-accent-foreground/50 body-secondary">{t("medium")}</p>
               </div>
-              <div className="rounded-xl border border-primary-foreground/10 bg-primary-foreground/5 p-4">
-                <p className="text-xl font-bold text-primary-foreground">
+              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-elevation-2 transition-smooth">
+                <p className="data-value text-xl font-bold text-accent-foreground">
                   22.5%
                 </p>
-                <p className="mt-1 text-xs text-primary-foreground/50">
+                <p className="mt-1 text-xs text-accent-foreground/50 body-secondary">
                   {t("high")}
                 </p>
               </div>
@@ -214,72 +214,75 @@ function RegisterPageContent() {
         <div className="flex w-full flex-col justify-center px-4 sm:px-6 py-8 sm:py-12 lg:w-1/2 lg:px-16 lg:py-12">
           <Link
             href="/"
-            className="mb-8 sm:mb-12 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            className="link-professional mb-8 sm:mb-12 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-smooth"
           >
             <ArrowLeft className="h-4 w-4" />
             {t("back_to_home")}
           </Link>
-          <div className="flex items-center gap-2 mb-10">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Lock className="h-4 w-4 text-primary-foreground" />
+          <div className="flex items-center gap-2 mb-10 animate-fade-in">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent shadow-elevation-1">
+              <Lock className="h-4 w-4 text-accent-foreground" />
             </div>
             <span className="text-lg font-semibold text-foreground">Vault</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+          <h1 className="h-section text-2xl font-bold tracking-tight text-foreground md:text-3xl animate-fade-in">
             {t("create_account")}
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="body-secondary mt-2 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: "100ms" }}>
             {t("join_platform")}
           </p>
 
         {step === 0 ? (
-          <form onSubmit={handleRegister} className="mt-8 flex flex-col gap-5">
+          <form onSubmit={handleRegister} className="mt-8 flex flex-col gap-5 animate-fade-in" style={{ animationDelay: "200ms" }}>
             {error && (
-              <p className="text-sm text-red-500">{error}</p>
+              <div className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/30">{error}</div>
             )}
             {info && (
-              <p className="text-sm text-green-600">{info}</p>
+              <div className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30">{info}</div>
             )}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="firstName">{t("first_name_label")}</Label>
+                <Label htmlFor="firstName" className="font-semibold">{t("first_name_label")}</Label>
                 <Input
                   id="firstName"
                   placeholder={t("first_name_label")}
                   value={firstName}
+                  className="input-professional"
                   onChange={(e) => setFirstName(e.target.value)}
                   required
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <Label htmlFor="lastName">{t("last_name_label")}</Label>
+                <Label htmlFor="lastName" className="font-semibold">{t("last_name_label")}</Label>
                 <Input
                   id="lastName"
                   placeholder={t("last_name_label")}
                   value={lastName}
+                  className="input-professional"
                   onChange={(e) => setLastName(e.target.value)}
                   required
                 />
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email">{t("email_label")}</Label>
+              <Label htmlFor="email" className="font-semibold">{t("email_label")}</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder={t("email_placeholder")}
                 value={email}
+                className="input-professional"
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="phone">{t("phone_label")}</Label>
+              <Label htmlFor="phone" className="font-semibold">{t("phone_label")}</Label>
               <div className="flex gap-2">
                 <select
                   value={phoneCountry}
                   onChange={(e) => setPhoneCountry(e.target.value as CountryCode)}
-                  className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  className="input-professional flex h-10 w-24 px-3 py-2"
                 >
                   {COUNTRY_CODES_LIST.map((country) => (
                     <option key={country.countryCode} value={country.countryCode}>
@@ -292,53 +295,56 @@ function RegisterPageContent() {
                   type="tel"
                   placeholder={COUNTRY_CODES_LIST.find(c => c.countryCode === phoneCountry)?.format || "(555) 000-0000"}
                   value={phone}
+                  className="input-professional flex-1"
                   onChange={(e) => setPhone(e.target.value)}
                   required
-                  className="flex-1"
                 />
               </div>
               {phoneCountry && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground body-secondary">
                   Format: {COUNTRY_CODES_LIST.find(c => c.countryCode === phoneCountry)?.format}
                 </p>
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="dateOfBirth">{t("date_of_birth_label")}</Label>
+              <Label htmlFor="dateOfBirth" className="font-semibold">{t("date_of_birth_label")}</Label>
               <Input
                 id="dateOfBirth"
                 type="date"
+                className="input-professional"
                 value={dateOfBirth}
                 onChange={(e) => setDateOfBirth(e.target.value)}
                 required
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="referralCode">
-                Referral Code <span className="text-xs text-muted-foreground">(Optional)</span>
+              <Label className="font-semibold">
+                Referral Code <span className="text-xs text-muted-foreground body-secondary">(Optional)</span>
               </Label>
               <Input
                 id="referralCode"
                 type="text"
                 placeholder="Enter a referral code if you have one"
                 value={referralCode}
+                className="input-professional"
                 onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                 maxLength={8}
               />
               {referralCode && (
-                <p className="text-xs text-green-600">
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 body-secondary">
                   ✓ You'll earn referral bonuses from your referrer's deposits!
                 </p>
               )}
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">{t("password_label")}</Label>
+              <Label htmlFor="password" className="font-semibold">{t("password_label")}</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder={t("password_placeholder")}
                   value={password}
+                  className="input-professional"
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
@@ -346,7 +352,7 @@ function RegisterPageContent() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent focus-professional"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -358,38 +364,39 @@ function RegisterPageContent() {
               </div>
               <PasswordStrengthMeter password={password} />
             </div>
-            <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading || calculatePasswordStrength(password).score < 2}>
+            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-elevation-2 hover:shadow-elevation-3" disabled={loading || calculatePasswordStrength(password).score < 2}>
               {loading ? t("loading") : t("sign_up_button")}
             </Button>
           </form>
         ) : (
-          <form onSubmit={handleVerify} className="mt-8 flex flex-col gap-5">
+          <form onSubmit={handleVerify} className="mt-8 flex flex-col gap-5 animate-fade-in" style={{ animationDelay: "300ms" }}>
             {error && (
-              <p className="text-sm text-red-500">{error}</p>
+              <div className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/30">{error}</div>
             )}
             {info && (
-              <p className="text-sm text-green-600">{info}</p>
+              <div className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30">{info}</div>
             )}
-            <p className="text-sm text-muted-foreground">
+            <p className="body-secondary text-sm text-muted-foreground">
               {t("email_verification_required")}
             </p>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="code">{t("verify_email")}</Label>
+              <Label htmlFor="code" className="font-semibold">{t("verify_email")}</Label>
               <Input
                 id="code"
                 placeholder="123456"
                 value={code}
+                className="input-professional"
                 onChange={(e) => setCode(e.target.value)}
                 required
               />
             </div>
-            <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
+            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-elevation-2 hover:shadow-elevation-3" disabled={loading}>
               {loading ? t("loading") : t("verify_email")}
             </Button>
             <Button 
               type="button" 
               variant="outline" 
-              className="w-full" 
+              className="btn-professional w-full shadow-elevation-1 hover:shadow-elevation-2" 
               onClick={handleResendCode}
               disabled={!canResend || loading}
             >
@@ -400,11 +407,11 @@ function RegisterPageContent() {
           </form>
         )}
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-sm text-muted-foreground body-secondary">
           {t("have_account")}{" "}
           <Link
             href="/login"
-            className="font-medium text-foreground hover:underline"
+            className="link-professional font-medium text-accent hover:text-accent/80 transition-smooth"
           >
             {t("sign_in")}
           </Link>
