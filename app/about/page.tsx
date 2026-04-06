@@ -88,10 +88,10 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16 animate-fade-in">
         <div className="max-w-4xl mx-auto text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">About Vault</h1>
-          <p className="text-lg text-muted-foreground">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">About Vault</h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             We're on a mission to democratize investing and create financial opportunities for everyone.
           </p>
         </div>
@@ -99,10 +99,13 @@ export default function AboutPage() {
 
       {/* Mission & Vision */}
       <div className="container mx-auto px-4 pb-20">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
-          <div className="p-8 rounded-lg border bg-card">
-            <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
-            <p className="text-muted-foreground leading-relaxed">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+          <div className="card-professional p-8 border-l-4 border-primary animate-slide-left">
+            <h2 className="h-section mb-4 flex items-center gap-2">
+              <div className="w-1 h-8 bg-primary rounded-full"></div>
+              Our Mission
+            </h2>
+            <p className="body-secondary leading-relaxed">
               To democratize access to professional-grade investment tools and strategies, making wealth
               accumulation achievable for everyone, regardless of their financial background or experience
               level. We believe financial success should not be limited by geography, resources, or
@@ -110,9 +113,12 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="p-8 rounded-lg border bg-card">
-            <h2 className="text-2xl font-bold mb-4">Our Vision</h2>
-            <p className="text-muted-foreground leading-relaxed">
+          <div className="card-professional p-8 border-l-4 border-accent animate-slide-right">
+            <h2 className="h-section mb-4 flex items-center gap-2">
+              <div className="w-1 h-8 bg-accent rounded-full"></div>
+              Our Vision
+            </h2>
+            <p className="body-secondary leading-relaxed">
               To create a world where financial prosperity is accessible to all. We envision a future where
               intelligent automation, cutting-edge technology, and expert guidance empower millions to build
               lasting wealth, achieve financial independence, and pursue their dreams without financial constraints.
@@ -125,13 +131,13 @@ export default function AboutPage() {
       <div className="bg-secondary/30 py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Our Core Values</h2>
+            <h2 className="text-3xl font-bold text-center mb-12 h-section">Our Core Values</h2>
             <div className="grid md:grid-cols-2 gap-8">
               {values.map((value, index) => (
-                <div key={index} className="p-6 rounded-lg border bg-card hover:border-accent transition-all">
-                  <div className="text-accent mb-4">{value.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2">{value.title}</h3>
-                  <p className="text-muted-foreground">{value.description}</p>
+                <div key={index} className="group card-professional p-6 border-l-4 border-accent/30 hover:border-accent animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+                  <div className="text-accent mb-4 group-hover:scale-110 transition-smooth">{value.icon}</div>
+                  <h3 className="h-subsection mb-2 group-hover:text-accent transition-smooth">{value.title}</h3>
+                  <p className="body-secondary leading-relaxed">{value.description}</p>
                 </div>
               ))}
             </div>
@@ -142,14 +148,21 @@ export default function AboutPage() {
       {/* Leadership Team */}
       <div className="container mx-auto px-4 py-20">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Leadership Team</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 h-section">Leadership Team</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {team.map((member, index) => (
-              <div key={index} className="rounded-lg border p-6 text-center hover:shadow-lg transition-all">
-                <img src={member.image} alt={member.name} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover" />
-                <h3 className="font-semibold mb-1">{member.name}</h3>
-                <p className="text-sm text-accent font-medium mb-3">{member.role}</p>
-                <p className="text-sm text-muted-foreground">{member.bio}</p>
+              <div key={index} className="group card-professional p-6 text-center border-l-4 border-accent/30 hover:border-accent animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+                <div className="relative mb-4 flex justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-r from-accent/20 to-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-smooth"></div>
+                  <img 
+                    src={member.image} 
+                    alt={member.name} 
+                    className="relative w-24 h-24 rounded-full mx-auto object-cover ring-2 ring-accent/20 group-hover:ring-accent/50 transition-smooth" 
+                  />
+                </div>
+                <h3 className="h-subsection mb-1">{member.name}</h3>
+                <p className="text-sm text-accent font-medium mb-3 uppercase tracking-wide">{member.role}</p>
+                <p className="body-secondary line-clamp-3">{member.bio}</p>
               </div>
             ))}
           </div>
@@ -188,23 +201,23 @@ export default function AboutPage() {
       {/* Stats */}
       <div className="container mx-auto px-4 py-20">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">By The Numbers</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 h-section">By The Numbers</h2>
           <div className="grid md:grid-cols-4 gap-6">
-            <div className="text-center p-6 rounded-lg border bg-card">
-              <p className="text-4xl font-bold text-accent mb-2">45K+</p>
-              <p className="text-muted-foreground">Active Investors</p>
+            <div className="card-professional text-center p-8 border-t-4 border-accent group cursor-default animate-fade-in" style={{ animationDelay: '0ms' }}>
+              <p className="text-5xl font-bold text-accent mb-3 group-hover:scale-105 transition-smooth">45K+</p>
+              <p className="body-secondary uppercase tracking-widest text-xs">Active Investors</p>
             </div>
-            <div className="text-center p-6 rounded-lg border bg-card">
-              <p className="text-4xl font-bold text-accent mb-2">$2.4B</p>
-              <p className="text-muted-foreground">Assets Under Management</p>
+            <div className="card-professional text-center p-8 border-t-4 border-primary group cursor-default animate-fade-in" style={{ animationDelay: '100ms' }}>
+              <p className="text-5xl font-bold text-primary mb-3 group-hover:scale-105 transition-smooth">$2.4B</p>
+              <p className="body-secondary uppercase tracking-widest text-xs">Assets Under Management</p>
             </div>
-            <div className="text-center p-6 rounded-lg border bg-card">
-              <p className="text-4xl font-bold text-accent mb-2">45+</p>
-              <p className="text-muted-foreground">Countries Served</p>
+            <div className="card-professional text-center p-8 border-t-4 border-accent group cursor-default animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <p className="text-5xl font-bold text-accent mb-3 group-hover:scale-105 transition-smooth">45+</p>
+              <p className="body-secondary uppercase tracking-widest text-xs">Countries Served</p>
             </div>
-            <div className="text-center p-6 rounded-lg border bg-card">
-              <p className="text-4xl font-bold text-accent mb-2">99.95%</p>
-              <p className="text-muted-foreground">Uptime Guarantee</p>
+            <div className="card-professional text-center p-8 border-t-4 border-success group cursor-default animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <p className="text-5xl font-bold text-success mb-3 group-hover:scale-105 transition-smooth">99.95%</p>
+              <p className="body-secondary uppercase tracking-widest text-xs">Uptime Guarantee</p>
             </div>
           </div>
         </div>

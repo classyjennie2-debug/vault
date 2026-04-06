@@ -194,6 +194,89 @@
 }
 
 @layer components {
+  /* Professional Shadow System - Elevation Levels */
+  .shadow-elevation-1 {
+    @apply shadow-sm;
+  }
+  .shadow-elevation-2 {
+    @apply shadow-md;
+  }
+  .shadow-elevation-3 {
+    @apply shadow-lg;
+  }
+  .shadow-elevation-4 {
+    @apply shadow-xl;
+  }
+
+  /* Smooth Transition Utilities */
+  .transition-smooth {
+    @apply transition duration-300 ease-in-out;
+  }
+  .transition-smooth-fast {
+    @apply transition duration-200 ease-in-out;
+  }
+  .transition-smooth-slow {
+    @apply transition duration-500 ease-in-out;
+  }
+
+  /* Professional Card Styling */
+  .card-professional {
+    @apply rounded-lg border border-border bg-card text-card-foreground shadow-elevation-1 transition-smooth hover:shadow-elevation-2;
+  }
+
+  /* Professional Button Styling */
+  .btn-professional {
+    @apply inline-flex items-center justify-center rounded-lg font-medium transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Professional Input Styling */
+  .input-professional {
+    @apply flex h-10 w-full rounded-lg border border-input bg-input px-3 py-2 text-sm placeholder:text-muted-foreground transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent;
+  }
+
+  /* Professional Link Styling */
+  .link-professional {
+    @apply text-primary transition-smooth hover:text-primary/80 underline-offset-4 hover:underline;
+  }
+
+  /* Subtle Accent Border */
+  .border-accent-left {
+    @apply border-l-4 border-accent;
+  }
+
+  /* Data Display - Emphasis */
+  .data-value {
+    @apply text-2xl font-bold text-foreground;
+  }
+  .data-label {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+
+  /* Status Indicators */
+  .status-badge {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium;
+  }
+  .status-success {
+    @apply bg-success/10 text-success;
+  }
+  .status-warning {
+    @apply bg-warning/10 text-warning;
+  }
+  .status-error {
+    @apply bg-destructive/10 text-destructive;
+  }
+
+  /* Professional Typography - Hierarchy */
+  .h-section {
+    @apply text-xl font-bold tracking-tight text-foreground;
+  }
+  .h-subsection {
+    @apply text-lg font-semibold text-foreground;
+  }
+  .body-secondary {
+    @apply text-sm text-muted-foreground;
+  }
+
   /* Consistent full-width container for all pages */
   .page-container {
     @apply w-full min-h-screen bg-background;
@@ -220,4 +303,92 @@
       @apply max-w-full;
     }
   }
+
+  /* Professional Divider */
+  .divider-subtle {
+    @apply h-px bg-border/30;
+  }
+  .divider-standard {
+    @apply h-px bg-border;
+  }
+
+  /* Loading Skeleton */
+  .skeleton {
+    @apply animate-pulse rounded bg-muted;
+  }
+
+  /* Focus Visible Override - More Professional */
+  .focus-professional {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* Professional Animations */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.3s ease-out;
+}
+.animate-slide-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+.animate-slide-up {
+  animation: slideInUp 0.3s ease-out;
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
 }
