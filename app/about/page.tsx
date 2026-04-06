@@ -47,7 +47,7 @@ const team = [
     name: "Edward Williamson",
     role: "Head of Compliance",
     bio: "Legal expert with 20 years ensuring regulatory compliance across multiple financial sectors",
-    image: "https://i.pravatar.cc/150?img=71",
+    image: "https://i.pravatar.cc/150?img=48",
   },
 ]
 
