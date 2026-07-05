@@ -23,7 +23,7 @@ export default async function EmployeeAccessPage() {
             </p>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
-                href="/login"
+                href="/employee-access/login"
                 className="inline-flex items-center rounded-xl border border-border/70 bg-primary/10 px-5 py-3 text-sm font-medium text-primary transition hover:bg-primary/15"
               >
                 Sign in
