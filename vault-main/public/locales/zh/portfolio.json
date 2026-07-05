@@ -1,0 +1,21 @@
+{
+  "title": "投资组合面板",
+  "description": "查看您的完整投资组合和性能指标",
+  "last_update": "投资组合数据每天更新。最后更新时间：",
+  "overview": "概览",
+  "analysis": "分析",
+  "history": "历史",
+  "performance_analysis": "性能分析",
+  "best_performing": "表现最好的资产",
+  "ytd_return": "年初至今回报率",
+  "volatility": "波动性",
+  "low": "低",
+  "diversified_portfolio": "多元化投资组合",
+  "portfolio_history": "投资组合历史",
+  "balance": "余额",
+  "returns": "回报",
+  "date": "日期",
+  "view_portfolio": "查看投资组合",
+  "your_portfolio": "您的投资组合",
+  "complete_portfolio": "管理您的完整投资组合"
+}

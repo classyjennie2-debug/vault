@@ -1,0 +1,23 @@
+import { NextRequest, NextResponse } from "next/server"
+import { requireAuthAPI } from "@/lib/auth"
+import { apiLogger } from "@/lib/logging"
+
+export async function POST(request: NextRequest) {
+  try {
+    const user = await requireAuthAPI()
+    if (user instanceof NextResponse) return user
+    const { email, subject, message } = await request.json()
+
+    if (!email || !subject || !message) {
+      return NextResponse.json({ error: "All fields are required" }, { status: 400 })
+    }
+
+    // In a real app, this would send an email or create a support ticket
+    apiLogger.info("Support request received", { userId: user.id, subject })
+
+    return NextResponse.json({ message: "Support request submitted successfully" })
+  } catch (error) {
+    console.error("Support request error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}

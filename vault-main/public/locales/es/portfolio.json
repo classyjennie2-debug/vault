@@ -1,0 +1,21 @@
+{
+  "title": "Panel de Cartera",
+  "description": "Ver su cartera de inversión completa y métricas de desempeño",
+  "last_update": "Los datos de cartera se actualizan diariamente. Última actualización:",
+  "overview": "Descripción General",
+  "analysis": "Análisis",
+  "history": "Historial",
+  "performance_analysis": "Análisis de Desempeño",
+  "best_performing": "Activo de Mejor Desempeño",
+  "ytd_return": "Rendimiento YTD",
+  "volatility": "Volatilidad",
+  "low": "Bajo",
+  "diversified_portfolio": "Cartera diversificada",
+  "portfolio_history": "Historial de Cartera",
+  "balance": "Saldo",
+  "returns": "Rendimientos",
+  "date": "Fecha",
+  "view_portfolio": "Ver Cartera",
+  "your_portfolio": "Su Cartera",
+  "complete_portfolio": "Administre su cartera de inversión completa"
+}

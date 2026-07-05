@@ -1,0 +1,412 @@
+"use client"
+
+import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useI18n } from "@/hooks/use-i18n"
+import {
+  type CoinType,
+  coinDetails,
+} from "@/lib/types"
+import { CoinIcon } from "@/components/crypto/coin-icon"
+import { convertUSDToCoin } from "@/lib/crypto-prices"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle, CheckCircle, ArrowLeft, Loader2, Info } from "lucide-react"
+import Link from "next/link"
+
+const coins: CoinType[] = ["USDT", "BTC", "ETH", "BNB", "TRX", "SOL"]
+
+export default function WithdrawPage() {
+  const { t } = useI18n('withdraw')
+  const [selectedCoin, setSelectedCoin] = useState<CoinType | null>(null)
+  const [amount, setAmount] = useState<string>("")
+  const [cryptoAddress, setCryptoAddress] = useState<string>("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<string>("")
+  const [availableBalance, setAvailableBalance] = useState<number>(0)
+  const [loading, setLoading] = useState(true)
+  const [convertedAmount, setConvertedAmount] = useState<number>(0)
+  const [isConverting, setIsConverting] = useState(false)
+  const router = useRouter()
+
+  const WITHDRAWAL_FEE_PERCENT = 0.003 // 0.3%
+
+  useEffect(() => {
+    async function fetchBalance() {
+      try {
+        const response = await fetch("/api/user/balance")
+        if (response.ok) {
+          const data = await response.json()
+          setAvailableBalance(data.availableBalance)
+        }
+      } catch (err) {
+        console.error("Failed to fetch balance:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchBalance()
+  }, [])
+
+  // Convert USD amount to crypto when amount or coin changes
+  useEffect(() => {
+    async function convertAmount() {
+      if (!selectedCoin || !amount || parseFloat(amount) <= 0) {
+        setConvertedAmount(0)
+        return
+      }
+
+      setIsConverting(true)
+      try {
+        const amountNum = parseFloat(amount)
+        const fee = Math.round(amountNum * WITHDRAWAL_FEE_PERCENT * 100) / 100
+        const netAmount = amountNum - fee
+        
+        const converted = await convertUSDToCoin(netAmount, selectedCoin)
+        setConvertedAmount(Math.round(converted * 100000000) / 100000000) // Round to 8 decimals
+      } catch (err) {
+        console.error("Failed to convert amount:", err)
+        setConvertedAmount(0)
+      } finally {
+        setIsConverting(false)
+      }
+    }
+
+    convertAmount()
+  }, [selectedCoin, amount])
+
+  const amountNum = parseFloat(amount) || 0
+  const withdrawalFee = Math.round(amountNum * WITHDRAWAL_FEE_PERCENT * 100) / 100
+  const amountAfterFee = Math.round((amountNum - withdrawalFee) * 100) / 100
+  
+  const isValidAmount =
+    amountNum > 0 && amountNum <= availableBalance && amount !== ""
+  const isValid = selectedCoin && cryptoAddress && isValidAmount && !isSubmitting
+
+  const handleCoinSelect = (coin: CoinType) => {
+    setSelectedCoin(coin)
+    setError("")
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+
+    if (!isValid) {
+      setError("Please select a coin, enter a valid amount, and provide a withdrawal address")
+      return
+    }
+
+    const trimmedAddress = cryptoAddress.trim()
+    if (!trimmedAddress || trimmedAddress.length < 20) {
+      setError(`Please enter a valid ${selectedCoin} address (min 20 characters)`)
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const res = await fetch("/api/withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: amountNum > 0 ? Math.round(amountNum * 100) / 100 : 0,
+          method: "crypto",
+          cryptoAddress: trimmedAddress,
+          coin: selectedCoin,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || "Something went wrong")
+        return
+      }
+      setSubmitted(true)
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 2000)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An error occurred. Please try again."
+      setError(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  if (submitted) {
+    return (
+      <div className="w-full max-w-full">
+        <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/dashboard">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back to dashboard</span>
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+              Withdraw Crypto
+            </h1>
+          </div>
+        </div>
+
+        <Card className="border-green-500/20 bg-green-50/50 dark:bg-green-950/20">
+          <CardContent className="pt-4 sm:pt-6">
+            <div className="flex items-center gap-4">
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-green-900 dark:text-green-100">
+                  Withdrawal Request Submitted!
+                </h3>
+                <p className="text-sm text-green-800/70 dark:text-green-200/70 mt-1">
+                  Your withdrawal of ${amountNum.toLocaleString()} has been submitted for admin approval.
+                  You'll receive your {selectedCoin} shortly after approval.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4 md:gap-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/dashboard">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back to dashboard</span>
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            {t('title')}
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            {t('description')}
+          </p>
+        </div>
+      </div>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert className="border-red-500/50 bg-red-50/50 dark:bg-red-950/20">
+          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+          <AlertDescription className="text-red-800 dark:text-red-200">
+            {error}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Step 1 - Select Coin */}
+      <Card>
+        <CardHeader className="pb-2 sm:pb-3 md:pb-4">
+          <CardTitle className="text-sm sm:text-base">
+            <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+              1
+            </span>
+            {t('selectCryptocurrency')}
+          </CardTitle>
+          <CardDescription>
+            {t('chooseWithdraw')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {coins.map((coin) => {
+              const details = coinDetails[coin]
+              const isSelected = selectedCoin === coin
+              return (
+                <button
+                  key={coin}
+                  type="button"
+                  onClick={() => handleCoinSelect(coin)}
+                  className={`flex flex-col items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border-2 p-2 sm:p-3 md:p-4 transition-all ${
+                    isSelected
+                      ? "border-accent bg-accent/5 shadow-sm"
+                      : "border-border bg-card hover:border-muted-foreground/30 hover:bg-secondary/50"
+                  }`}
+                >
+                  <CoinIcon coin={coin} size={32} />
+                  <div className="text-center">
+                    <p
+                      className={`text-xs sm:text-sm font-semibold ${isSelected ? "text-foreground" : "text-card-foreground"}`}
+                    >
+                      {coin}
+                    </p>
+                    <p className="text-[9px] sm:text-[11px] text-muted-foreground">
+                      {details.name}
+                    </p>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Step 2 - Enter Details */}
+      {selectedCoin && (
+        <Card className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
+          <CardHeader className="pb-2 sm:pb-3 md:pb-4">
+            <CardTitle className="text-sm sm:text-base">
+              <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                2
+              </span>
+              {t('withdrawalDetails')}
+            </CardTitle>
+            <CardDescription>
+              {t('enterDetails')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {/* Amount */}
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-sm font-medium">
+                {t('withdrawalAmount')}
+              </Label>
+              <div className="space-y-1.5">
+                <Input
+                  id="amount"
+                  type="number"
+                  placeholder={t('enterAmount')}
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  max={availableBalance}
+                  step="0.01"
+                  min="0"
+                  className="border-border"
+                />
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    Available: ${availableBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAmount(availableBalance.toString())}
+                    className="text-accent hover:text-accent/80 font-medium"
+                  >
+                    Max
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Crypto Address */}
+            <div className="space-y-2">
+              <Label htmlFor="address" className="text-sm font-medium">
+                {t('withdrawalAddress')}
+              </Label>
+              <Input
+                id="address"
+                type="text"
+                placeholder={t('enterAddress')}
+                value={cryptoAddress}
+                onChange={(e) => setCryptoAddress(e.target.value)}
+                className="border-border font-mono text-xs"
+              />
+              <p className="text-xs text-muted-foreground/70">
+                {t('warningAddress')}
+              </p>
+            </div>
+
+            {/* Summary */}
+            {isValidAmount && selectedCoin && (
+              <div className="mt-6 space-y-3">
+                {/* Fee Info Alert */}
+                <Alert className="border-blue-500/30 bg-blue-50/50 dark:bg-blue-950/20">
+                  <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <AlertDescription className="text-blue-800 dark:text-blue-200 text-xs">
+                    A 0.3% withdrawal fee is applied to all withdrawals.
+                  </AlertDescription>
+                </Alert>
+
+                {/* Breakdown */}
+                <div className="rounded-lg bg-secondary/50 p-4 space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Withdrawal Amount (USD):</span>
+                    <span className="font-semibold text-foreground">${amountNum.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Withdrawal Fee (0.3%):</span>
+                    <span className="font-semibold text-red-600 dark:text-red-400">-${withdrawalFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  </div>
+
+                  <div className="border-t border-border/30 pt-3 flex items-center justify-between text-sm font-semibold">
+                    <span className="text-foreground">Amount After Fee (USD):</span>
+                    <span className="text-green-600 dark:text-green-400">${amountAfterFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  </div>
+
+                  {isConverting ? (
+                    <div className="border-t border-border/30 pt-3 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">You will receive ({selectedCoin}):</span>
+                      <span className="text-sm flex items-center gap-1">
+                        <span className="animate-pulse">Calculating...</span>
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="border-t border-border/30 pt-3 flex items-center justify-between text-sm font-semibold">
+                      <span className="text-foreground">You will receive ({selectedCoin}):</span>
+                      <span className="text-accent">{convertedAmount.toFixed(8)} {selectedCoin}</span>
+                    </div>
+                  )}
+
+
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Submit Button */}
+      {selectedCoin && (
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            asChild
+            className="flex-1"
+          >
+            <Link href="/dashboard">{t('cancel')}</Link>
+          </Button>
+          <Button
+            type="submit"
+            disabled={!isValid}
+            className="flex-1"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t('processing')}
+              </>
+            ) : (
+              t('withdraw')
+            )}
+          </Button>
+        </div>
+      )}
+    </form>
+  )
+}

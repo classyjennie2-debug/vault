@@ -1,0 +1,398 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* Professional Typography - Modern Font Stack */
+:root {
+  --font-sans: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+}
+
+:root {
+  /* Professional Institutional Color Scheme */
+  --background: oklch(0.99 0.001 240); /* Pure white background */
+  --foreground: oklch(0.15 0.01 240); /* Deep navy text */
+  --card: oklch(1 0 0); /* White cards */
+  --card-foreground: oklch(0.15 0.01 240); /* Navy text on cards */
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.01 240);
+
+  /* Navy Blue Primary */
+  --primary: oklch(0.25 0.08 240); /* Professional navy blue */
+  --primary-foreground: oklch(0.98 0.002 75); /* White text on primary */
+
+  /* Professional Grays */
+  --secondary: oklch(0.96 0.005 240); /* Light gray */
+  --secondary-foreground: oklch(0.20 0.01 240); /* Dark gray text */
+  --muted: oklch(0.96 0.005 240); /* Light muted gray */
+  --muted-foreground: oklch(0.45 0.01 240); /* Medium gray text */
+
+  /* Gold Accent */
+  --accent: oklch(0.70 0.12 85); /* Professional gold */
+  --accent-foreground: oklch(0.15 0.01 240); /* Navy text on gold */
+
+  /* Error/Success Colors */
+  --destructive: oklch(0.55 0.22 27); /* Professional red */
+  --destructive-foreground: oklch(0.98 0.002 75);
+
+  /* Borders and Inputs */
+  --border: oklch(0.90 0.005 240); /* Subtle gray borders */
+  --input: oklch(0.95 0.005 240); /* Light input backgrounds */
+  --ring: oklch(0.25 0.08 240); /* Navy focus rings */
+
+  /* Chart Colors - Professional Palette */
+  --chart-1: oklch(0.25 0.08 240); /* Navy */
+  --chart-2: oklch(0.70 0.12 85); /* Gold */
+  --chart-3: oklch(0.60 0.10 160); /* Teal */
+  --chart-4: oklch(0.50 0.08 320); /* Purple */
+  --chart-5: oklch(0.45 0.06 40); /* Brown */
+
+  /* Border Radius */
+  --radius: 0.5rem; /* More professional, less rounded */
+
+  /* Status Colors */
+  --success: oklch(0.60 0.10 160); /* Professional green */
+  --success-foreground: oklch(0.98 0.002 75);
+  --warning: oklch(0.75 0.15 80); /* Professional amber */
+  --warning-foreground: oklch(0.15 0.01 240);
+
+  /* Sidebar - Professional Dark Theme */
+  --sidebar: oklch(0.15 0.01 240); /* Navy sidebar */
+  --sidebar-foreground: oklch(0.95 0.005 75); /* Light text */
+  --sidebar-primary: oklch(0.70 0.12 85); /* Gold accents */
+  --sidebar-primary-foreground: oklch(0.15 0.01 240);
+  --sidebar-accent: oklch(0.20 0.01 240); /* Slightly lighter navy */
+  --sidebar-accent-foreground: oklch(0.95 0.005 75);
+  --sidebar-border: oklch(0.25 0.01 240); /* Dark border */
+  --sidebar-ring: oklch(0.70 0.12 85); /* Gold focus */
+}
+
+.dark {
+  /* Professional Dark Theme - Deep Navy & Gold */
+  --background: oklch(0.08 0.005 240); /* Deep navy background */
+  --foreground: oklch(0.95 0.005 75); /* Light text */
+  --card: oklch(0.12 0.01 240); /* Dark navy cards */
+  --card-foreground: oklch(0.95 0.005 75); /* Light text on cards */
+  --popover: oklch(0.12 0.01 240);
+  --popover-foreground: oklch(0.95 0.005 75);
+
+  /* Navy Blue Primary (lighter in dark mode) */
+  --primary: oklch(0.70 0.12 85); /* Gold primary in dark mode */
+  --primary-foreground: oklch(0.15 0.01 240); /* Navy text on gold */
+
+  /* Professional Dark Grays */
+  --secondary: oklch(0.18 0.01 240); /* Dark gray */
+  --secondary-foreground: oklch(0.90 0.005 75); /* Light text */
+  --muted: oklch(0.18 0.01 240); /* Dark muted */
+  --muted-foreground: oklch(0.65 0.01 240); /* Medium gray text */
+
+  /* Gold Accent (brighter in dark mode) */
+  --accent: oklch(0.75 0.15 85); /* Bright gold */
+  --accent-foreground: oklch(0.15 0.01 240); /* Navy text on gold */
+
+  /* Error/Success Colors */
+  --destructive: oklch(0.50 0.20 27); /* Professional red */
+  --destructive-foreground: oklch(0.95 0.005 75);
+
+  /* Borders and Inputs */
+  --border: oklch(0.20 0.01 240); /* Dark borders */
+  --input: oklch(0.15 0.01 240); /* Dark input backgrounds */
+  --ring: oklch(0.70 0.12 85); /* Gold focus rings */
+
+  /* Chart Colors - Professional Dark Palette */
+  --chart-1: oklch(0.70 0.12 85); /* Gold */
+  --chart-2: oklch(0.60 0.10 160); /* Teal */
+  --chart-3: oklch(0.50 0.08 320); /* Purple */
+  --chart-4: oklch(0.45 0.06 40); /* Brown */
+  --chart-5: oklch(0.25 0.08 240); /* Navy */
+
+  /* Status Colors */
+  --success: oklch(0.65 0.12 160); /* Professional green */
+  --success-foreground: oklch(0.95 0.005 75);
+  --warning: oklch(0.75 0.15 80); /* Professional amber */
+  --warning-foreground: oklch(0.15 0.01 240);
+
+  /* Sidebar - Professional Dark */
+  --sidebar: oklch(0.10 0.01 240); /* Very dark navy */
+  --sidebar-foreground: oklch(0.90 0.005 75); /* Light text */
+  --sidebar-primary: oklch(0.75 0.15 85); /* Bright gold */
+  --sidebar-primary-foreground: oklch(0.15 0.01 240);
+  --sidebar-accent: oklch(0.15 0.01 240); /* Medium navy */
+  --sidebar-accent-foreground: oklch(0.90 0.005 75);
+  --sidebar-border: oklch(0.18 0.01 240); /* Dark border */
+  --sidebar-ring: oklch(0.75 0.15 85); /* Bright gold focus */
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-heading: var(--font-dm-sans), 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+}
+
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+    width: 100vw;
+    overflow-x: hidden;
+  }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+  
+  /* Prevent scrollbars from causing shift */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+}
+
+@layer components {
+  /* Smooth Transition Utilities */
+  .transition-smooth {
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .transition-smooth-fast {
+    transition-property: all;
+    transition-duration: 0.2s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .transition-smooth-slow {
+    transition-property: all;
+    transition-duration: 0.5s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Professional Card Styling */
+  .card-professional {
+    @apply rounded-lg border border-border bg-card text-card-foreground shadow-md hover:shadow-lg;
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Professional Button Styling */
+  .btn-professional {
+    @apply inline-flex items-center justify-center rounded-lg font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed;
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Professional Input Styling */
+  .input-professional {
+    @apply flex h-10 w-full rounded-lg border border-input bg-input px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent;
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Professional Link Styling */
+  .link-professional {
+    @apply text-primary hover:text-primary/80 underline-offset-4 hover:underline;
+    transition-property: color;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Subtle Accent Border */
+  .border-accent-left {
+    @apply border-l-4 border-accent;
+  }
+
+  /* Data Display - Emphasis */
+  .data-value {
+    @apply text-2xl font-bold text-foreground;
+  }
+  .data-label {
+    @apply text-sm font-medium text-muted-foreground;
+  }
+
+  /* Status Indicators */
+  .status-badge {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium;
+  }
+  .status-success {
+    @apply bg-success/10 text-success;
+  }
+  .status-warning {
+    @apply bg-warning/10 text-warning;
+  }
+  .status-error {
+    @apply bg-destructive/10 text-destructive;
+  }
+
+  /* Professional Typography - Hierarchy */
+  .h-section {
+    @apply text-xl font-bold tracking-tight text-foreground;
+  }
+  .h-subsection {
+    @apply text-lg font-semibold text-foreground;
+  }
+  .body-secondary {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* Consistent full-width container for all pages */
+  .page-container {
+    @apply w-full min-h-screen bg-background;
+  }
+
+  /* Consistent content wrapper with responsive padding */
+  .page-content {
+    @apply container mx-auto w-full px-4 sm:px-6 md:px-8;
+  }
+
+  /* Ensure no horizontal overflow on mobile */
+  * {
+    @apply box-border;
+  }
+
+  /* Mobile-safe max width for all content */
+  .max-container {
+    @apply w-full max-w-screen overflow-hidden;
+  }
+
+  /* Override any inline width styles */
+  @media (max-width: 640px) {
+    [class*="lg:"][class*="w-"] {
+      @apply max-w-full;
+    }
+  }
+
+  /* Professional Divider */
+  .divider-subtle {
+    @apply h-px bg-border/30;
+  }
+  .divider-standard {
+    @apply h-px bg-border;
+  }
+
+  /* Loading Skeleton */
+  .skeleton {
+    @apply animate-pulse rounded bg-muted;
+  }
+
+  /* Focus Visible Override - More Professional */
+  .focus-professional {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* Professional Animations */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.3s ease-out;
+}
+.animate-slide-left {
+  animation: slideInLeft 0.3s ease-out;
+}
+.animate-slide-up {
+  animation: slideInUp 0.3s ease-out;
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}

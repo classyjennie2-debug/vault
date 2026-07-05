@@ -1,0 +1,66 @@
+{
+  "scanDate": "2026-04-04",
+  "summary": {
+    "totalMissingKeysEnglish": 13,
+    "namespacesWithIssues": 2,
+    "criticalNamespaces": ["referral", "auth"],
+    "languagesAnalyzed": 7,
+    "componentsAnalyzed": 250
+  },
+  "missingByNamespace": {
+    "referral": {
+      "available": 15,
+      "used": 24,
+      "missing": 9,
+      "keys": [
+        "loading",
+        "my_referrals",
+        "withdraw",
+        "shareYourCode",
+        "referralCode",
+        "howItWorks",
+        "step1Title",
+        "step2Title",
+        "step3Title"
+      ],
+      "priority": "CRITICAL",
+      "affectedFiles": [
+        "app/dashboard/referrals/page.tsx",
+        "components/dashboard/referral-dashboard.tsx",
+        "components/dashboard/referral-summary-card.tsx"
+      ]
+    },
+    "auth": {
+      "available": 48,
+      "used": 42,
+      "missing": 4,
+      "keys": [
+        "allFieldsRequired",
+        "low",
+        "medium",
+        "high"
+      ],
+      "priority": "MEDIUM",
+      "affectedFiles": [
+        "app/register/page.tsx",
+        "app/dashboard/settings/page.tsx"
+      ]
+    }
+  },
+  "missingByLanguage": {
+    "en": 13,
+    "es": 19,
+    "pt": 28,
+    "fr": 34,
+    "ar": 23,
+    "ph": 23,
+    "zh": 23
+  },
+  "recommendations": [
+    "Add 9 missing keys to public/locales/en/referral.json",
+    "Add/verify 4 keys in public/locales/en/auth.json",
+    "Propagate all changes to 7 language files",
+    "Fix encoding issues in PT, FR, AR, PH, ZH locale files",
+    "Validate JSON integrity across all translation files"
+  ]
+}

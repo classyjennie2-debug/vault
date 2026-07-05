@@ -1,0 +1,100 @@
+import * as React from 'react'
+import { Slot } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
+
+import { cn } from '@/lib/utils'
+import { Icon, type IconName } from '@/components/ui/icon'
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-300 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg active:scale-95',
+        destructive:
+          'bg-destructive text-white hover:bg-destructive/90 shadow-md hover:shadow-lg focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 active:scale-95',
+        outline:
+          'border-2 border-primary text-primary bg-white dark:bg-slate-800 hover:bg-primary/5 dark:hover:bg-primary/10 shadow-sm hover:shadow-md active:scale-95',
+        secondary:
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-md hover:shadow-lg active:scale-95',
+        ghost:
+          'border-2 border-slate-300 dark:border-slate-600 text-foreground hover:bg-slate-100 dark:hover:bg-slate-800 shadow-sm hover:shadow-md active:scale-95',
+        link: 'text-primary underline-offset-4 hover:underline',
+      },
+      size: {
+        default: 'h-10 px-5 py-2.5 has-[>svg]:px-4',
+        sm: 'h-9 px-4 py-1.5 rounded-md gap-1.5 has-[>svg]:px-3 text-xs',
+        lg: 'h-12 rounded-lg px-7 has-[>svg]:px-5 text-base',
+        icon: 'size-10',
+        'icon-sm': 'size-9',
+        'icon-lg': 'size-12',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  },
+)
+
+interface ButtonProps
+  extends React.ComponentProps<'button'>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+  /**
+   * pass a React node to show an icon at the start of the button
+   */
+  icon?: React.ReactNode
+  /**
+   * convenience prop; uses the shared Icon component by name
+   */
+  iconName?: IconName
+  /**
+   * automatically add a simple fade-in/slide-up animation when the button
+   * mounts.  Useful for modals, toasts, etc.
+   */
+  animateEntry?: boolean
+}
+
+function Button({
+  className,
+  variant,
+  size,
+  asChild = false,
+  icon,
+  iconName,
+  animateEntry = false,
+  ...props
+}: ButtonProps) {
+  const Comp = asChild ? Slot : 'button'
+
+  const buttonClasses = cn(
+    buttonVariants({ variant, size, className }),
+    animateEntry && 'animate-fade-in'
+  )
+
+  if (asChild) {
+    return (
+      <Comp
+        data-slot="button"
+        className={buttonClasses}
+        {...props}
+      >
+        {props.children}
+      </Comp>
+    )
+  }
+
+  return (
+    <Comp
+      data-slot="button"
+      className={buttonClasses}
+      {...props}
+    >
+      {icon || (iconName && <Icon name={iconName} className="size-4" />)}
+      {props.children}
+    </Comp>
+  )
+}
+
+export { Button, buttonVariants }

@@ -1,0 +1,21 @@
+{
+  "title": "Portfolio Dashboard",
+  "description": "Tingnan ang iyong kumpletong portfolio ng pamumuhunan at mga sukatan ng pagganap",
+  "last_update": "Ang portfolio data ay ina-update araw-araw. Huling update:",
+  "overview": "Pangkalahatang Pagtingin",
+  "analysis": "Pagsusuri",
+  "history": "Kasaysayan",
+  "performance_analysis": "Pagsusuring Pagganap",
+  "best_performing": "Pinakamahusay na Performang Asset",
+  "ytd_return": "YTD Return",
+  "volatility": "Pagbabago",
+  "low": "Mababa",
+  "diversified_portfolio": "Diversified portfolio",
+  "portfolio_history": "Portfolio History",
+  "balance": "Balanse",
+  "returns": "Mga Balik",
+  "date": "Petsa",
+  "view_portfolio": "Tingnan ang Portfolio",
+  "your_portfolio": "Ang Iyong Portfolio",
+  "complete_portfolio": "Pamahalaan ang iyong kumpletong portfolio ng pamumuhunan"
+}

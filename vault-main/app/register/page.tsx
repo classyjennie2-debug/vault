@@ -1,0 +1,435 @@
+"use client"
+
+import React from "react"
+import Link from "next/link"
+import { useState, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Lock, ArrowLeft, Eye, EyeOff } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { PasswordStrengthMeter, calculatePasswordStrength } from "@/components/auth/password-strength-meter"
+import { COUNTRY_CODES_LIST, type CountryCode } from "@/lib/phone-validation"
+import { useI18n } from "@/hooks/use-i18n"
+import { LanguageSwitcher } from "@/components/language-switcher"
+
+function RegisterPageContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { t } = useI18n("auth")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>("US")
+  const [dateOfBirth, setDateOfBirth] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [referralCode, setReferralCode] = useState("")
+  const [step, setStep] = useState<0 | 1>(0)
+  const [code, setCode] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [info, setInfo] = useState("")
+  const [canResend, setCanResend] = useState(true)
+  const [resendCountdown, setResendCountdown] = useState(0)
+
+  // Extract referral code from URL params on mount
+  useEffect(() => {
+    const refParam = searchParams.get('ref')
+    if (refParam) {
+      setReferralCode(refParam)
+    }
+  }, [searchParams])
+
+  // Countdown timer for resend
+  React.useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000)
+      return () => clearTimeout(timer)
+    }
+    if (resendCountdown === 0 && !canResend) {
+      setCanResend(true)
+    }
+  }, [resendCountdown, canResend])
+
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault()
+    setError("")
+    setInfo("")
+    
+    if (!firstName.trim() || !lastName.trim() || !email || !password || !phone.trim() || !dateOfBirth || !phoneCountry) {
+      setError(t("allFieldsRequired") || "All fields are required")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          firstName, 
+          lastName,
+          email, 
+          password,
+          phone,
+          phoneCountry,
+          dateOfBirth,
+          referralCode: referralCode || undefined
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || t("error"))
+        setLoading(false)
+        console.error("Signup error response:", { status: res.status, data })
+        return
+      }
+      setInfo(t("email_sent"))
+      setLoading(false)
+      setStep(1)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Network error"
+      setError(t("error"))
+      setLoading(false)
+      console.error("Signup fetch error:", err)
+    }
+  }
+
+  async function handleVerify(e: React.FormEvent) {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+    try {
+      const res = await fetch("/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || t("error"))
+        setLoading(false)
+        return
+      }
+      // Show success and redirect quickly
+      setInfo("✓ " + t("success") + "! Redirecting...")
+      // Use setTimeout to ensure smooth redirect with loading page
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 200)
+      // Don't set loading to false - keep the button locked
+    } catch (_err) {
+      setError(t("error"))
+      setLoading(false)
+    }
+  }
+
+  async function handleResendCode(e: React.FormEvent) {
+    e.preventDefault()
+    if (!canResend || !email) return
+
+    setError("")
+    setInfo("")
+    setCanResend(false)
+    setResendCountdown(15) // 15 seconds countdown
+
+    try {
+      const res = await fetch("/api/auth/resend-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setCanResend(true)
+        setResendCountdown(0)
+        if (res.status === 429) {
+          setError(data.error || t("error"))
+        } else if (res.status === 404) {
+          setError(t("error"))
+        } else {
+          setError(data.error || t("error"))
+        }
+        return
+      }
+
+      setInfo(t("email_sent"))
+    } catch (err) {
+      setCanResend(true)
+      setResendCountdown(0)
+      const message = err instanceof Error ? err.message : "Network error"
+      setError(t("error"))
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      {/* Language Switcher in top-right */}
+      <div className="flex justify-end p-4 lg:p-6">
+        <LanguageSwitcher />
+      </div>
+
+      <div className="flex flex-1">
+        {/* Left: visual panel */}
+        <div className="hidden w-1/2 bg-gradient-to-br from-accent to-accent/80 lg:flex lg:flex-col lg:items-center lg:justify-center lg:p-12">
+          <div className="max-w-sm text-center animate-slide-up">
+            <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent-foreground/10 bg-accent-foreground/5 shadow-md">
+              <Lock className="h-8 w-8 text-accent-foreground" />
+            </div>
+            <h2 className="h-section text-2xl font-bold text-accent-foreground">
+              {t("create_account")}
+            </h2>
+            <p className="body-secondary mt-4 text-sm leading-relaxed text-accent-foreground/70">
+              {t("join_platform")}
+            </p>
+            <div className="mt-10 grid grid-cols-3 gap-4">
+              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-md transition-smooth">
+                <p className="data-value text-xl font-bold text-accent-foreground">6.5%</p>
+                <p className="mt-1 text-xs text-accent-foreground/50 body-secondary">
+                  {t("low")}
+                </p>
+              </div>
+              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-md transition-smooth">
+                <p className="data-value text-xl font-bold text-accent-foreground">
+                  12.8%
+                </p>
+                <p className="mt-1 text-xs text-accent-foreground/50 body-secondary">{t("medium")}</p>
+              </div>
+              <div className="card-professional rounded-xl border-accent/20 bg-accent/10 p-4 hover:shadow-md transition-smooth">
+                <p className="data-value text-xl font-bold text-accent-foreground">
+                  22.5%
+                </p>
+                <p className="mt-1 text-xs text-accent-foreground/50 body-secondary">
+                  {t("high")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Form */}
+        <div className="flex w-full flex-col justify-center px-4 sm:px-6 py-8 sm:py-12 lg:w-1/2 lg:px-16 lg:py-12">
+          <Link
+            href="/"
+            className="link-professional mb-8 sm:mb-12 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-smooth"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("back_to_home")}
+          </Link>
+          <div className="flex items-center gap-2 mb-10 animate-fade-in">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent shadow">
+              <Lock className="h-4 w-4 text-accent-foreground" />
+            </div>
+            <span className="text-lg font-semibold text-foreground">Vault</span>
+          </div>
+          <h1 className="h-section text-2xl font-bold tracking-tight text-foreground md:text-3xl animate-fade-in">
+            {t("create_account")}
+          </h1>
+          <p className="body-secondary mt-2 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: "100ms" }}>
+            {t("join_platform")}
+          </p>
+
+        {step === 0 ? (
+          <form onSubmit={handleRegister} className="mt-8 flex flex-col gap-5 animate-fade-in" style={{ animationDelay: "200ms" }}>
+            {error && (
+              <div className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/30">{error}</div>
+            )}
+            {info && (
+              <div className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30">{info}</div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="firstName" className="font-semibold">{t("first_name_label")}</Label>
+                <Input
+                  id="firstName"
+                  placeholder={t("first_name_label")}
+                  value={firstName}
+                  className="input-professional"
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="lastName" className="font-semibold">{t("last_name_label")}</Label>
+                <Input
+                  id="lastName"
+                  placeholder={t("last_name_label")}
+                  value={lastName}
+                  className="input-professional"
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="email" className="font-semibold">{t("email_label")}</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder={t("email_placeholder")}
+                value={email}
+                className="input-professional"
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="phone" className="font-semibold">{t("phone_label")}</Label>
+              <div className="flex gap-2">
+                <select
+                  value={phoneCountry}
+                  onChange={(e) => setPhoneCountry(e.target.value as CountryCode)}
+                  className="input-professional flex h-10 w-24 px-3 py-2"
+                >
+                  {COUNTRY_CODES_LIST.map((country) => (
+                    <option key={country.countryCode} value={country.countryCode}>
+                      {country.flag} {country.code}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder={COUNTRY_CODES_LIST.find(c => c.countryCode === phoneCountry)?.format || "(555) 000-0000"}
+                  value={phone}
+                  className="input-professional flex-1"
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+              </div>
+              {phoneCountry && (
+                <p className="text-xs text-muted-foreground body-secondary">
+                  Format: {COUNTRY_CODES_LIST.find(c => c.countryCode === phoneCountry)?.format}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="dateOfBirth" className="font-semibold">{t("date_of_birth_label")}</Label>
+              <Input
+                id="dateOfBirth"
+                type="date"
+                className="input-professional"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="font-semibold">
+                Referral Code <span className="text-xs text-muted-foreground body-secondary">(Optional)</span>
+              </Label>
+              <Input
+                id="referralCode"
+                type="text"
+                placeholder="Enter a referral code if you have one"
+                value={referralCode}
+                className="input-professional"
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                maxLength={8}
+              />
+              {referralCode && (
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 body-secondary">
+                  ✓ You'll earn referral bonuses from your referrer's deposits!
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="password" className="font-semibold">{t("password_label")}</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder={t("password_placeholder")}
+                  value={password}
+                  className="input-professional"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent focus-professional"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+              <PasswordStrengthMeter password={password} />
+            </div>
+            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-md hover:shadow-lg" disabled={loading || calculatePasswordStrength(password).score < 2}>
+              {loading ? t("loading") : t("sign_up_button")}
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerify} className="mt-8 flex flex-col gap-5 animate-fade-in" style={{ animationDelay: "300ms" }}>
+            {error && (
+              <div className="rounded-lg bg-rose-500/10 p-3 text-sm text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/30">{error}</div>
+            )}
+            {info && (
+              <div className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30">{info}</div>
+            )}
+            <p className="body-secondary text-sm text-muted-foreground">
+              {t("email_verification_required")}
+            </p>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="code" className="font-semibold">{t("verify_email")}</Label>
+              <Input
+                id="code"
+                placeholder="123456"
+                value={code}
+                className="input-professional"
+                onChange={(e) => setCode(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" size="lg" className="btn-professional mt-2 w-full shadow-md hover:shadow-lg" disabled={loading}>
+              {loading ? t("loading") : t("verify_email")}
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="btn-professional w-full shadow hover:shadow-md" 
+              onClick={handleResendCode}
+              disabled={!canResend || loading}
+            >
+              {!canResend && resendCountdown > 0
+                ? `${t("resend_email")} ${Math.floor(resendCountdown / 60)}:${String(resendCountdown % 60).padStart(2, '0')}`
+                : t("resend_email")}
+            </Button>
+          </form>
+        )}
+
+        <p className="mt-6 text-center text-sm text-muted-foreground body-secondary">
+          {t("have_account")}{" "}
+          <Link
+            href="/login"
+            className="link-professional font-medium text-accent hover:text-accent/80 transition-smooth"
+          >
+            {t("sign_in")}
+          </Link>
+        </p>
+      </div>
+    </div>
+    </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    }>
+      <RegisterPageContent />
+    </Suspense>
+  )
+}

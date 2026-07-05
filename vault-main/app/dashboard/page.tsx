@@ -1,0 +1,128 @@
+import { DashboardHeroSynced } from "@/components/dashboard/dashboard-hero-synced"
+import { DashboardCardsSynced } from "@/components/dashboard/dashboard-cards-synced"
+import { ReferralSummaryCard } from "@/components/dashboard/referral-summary-card"
+import { GlanceStripSynced } from "@/components/dashboard/glance-strip-synced"
+import { PortfolioChart } from "@/components/dashboard/portfolio-chart"
+import { RecentTransactionsSynced } from "@/components/dashboard/recent-transactions-synced"
+import { EducationTips } from "@/components/dashboard/education-tips"
+import { QuickActions } from "@/components/dashboard/quick-actions"
+import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
+import LiveChatButton from "@/components/live-chat-button"
+import { DashboardLayoutClient } from "@/components/dashboard/dashboard-layout-client"
+import { requireAuth } from "@/lib/auth"
+import { getUserStats, generatePortfolioData, getUserActiveInvestmentsWithProfit, updateLastLogin } from "@/lib/db"
+import { calculateMonthlyMetrics, calculateReturnRate } from "@/lib/monthly-metrics"
+import { Suspense } from "react"
+
+// Skeleton loader for chart section
+function PortfolioChartSkeleton() {
+  return <div className="h-96 bg-card rounded-lg animate-pulse" />
+}
+
+// Skeleton loader for investments table
+function InvestmentsTableSkeleton() {
+  return <div className="h-64 bg-card rounded-lg animate-pulse" />
+}
+
+// Skeleton loader for recent transactions
+function RecentTransactionsSkeleton() {
+  return <div className="h-96 bg-card rounded-lg animate-pulse" />
+}
+
+export default async function DashboardPage() {
+  // Only fetch critical data immediately - user and basic stats
+  const user = await requireAuth()
+  const stats = await getUserStats(user.id)
+
+  // Determine if this is the user's first dashboard visit
+  const isFirstDashboardVisit = !user.lastLogin
+
+  // Update last login for first-time visitors
+  if (isFirstDashboardVisit) {
+    await updateLastLogin(user.id)
+  }
+
+  return (
+    <DashboardLayoutClient firstName={user.firstName || ""} lastName={user.lastName || ""} isFirstVisit={isFirstDashboardVisit}>
+      <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+        {/* Real-time Dashboard Hero with auto-syncing balance and stats */}
+        <DashboardHeroSynced />
+
+        {/* Real-time Net Balance with auto-syncing */}
+        <GlanceStripSynced />
+
+        <QuickActions />
+
+        {/* Dashboard Cards Grid with Referral Card */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+          <DashboardCardsSynced />
+          <ReferralSummaryCard />
+        </div>
+
+        <div className="grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <Suspense fallback={<PortfolioChartSkeleton />}>
+              <PortfolioChartAsync userId={user.id} stats={stats} />
+            </Suspense>
+          </div>
+          <div className="lg:col-span-2">
+            {/* Real-time Recent Transactions with auto-syncing */}
+            <Suspense fallback={<RecentTransactionsSkeleton />}>
+              <RecentTransactionsSynced />
+            </Suspense>
+          </div>
+        </div>
+
+        <Suspense fallback={<div className="h-64 bg-card rounded-lg animate-pulse" />}>
+          <ActiveInvestmentsAsync userId={user.id} />
+        </Suspense>
+
+        <EducationTips />
+
+        <div className="pb-4 sm:pb-0">
+          <LiveChatButton />
+        </div>
+      </div>
+    </DashboardLayoutClient>
+  )
+}
+
+// Async component for PortfolioChart
+async function PortfolioChartAsync({ userId, stats }: { userId: string; stats: any }) {
+  const portfolioData = await generatePortfolioData(userId)
+  const monthlyMetrics = await calculateMonthlyMetrics(userId)
+  const activeInvestments = await getUserActiveInvestmentsWithProfit(userId)
+  
+  let liveProfit = 0
+  if (activeInvestments && activeInvestments.length > 0) {
+    liveProfit = activeInvestments.reduce((sum, inv) => sum + (inv.accumulatedProfit || 0), 0)
+  }
+  
+  const displayProfit = liveProfit > 0 ? liveProfit : stats.totalProfit
+  const totalBalance = stats.availableBalance + stats.totalInvested + displayProfit
+  const monthlyChange = stats.totalInvested > 0 ? Math.round((monthlyMetrics.monthlyGain / stats.totalInvested) * 100 * 100) / 100 : 0
+
+  return (
+    <PortfolioChart 
+      data={portfolioData} 
+      balance={totalBalance}
+      monthlyChange={monthlyChange}
+    />
+  )
+}
+
+// Async component for ActiveInvestments
+async function ActiveInvestmentsAsync({ userId }: { userId: string }) {
+  const activeInvestments = await getUserActiveInvestmentsWithProfit(userId)
+
+  if (!activeInvestments || activeInvestments.length === 0) {
+    return null
+  }
+
+  return (
+    <div>
+      <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">Active Investment Plans</h2>
+      <ActiveInvestmentsTable investments={activeInvestments} />
+    </div>
+  )
+}

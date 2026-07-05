@@ -1,0 +1,10 @@
+# Git LFS Configuration
+# Large binary files
+*.node filter=lfs diff=lfs merge=lfs -text
+
+# Build cache and next.js outputs
+.next/** filter=lfs diff=lfs merge=lfs -text
+.next/dev/cache/** filter=lfs diff=lfs merge=lfs -text
+
+# Node modules (if tracked)
+node_modules/** filter=lfs diff=lfs merge=lfs -text

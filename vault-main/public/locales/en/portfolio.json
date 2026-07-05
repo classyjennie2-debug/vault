@@ -1,0 +1,21 @@
+{
+  "title": "Portfolio Dashboard",
+  "description": "View your complete investment portfolio and performance metrics",
+  "last_update": "Portfolio data is updated daily. Last update:",
+  "overview": "Overview",
+  "analysis": "Analysis",
+  "history": "History",
+  "performance_analysis": "Performance Analysis",
+  "best_performing": "Best Performing Asset",
+  "ytd_return": "YTD Return",
+  "volatility": "Volatility",
+  "low": "Low",
+  "diversified_portfolio": "Diversified portfolio",
+  "portfolio_history": "Portfolio History",
+  "balance": "Balance",
+  "returns": "Returns",
+  "date": "Date",
+  "view_portfolio": "View Portfolio",
+  "your_portfolio": "Your Portfolio",
+  "complete_portfolio": "Manage your complete investment portfolio"
+}
