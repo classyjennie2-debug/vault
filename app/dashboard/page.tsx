@@ -9,7 +9,6 @@ import { QuickActions } from "@/components/dashboard/quick-actions"
 import { ActiveInvestmentsTable } from "@/components/investments/active-investments-table"
 import LiveChatButton from "@/components/live-chat-button"
 import { DashboardLayoutClient } from "@/components/dashboard/dashboard-layout-client"
-import { EmployeeTrainingGate } from "@/components/dashboard/employee-training-gate"
 import { requireAuth } from "@/lib/auth"
 import { getUserStats, generatePortfolioData, getUserActiveInvestmentsWithProfit, updateLastLogin } from "@/lib/db"
 import { calculateMonthlyMetrics, calculateReturnRate } from "@/lib/monthly-metrics"
@@ -45,58 +44,45 @@ export default async function DashboardPage() {
 
   return (
     <DashboardLayoutClient firstName={user.firstName || ""} lastName={user.lastName || ""} isFirstVisit={isFirstDashboardVisit}>
-      <EmployeeTrainingGate
-        isCompleted={Boolean(user.isTrainingCompleted)}
-        userName={(user.firstName || user.lastName) ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "Employee"}
-        userId={user.id}
-      >
-        <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-          <div className="rounded-2xl border border-border/70 bg-card/90 p-4 sm:p-5">
-            <h2 className="text-xl font-semibold text-foreground">Employee dashboard</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Your workspace is now unlocked. Review your portfolio, transactions, and investments below.
-            </p>
+      <div className="flex flex-col gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+        {/* Real-time Dashboard Hero with auto-syncing balance and stats */}
+        <DashboardHeroSynced />
+
+        {/* Real-time Net Balance with auto-syncing */}
+        <GlanceStripSynced />
+
+        <QuickActions />
+
+        {/* Dashboard Cards Grid with Referral Card */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+          <DashboardCardsSynced />
+          <ReferralSummaryCard />
+        </div>
+
+        <div className="grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <Suspense fallback={<PortfolioChartSkeleton />}>
+              <PortfolioChartAsync userId={user.id} stats={stats} />
+            </Suspense>
           </div>
-
-          {/* Real-time Dashboard Hero with auto-syncing balance and stats */}
-          <DashboardHeroSynced />
-
-          {/* Real-time Net Balance with auto-syncing */}
-          <GlanceStripSynced />
-
-          <QuickActions />
-
-          {/* Dashboard Cards Grid with Referral Card */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-            <DashboardCardsSynced />
-            <ReferralSummaryCard />
-          </div>
-
-          <div className="grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-5">
-            <div className="lg:col-span-3">
-              <Suspense fallback={<PortfolioChartSkeleton />}>
-                <PortfolioChartAsync userId={user.id} stats={stats} />
-              </Suspense>
-            </div>
-            <div className="lg:col-span-2">
-              {/* Real-time Recent Transactions with auto-syncing */}
-              <Suspense fallback={<RecentTransactionsSkeleton />}>
-                <RecentTransactionsSynced />
-              </Suspense>
-            </div>
-          </div>
-
-          <Suspense fallback={<div className="h-64 bg-card rounded-lg animate-pulse" />}>
-            <ActiveInvestmentsAsync userId={user.id} />
-          </Suspense>
-
-          <EducationTips />
-
-          <div className="pb-4 sm:pb-0">
-            <LiveChatButton />
+          <div className="lg:col-span-2">
+            {/* Real-time Recent Transactions with auto-syncing */}
+            <Suspense fallback={<RecentTransactionsSkeleton />}>
+              <RecentTransactionsSynced />
+            </Suspense>
           </div>
         </div>
-      </EmployeeTrainingGate>
+
+        <Suspense fallback={<div className="h-64 bg-card rounded-lg animate-pulse" />}>
+          <ActiveInvestmentsAsync userId={user.id} />
+        </Suspense>
+
+        <EducationTips />
+
+        <div className="pb-4 sm:pb-0">
+          <LiveChatButton />
+        </div>
+      </div>
     </DashboardLayoutClient>
   )
 }
