@@ -1,3 +1,4 @@
+import { EmployeeLogoutButton } from "@/components/dashboard/employee-logout-button"
 import { EmployeeTrainingGate } from "@/components/dashboard/employee-training-gate"
 import { requireAuth } from "@/lib/auth"
 
@@ -9,13 +10,18 @@ export default async function EmployeeAccessPage() {
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <div className="rounded-2xl border border-border/70 bg-card/90 p-6 shadow-sm">
-          <p className="text-sm font-medium uppercase tracking-[0.24em] text-muted-foreground">
-            Vault Capital
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold text-foreground">Employee access portal</h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            This is a separate employee-only workspace. Enter the access code and complete the training steps before the employee tools become available.
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.24em] text-muted-foreground">
+                Vault Capital
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold text-foreground">Employee access portal</h1>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                This is a separate employee-only workspace. Enter the access code and complete the training steps before the employee tools become available.
+              </p>
+            </div>
+            <EmployeeLogoutButton />
+          </div>
         </div>
 
         <EmployeeTrainingGate
