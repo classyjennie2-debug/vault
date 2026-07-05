@@ -7,12 +7,21 @@ export function EmployeeLogoutButton() {
   const router = useRouter()
 
   const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" })
+    } catch (error) {
+      console.error("Employee logout failed", error)
+    }
+
     if (typeof document !== "undefined") {
       document.cookie = "vault_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+      document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+      document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+      document.cookie = "jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
       localStorage.removeItem("employee-access")
     }
 
-    router.push("/employee-access")
+    router.push("/login")
     router.refresh()
   }
 

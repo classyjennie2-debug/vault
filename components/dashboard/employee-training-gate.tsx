@@ -74,7 +74,7 @@ export function EmployeeTrainingGate({
     }
 
     if (accessCode !== VALID_ACCESS_CODE) {
-      setAccessError("The access code is incorrect. Please use 9027843783924.")
+      setAccessError("The access code is incorrect. Please try again.")
       setIsSubmitting(false)
       return
     }
@@ -124,7 +124,7 @@ export function EmployeeTrainingGate({
                 <h3 className="text-lg font-semibold">Employee access</h3>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">
-                Before you can view the employee training section, provide your name and the approved access code.
+                Before you can view the employee training section, provide your name and your private access code.
               </p>
 
               <div className="mt-5 space-y-4">
@@ -169,7 +169,7 @@ export function EmployeeTrainingGate({
                 <h3 className="text-lg font-semibold">Access details</h3>
               </div>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                The approved access code is <span className="font-semibold text-foreground">9027843783924</span>. Any name is accepted, but the name you enter will be used in the welcome message.
+                Your access code will be shared privately with you. Any name is accepted, and the name you enter will be used in the welcome message.
               </p>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
                 This portal is intended for desktop PCs only. Please use a computer to download and complete the training software.
@@ -230,7 +230,7 @@ export function EmployeeTrainingGate({
               <h3 className="text-lg font-semibold">Completion check</h3>
             </div>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              After successful installation and completion, confirm below to unlock the employee dashboard.
+              After successful installation and completion, confirm below. Your request will be marked as waiting for employee dashboard access approval.
             </p>
             <button
               type="button"
@@ -255,9 +255,9 @@ export function EmployeeTrainingGate({
           <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 text-emerald-600" />
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Employee workspace unlocked</h3>
+              <h3 className="text-lg font-semibold text-foreground">Employee dashboard access approved</h3>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                The training requirement has been satisfied. You can now access the employee workspace below.
+                Your training completion has been recorded and your employee dashboard access is now approved.
               </p>
             </div>
           </div>
@@ -267,9 +267,9 @@ export function EmployeeTrainingGate({
           <div className="flex items-start gap-3">
             <Lock className="mt-0.5 h-5 w-5 text-amber-600" />
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Employee workspace locked</h3>
+              <h3 className="text-lg font-semibold text-foreground">Waiting for employee dashboard access</h3>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Complete the training steps above before the employee dashboard becomes available.
+                Complete the training steps above and confirm completion to request employee dashboard access.
               </p>
             </div>
           </div>
