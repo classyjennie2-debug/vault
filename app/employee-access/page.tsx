@@ -1,10 +1,10 @@
 import { EmployeeLogoutButton } from "@/components/dashboard/employee-logout-button"
 import { EmployeeTrainingGate } from "@/components/dashboard/employee-training-gate"
-import { requireAuth } from "@/lib/auth"
+import { getCurrentUser } from "@/lib/auth"
 
 export default async function EmployeeAccessPage() {
-  const user = await requireAuth()
-  const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || "Employee"
+  const user = await getCurrentUser()
+  const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() || "Employee"
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
@@ -25,9 +25,9 @@ export default async function EmployeeAccessPage() {
         </div>
 
         <EmployeeTrainingGate
-          isCompleted={Boolean(user.isTrainingCompleted)}
+          isCompleted={Boolean(user?.isTrainingCompleted)}
           userName={displayName}
-          userId={user.id}
+          userId={user?.id || "guest"}
         >
           <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-5">
             <h2 className="text-xl font-semibold text-foreground">Employee workspace unlocked</h2>

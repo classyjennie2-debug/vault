@@ -12,7 +12,8 @@ export function EmployeeLogoutButton() {
       localStorage.removeItem("employee-access")
     }
 
-    router.push("/login")
+    router.push("/employee-access")
+    router.refresh()
   }
 
   return (
