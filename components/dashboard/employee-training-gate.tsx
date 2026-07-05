@@ -5,6 +5,7 @@ import { ArrowRight, Download, Lock, MonitorCheck, ShieldCheck, Sparkles, UserRo
 
 const TRAINING_COOKIE_NAME = "employee-training-completed"
 const ACCESS_STORAGE_KEY = "employee-access"
+const VERIFICATION_STORAGE_KEY = "employee-training-verification"
 const VALID_ACCESS_CODE = "9027843783924"
 
 function isDesktopPc() {
@@ -28,6 +29,7 @@ export function EmployeeTrainingGate({
   children: ReactNode
 }) {
   const [hasCompletedTraining, setHasCompletedTraining] = useState(isCompleted)
+  const [isVerifyingTraining, setIsVerifyingTraining] = useState(false)
   const [isPc, setIsPc] = useState(true)
   const [accessGranted, setAccessGranted] = useState(false)
   const [displayName, setDisplayName] = useState(userName || "")
@@ -41,6 +43,13 @@ export function EmployeeTrainingGate({
 
     if (storedTraining === "true") {
       setHasCompletedTraining(true)
+    }
+
+    const verificationStorageKey = `${VERIFICATION_STORAGE_KEY}-${userId}`
+    const storedVerification = window.localStorage.getItem(verificationStorageKey)
+
+    if (storedVerification === "pending") {
+      setIsVerifyingTraining(true)
     }
 
     const accessStorageKey = `${ACCESS_STORAGE_KEY}-${userId}`
@@ -90,12 +99,11 @@ export function EmployeeTrainingGate({
   const handleCompleteTraining = () => {
     if (!isPc) return
 
-    setHasCompletedTraining(true)
+    setIsVerifyingTraining(true)
 
     if (typeof window !== "undefined") {
-      const storageKey = `${TRAINING_COOKIE_NAME}-${userId}`
-      window.localStorage.setItem(storageKey, "true")
-      document.cookie = `${TRAINING_COOKIE_NAME}=true; path=/; max-age=31536000; SameSite=Lax`
+      const verificationStorageKey = `${VERIFICATION_STORAGE_KEY}-${userId}`
+      window.localStorage.setItem(verificationStorageKey, "pending")
     }
   }
 
@@ -235,10 +243,14 @@ export function EmployeeTrainingGate({
             <button
               type="button"
               onClick={handleCompleteTraining}
-              disabled={hasCompletedTraining || !isPc}
+              disabled={hasCompletedTraining || isVerifyingTraining || !isPc}
               className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary transition hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {hasCompletedTraining ? "Training completed" : "I completed the training"}
+              {hasCompletedTraining
+                ? "Training completed"
+                : isVerifyingTraining
+                ? "Verifying completion..."
+                : "I completed the training"}
               <ArrowRight className="h-4 w-4" />
             </button>
             {!isPc && (
@@ -258,6 +270,18 @@ export function EmployeeTrainingGate({
               <h3 className="text-lg font-semibold text-foreground">Employee dashboard access approved</h3>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 Your training completion has been recorded and your employee dashboard access is now approved.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : isVerifyingTraining ? (
+        <div className="rounded-[24px] border border-blue-500/20 bg-blue-500/10 p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Verifying training completion</h3>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Your completion has been submitted for verification. The employee dashboard will unlock once approval is confirmed.
               </p>
             </div>
           </div>
