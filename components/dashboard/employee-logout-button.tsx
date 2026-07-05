@@ -8,20 +8,32 @@ export function EmployeeLogoutButton() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" })
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+      })
     } catch (error) {
       console.error("Employee logout failed", error)
     }
 
-    if (typeof document !== "undefined") {
+    if (typeof window !== "undefined") {
       document.cookie = "vault_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
       document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
       document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
       document.cookie = "jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
       localStorage.removeItem("employee-access")
+      localStorage.removeItem("user")
+      localStorage.removeItem("token")
+      sessionStorage.clear()
     }
 
-    router.push("/login")
+    if (typeof window !== "undefined") {
+      window.location.assign("/employee-access")
+      return
+    }
+
+    router.replace("/employee-access")
     router.refresh()
   }
 
