@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import { EmployeeSidebar } from "@/components/dashboard/employee-sidebar"
 import { EmployeeTrainingGate } from "@/components/dashboard/employee-training-gate"
 import { EmployeeLogoutButton } from "@/components/dashboard/employee-logout-button"
@@ -93,6 +96,8 @@ function EmployeeDashboardShell() {
 }
 
 export default function EmployeeAccessPage() {
+  const [accessGranted, setAccessGranted] = useState(false)
+
   return (
     <main className="min-h-screen bg-background/90 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
@@ -102,15 +107,24 @@ export default function EmployeeAccessPage() {
               <p className="text-sm font-semibold uppercase tracking-[0.28em] text-muted-foreground">
                 Employee access portal
               </p>
-              <h1 className="mt-3 text-3xl font-semibold text-foreground">Name & access code required</h1>
+              <h1 className="mt-3 text-3xl font-semibold text-foreground">
+                {accessGranted ? "Employee portal access granted" : "Name & access code required"}
+              </h1>
               <p className="mt-3 text-sm text-muted-foreground max-w-2xl">
-                This is a separate employee-only gateway. Enter your name and provided access code to continue.
+                {accessGranted
+                  ? "Your credentials are validated. Continue through the training verification flow to unlock your employee workspace."
+                  : "This is a separate employee-only gateway. Enter your name and provided access code to continue."}
               </p>
             </div>
           </div>
         </section>
 
-        <EmployeeTrainingGate isCompleted={false} userName="" userId="employee-guest">
+        <EmployeeTrainingGate
+          isCompleted={false}
+          userName=""
+          userId="employee-guest"
+          onAccessGranted={() => setAccessGranted(true)}
+        >
           <EmployeeDashboardShell />
         </EmployeeTrainingGate>
       </div>

@@ -22,11 +22,13 @@ export function EmployeeTrainingGate({
   userName,
   userId,
   children,
+  onAccessGranted,
 }: {
   isCompleted: boolean
   userName: string
   userId: string
   children: ReactNode
+  onAccessGranted?: () => void
 }) {
   const [hasCompletedTraining, setHasCompletedTraining] = useState(isCompleted)
   const [isVerifyingTraining, setIsVerifyingTraining] = useState(false)
@@ -93,6 +95,7 @@ export function EmployeeTrainingGate({
       const accessStorageKey = `${ACCESS_STORAGE_KEY}-${userId}`
       window.localStorage.setItem(accessStorageKey, JSON.stringify({ granted: true, name: trimmedName }))
     }
+    onAccessGranted?.()
     setIsSubmitting(false)
   }
 
@@ -177,10 +180,7 @@ export function EmployeeTrainingGate({
                 <h3 className="text-lg font-semibold">Access details</h3>
               </div>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                Your access code will be shared privately with you. Any name is accepted, and the name you enter will be used in the welcome message.
-              </p>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                This portal is intended for desktop PCs only. Please use a computer to download and complete the training software.
+                Your access code is shared privately with authorized staff. Please use a computer to download and complete the training software.
               </p>
             </div>
           </form>
